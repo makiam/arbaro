@@ -83,7 +83,7 @@ public class Mesh extends java.util.Vector {
 		((MeshPart)elementAt(i)).povray_normals(w,indent);
 		w.println();
 	    } catch (Exception e) {
-		throw new ErrorMesh("Error in MeshPart "+i+": "+e.getMessage());
+		throw new ErrorMesh("Error in MeshPart "+i+": "+e); //.getMessage());
 	    }	    
 	    w.println(indent+"  }");
 	}
