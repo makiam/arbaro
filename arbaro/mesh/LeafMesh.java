@@ -127,7 +127,7 @@ class DiscShape extends LeafShape {
 				faces[i] = new Face(left,left+1,right);
 				left++;
 			} else {
-				faces[i] = new Face(left,right,right-1);
+				faces[i] = new Face(left,right-1,right);
 				right--;
 			}
 		}

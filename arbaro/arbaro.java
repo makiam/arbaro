@@ -201,7 +201,7 @@ public class arbaro {
 		
 		// read parameters
 		if (input == CFGinput) tree.params.readFromCfg(in);
-		else tree.params.readFromXML(in);
+		else tree.readFromXML(in);
 		
 		// FIXME: put here or earlier?
 		if (smooth>=0) tree.params.setParam("Smooth",new Double(smooth).toString());

@@ -71,7 +71,7 @@ public class DXFOutput extends Output {
 		// FIXME: optimize speed, maybe using enumerations
 
 		Mesh mesh = tree.createStemMesh();
-		progress.beginPhase("Writing stem mesh",tree.getStemCount());
+		progress.beginPhase("Writing stem mesh",mesh.size());
 
 		for (int i=0; i<mesh.size(); i++) {
 			

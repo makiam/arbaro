@@ -49,16 +49,19 @@ public class Segment {
 	// FIXME: use Enumeration instead of making this public
 	public java.util.Vector subsegments;
 	
-	public Segment(Params params, LevelParams lparams, Stem stm, int inx, 
-			Transformation trf, double r1, double r2, double len) {
-		par = params;
-		lpar = lparams;
+	public Segment(/*Params params, LevelParams lparams,*/ 
+			Stem stm, int inx, Transformation trf, 
+			double r1, double r2) {
 		index = inx;
 		transf = trf; 
 		rad1 = r1;
 		rad2 = r2;
-		length = len;
 		stem = stm;
+
+		par = stem.par;
+		lpar = stem.lpar;
+		length = stem.segmentLength;
+		
 		// FIXME: rad1 and rad2 could be calculated only when output occurs (?)
 		// or here in the constructor ?
 		// FIXME: inialize subsegs with a better estimation of size
@@ -195,7 +198,7 @@ public class Segment {
 	 * @return the new transformation of the substem (shifted from
 	 *        the axis of the segment to the axis of the subsegment)
 	 */
-	public Transformation substem_position(Transformation trf,double where) {
+	public Transformation substemPosition(Transformation trf,double where) {
 		if (lpar.nCurveV>=0) { // normal segment 
 			return trf.translate(transf.getZ().mul(where*length));
 		} else { // helix
@@ -257,7 +260,7 @@ public class Segment {
 	 * @param meshpart the mesh part where the points should be added
 	 * @param donttrf if true, the transformation is not applied to the section points
 	 */
-	void createSectionMeshpoints(Vector pos, double rad, MeshPart meshpart,
+	private void createSectionMeshpoints(Vector pos, double rad, MeshPart meshpart,
 			boolean donttrf) {
 		//h = (self.index+where)*self.stem.segment_len
 		//rad = self.stem.stem_radius(h)

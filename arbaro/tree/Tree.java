@@ -202,7 +202,7 @@ public class Tree {
 			dist = lpar.var(lpar.nBranchDist);
 			trf = trf.translate(new Vector(dist*Math.sin(angle),
 					dist*Math.cos(angle),0));
-			Stem trunk = new Stem(this,params,params.levelParams[0],null,null,0,trf,0);
+			Stem trunk = new Stem(this,null,0,trf,0);
 			trunks.addElement(trunk);
 			trunk.index=0;
 			trunk.make();
@@ -488,7 +488,7 @@ public class Tree {
 	}
 	
 	public long getStemCount() {
-		long stemCount = 0;
+		long stemCount = trunks.size();
 		for (int t=0; t<trunks.size(); t++) {
 			stemCount += ((Stem)trunks.elementAt(t)).substemTotal();
 		}

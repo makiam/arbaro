@@ -325,17 +325,25 @@ public class Stem {
 	 * @param trf the base transformation of the stem
 	 * @param offs the offset of ste stem within the parent stem (0..1)
 	 */
-	public Stem(Tree tr, Params params, LevelParams lparams, Stem parnt, 
-			Stem clndFrom, int stlev, Transformation trf, double offs) /* offs=0 */ {
+	public Stem(Tree tr, Stem growsOutOf, int stlev, 
+			Transformation trf, double offs) /* offs=0 */ {
 		tree = tr;
-		par = params;
-		lpar = lparams;
-		parent = parnt;
-		clonedFrom = clndFrom;
 		stemlevel = stlev;
 		transf = trf; 
 		offset = offs;
 		
+		if (growsOutOf != null) {
+			if (growsOutOf.stemlevel<stemlevel)
+				parent = growsOutOf;
+			else {
+				clonedFrom = growsOutOf;
+				parent = growsOutOf.parent;
+			}
+		}
+
+		par = tree.params;
+		lpar = par.levelParams[Math.min(stemlevel,3)];
+
 		// initialize lists
 		segments = new java.util.Vector(lpar.nCurveRes);
 		
@@ -344,7 +352,7 @@ public class Stem {
 		}
 		
 		if (stemlevel < par.Levels-1) {
-			LevelParams lpar_1 = params.levelParams[Math.min(lpar.level+1,3)];
+			LevelParams lpar_1 = par.levelParams[Math.min(lpar.level+1,3)];
 			substems = new java.util.Vector(lpar_1.nBranches);
 		}
 		
@@ -428,7 +436,7 @@ public class Stem {
 	 */
 	Stem clone(Transformation trf, int start_segm) {
 		// creates a clone stem with same atributes as this stem
-		Stem clone = new Stem(tree,par,lpar,parent,this,stemlevel,trf,offset);
+		Stem clone = new Stem(tree,this,stemlevel,trf,offset);
 		clone.segmentLength = segmentLength;
 		clone.segmentCount = segmentCount;
 		clone.length = length;
@@ -602,7 +610,7 @@ public class Stem {
 			double rad2 = getStemRadius((s+1)*segmentLength);
 			
 			// create new segment
-			Segment segment = new Segment(par,lpar,this,s,trf,rad1,rad2,segmentLength);
+			Segment segment = new Segment(this,s,trf,rad1,rad2);
 			segment.make();
 			segments.addElement(segment);
 			
@@ -665,7 +673,7 @@ public class Stem {
 	 * @return The new transformation of the current segment
 	 */
 	Transformation getNewDirection(Transformation trf, int nsegm) {
-		// next segments  direction
+		// next segments direction
 		
 		// The first segment shouldn't get another direction 
 		// down and rotation angle shouldn't be falsified 
@@ -951,10 +959,10 @@ public class Stem {
 					+" where: "+where+ " seglen: "+segmentLength);
 			
 			Transformation trf = getSubstemDirection(segment.transf,offset);
-			trf = segment.substem_position(trf,where);
+			trf = segment.substemPosition(trf,where);
 			
 			// create new substem
-			Stem substem = new Stem(tree,par,lpar_1,this,null,stemlevel+1,trf,offset);
+			Stem substem = new Stem(tree,this,stemlevel+1,trf,offset);
 			substem.index=substems.size();
 			DBG("Stem.make_substems(): make new substem");
 			substem.make();
@@ -1039,7 +1047,7 @@ public class Stem {
 				trf = trf.translate(segment.transf.getZ().mul(where*segmentLength));
 				
 				// create new leaf
-				Leaf leaf = new Leaf(par,trf,loffs);
+				Leaf leaf = new Leaf(par,trf/*,loffs*/);
 				leaf.make();
 				leaves.addElement(leaf);
 				
@@ -1061,7 +1069,7 @@ public class Stem {
 			// use different method for odd and even number
 			if (cnt%2 == 1) {
 				// create one leaf in the middle
-				Leaf leaf = new Leaf(par,trf,segmentCount*segmentLength);
+				Leaf leaf = new Leaf(par,trf/*,segmentCount*segmentLength*/);
 				leaf.make();
 				leaves.addElement(leaf);
 				offsetangle = distangle;
@@ -1074,7 +1082,7 @@ public class Stem {
 					Transformation transf1 = trf.roty(rot*(offsetangle+s*distangle
 							+lpar_1.var(varangle)));
 					transf1 = transf1.rotx(downangle+lpar_1.var(vardown));
-					Leaf leaf = new Leaf(par,transf1,segmentCount*segmentLength);
+					Leaf leaf = new Leaf(par,transf1/*,segmentCount*segmentLength*/);
 					leaf.make();
 					leaves.addElement(leaf);
 				}
@@ -1189,7 +1197,7 @@ public class Stem {
 				if (lpar.var(1) >= 0) split_diverge = - split_diverge;
 			}
 			
-			trf = trf.rotaxis(split_diverge,new Vector(0,0,1));
+			trf = trf.rotaxis(split_diverge,Vector.Z_AXIS);
 			
 		} else split_diverge = 0; // for debugging only
 		

@@ -36,12 +36,12 @@ import net.sourceforge.arbaro.transformation.*;
  * @author Wolfram Diestel
  */
 public class Subsegment { 
-    // a Segment can have one or more Subsegments
-    public Vector pos; 
-    public double rad; 
-
-    public Subsegment(Vector p, double r) {
-	pos = p;
-	rad = r; 
-    }
+	// a Segment can have one or more Subsegments
+	public Vector pos; 
+	public double rad; 
+	
+	public Subsegment(Vector p, double r) {
+		pos = p;
+		rad = r; 
+	}
 }

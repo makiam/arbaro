@@ -38,36 +38,35 @@ public class Leaf {
 	
 	public Transformation transf;
 	Params par;
-	//LevelParams lpar;
 	
-	//  const Tree &tree; // the tree
-	//  const Stem &stem; // the parent stem
-	//  const int level;  // which branch level
-	double offset;    // how far from the parent's base
-	double length;    // the length of the leaf (without leaf stem)
-	double width;     // the width of the leaf
+//	double offset;    // how far from the parent's base
+//	double length;    // the length of the leaf (without leaf stem)
+//	double width;     // the width of the leaf
 	
-	public Leaf(Params params, Transformation trf, double offs) { /* offs = 0 */
+	public Leaf(Params params, Transformation trf/*, double offs*/) { /* offs = 0 */
 		par = params;
 		transf = trf;
-		offset = offs;
+//		offset = offs;
 		
-		setLeafDimension();
+//		setLeafDimension();
 		
 		// FIXME: should stem radius be added?
 		// print self.parent.stem_radius(self.offset)
 		// self.direction.radius = self.parent.stem_radius(self.offset)+self.length/2
 		
-		setLeafOrientation();
+		// setLeafOrientation();
 	}
 	
-	/**
-	 *	Sets the length and width of a leaf
-	 */
-	private void setLeafDimension() {
-		length = par.LeafScale/Math.sqrt(par.LeafQuality);
-		width = par.LeafScale*par.LeafScaleX/Math.sqrt(par.LeafQuality);
-	}
+//	/**
+//	 *	Sets the length and width of a leaf
+//	 */
+//	private void setLeafDimension() {
+//		// FIXME: this is made in tree at the moment
+//		// it would be necessary only when leafs are
+//		// different in length and width
+//		length = par.LeafScale/Math.sqrt(par.LeafQuality);
+//		width = par.LeafScale*par.LeafScaleX/Math.sqrt(par.LeafQuality);
+//	}
 	
 	/**
 	 *	Leaf rotation toward light
@@ -75,18 +74,24 @@ public class Leaf {
 	private void setLeafOrientation() {
 		if (par.LeafBend==0) return;
 		
+		
 		// FIXME: make this function as fast as possible - a tree has a lot of leafs
 		
 		// rotation outside 
 		Vector pos = transf.getT();
+		// the z-vector of transf is parallel to the
+		// axis of the leaf, the y-vector is the normal
+		// (of the upper side) of the leaf
 		Vector norm = transf.getY();
 		
 		double tpos = Vector.atan2(pos.getY(),pos.getX());
 		double tbend = tpos - Vector.atan2(norm.getY(),norm.getX());
-		if (tbend>180) tbend = 360-tbend;
+		// if (tbend>180) tbend = 360-tbend;
 		
 		double bend_angle = par.LeafBend*tbend;
-		transf = transf.rotz(bend_angle);
+		// transf = transf.rotz(bend_angle);
+		// rotate about global z-axis
+		transf = transf.rotaxis(bend_angle,Vector.Z_AXIS);
 		
 		// rotation up
 		norm = transf.getY();
@@ -96,36 +101,24 @@ public class Leaf {
 		double orientation = Vector.atan2(norm.getY(),norm.getX());
 		bend_angle = par.LeafBend*fbend;
 		
-		// FIXME: maybe optimize this with a rotation doing all
-		// three rotations at once
-		transf = transf
-			.rotz(-orientation)
-			.rotx(bend_angle)
-			.rotz(orientation);
+		transf = transf.rotx(bend_angle); 
+
+//		this is from the paper, but is equivalent with
+//      local x-rotation (upper code line)
+//		
+//		transf = transf
+//			.rotaxis(-orientation,Vector.Z_AXIS)
+//			.rotx(bend_angle)
+//			.rotaxis(orientation,Vector.Z_AXIS);
 	}
 	
-	/**
-	 * Makes a string with a number of spaces
-	 * 
-	 * @param len the number of spaces
-	 * @return a string of spaces
-	 */
-	private String whitespace(int len) {
-		char[] ws = new char[len];
-		for (int i=0; i<len; i++) {
-			ws[i] = ' ';
-		}
-		return new String(ws);
-	}
-	
-	
+		
 	/**
 	 * Makes the leave. Does nothing at the moment, because
 	 * all the values can be calculated in the constructor 
 	 */
-	void make() {
-		// makes the leaf shape
-		// add code here if necessary
+	public void make() {
+		setLeafOrientation();
 	}
 };
 

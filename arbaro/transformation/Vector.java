@@ -41,6 +41,9 @@ public class Vector {
 	final int Y=1;
 	final int Z=2;
 	
+	public final static Vector X_AXIS = new Vector(1,0,0);
+	public final static Vector Y_AXIS = new Vector(0,1,0);
+	public final static Vector Z_AXIS = new Vector(0,0,1);
 	
 	private double[] coord = {0,0,0};
 	

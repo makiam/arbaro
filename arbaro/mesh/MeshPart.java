@@ -175,7 +175,7 @@ public class MeshPart extends java.util.Vector {
 		} else if (next.size() == 1) {
 			long ninx = inx+section.size();
 			for (int i=0; i<section.size(); i++) {
-				faces.addElement(new Face(inx+i,inx+(i+1)%section.size(),ninx));
+				faces.addElement(new Face(inx+i,ninx,inx+(i+1)%section.size()));
 			}
 		} else { // section and next must have same point_cnt>1!!!
 			long ninx = inx+section.size();
@@ -184,7 +184,7 @@ public class MeshPart extends java.util.Vector {
 						+ "differ ("+inx+","+ninx+")");
 			}
 			for (int i=0; i<section.size(); i++) {
-				faces.addElement(new Face(inx+i,inx+(i+1)%section.size(),ninx+i));
+				faces.addElement(new Face(inx+i,ninx+i,inx+(i+1)%section.size()));
 				faces.addElement(new Face(inx+(i+1)%section.size(),ninx+i,
 						ninx+(i+1)%next.size()));
 			}
@@ -223,8 +223,9 @@ public class MeshPart extends java.util.Vector {
 			for (int i=0; i<section.size(); i++) {
 				faces.addElement(new VFace(
 						section.pointAt(i),
-						section.pointAt((i+1)%section.size()),
-						next.pointAt(0)));
+						next.pointAt(0),
+						section.pointAt((i+1)%section.size())
+						));
 			}
 		} else { // section and next must have same point_cnt>1!!!
 			if (section.size() != next.size()) {
@@ -234,8 +235,9 @@ public class MeshPart extends java.util.Vector {
 			for (int i=0; i<section.size(); i++) {
 				faces.addElement(new VFace(
 						section.pointAt(i),
-						section.pointAt((i+1)%section.size()),
-						next.pointAt(i)));
+						next.pointAt(i),
+						section.pointAt((i+1)%section.size())
+						));
 				faces.addElement(new VFace(
 						section.pointAt((i+1)%section.size()),
 						next.pointAt(i),

@@ -256,7 +256,7 @@ public class PovMeshOutput extends Output {
 		int vertex_cnt = mesh.vertexCount();
 		int face_cnt = mesh.faceCount();
 		
-		progress.beginPhase("Writing stem mesh",tree.getStemCount()*3);
+		progress.beginPhase("Writing stem mesh",mesh.size()*3);
 		
 		w.println("#declare " + povrayDeclarationPrefix() + "stems = "); 
 		w.println(indent + "mesh2 {");
