@@ -47,6 +47,21 @@ public class ParamFrame {
     Component lastFocused = null;
     boolean modified = false;
 
+    final static ImageIcon shapesIcon = createImageIcon("images/shapes.png","shapes");
+
+    /** Returns an ImageIcon, or null if the path was invalid. */
+    protected static ImageIcon createImageIcon(String path,
+					       String description) {
+	java.net.URL imgURL = ParamFrame.class.getResource(path);
+	if (imgURL != null) {
+	    return new ImageIcon(imgURL, description);
+	} else {
+	    System.err.println("Couldn't find file: " + path);
+	    return null;
+	}
+    }
+
+
     public ParamFrame() {
 	// create tree with paramDB
 	tree = new Tree();
@@ -119,6 +134,11 @@ public class ParamFrame {
 	    addParamGroupWidget("SPLITTING","Splitting",i,panel);
 	    addParamGroupWidget("BRANCHING","Branching",i,panel);
 	    addParamGroupWidget("ADDBRANCH","Branch distribution",i,panel);
+	    
+	    JLabel imagelabel = new JLabel("the shapes 0 to 7", shapesIcon, JLabel.CENTER);
+	    imagelabel.setVerticalTextPosition(JLabel.BOTTOM);
+	    imagelabel.setHorizontalTextPosition(JLabel.CENTER);
+	    panel.add(imagelabel);
 	}
 
 	// add more
@@ -211,20 +231,41 @@ public class ParamFrame {
 	TreeMap params = new TreeMap(tree.getParamGroup(level,group));
 	
 	JPanel panel = new JPanel();
-	panel.setLayout(new GridLayout(params.size(),2,10,2));
+	panel.setBorder(BorderFactory.createCompoundBorder(
+                      BorderFactory.createTitledBorder(groupName),
+                      BorderFactory.createEmptyBorder(5,10,5,10)));
+	
+
+	//panel.setLayout(new GridLayout(params.size(),2,10,2));
+	panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 
 	for (Iterator e=params.values().iterator();e.hasNext();) {
 	    AbstractParam p = (AbstractParam)e.next();
-	    panel.add(new JLabel(p.getName()));
-	    panel.add(new ParamField(this,6,p));
+
+	    JPanel panl = new JPanel();
+	    panl.setLayout(new BoxLayout(panl,BoxLayout.X_AXIS));
+	    panl.add(new JLabel(p.getName()));
+	    panl.add(Box.createHorizontalGlue());
+
+	    if (p.getName().equals("Shape")) {
+		panl.add(Box.createRigidArea(new Dimension(7,0)));
+		panl.add(new ShapeBox(this,p));
+	    } else {
+		panl.add(new ParamField(this,6,p));
+	    }
+	    panel.add(panl);
 	}
 
+	/*
 	JPanel panel1 = new JPanel();
 	panel1.setBorder(BorderFactory.createCompoundBorder(
                       BorderFactory.createTitledBorder(groupName),
                       BorderFactory.createEmptyBorder(5,10,5,10)));
 	panel1.add(panel);
 	parent.add(panel1);
+	*/
+
+	parent.add(panel);
 	//panel1.setAlignmentX(Component.LEFT_ALIGNMENT);
     }
 
@@ -365,6 +406,8 @@ public class ParamFrame {
     }
 }
 
+/****************** SpeciesField ************************/
+
 class SpeciesField extends JTextField {
 
     Tree tree;
@@ -394,6 +437,8 @@ class SpeciesField extends JTextField {
 	    });
     }
 }
+
+/********************** ParamField ****************************/
 
 class ParamField extends JTextField {
 
@@ -437,6 +482,9 @@ class ParamField extends JTextField {
 				
     }
 
+    public Dimension getMaximumSize() {
+	return getPreferredSize();
+    }
 
     void setParamValue() {
 	try {
@@ -455,6 +503,123 @@ class ParamField extends JTextField {
 	}
     }
 }
+
+/********************** ShapeBox *****************************/
+
+class ShapeBox extends JComboBox {
+
+    ParamFrame parent;
+    IntParam param;
+
+    //Integer [] values;
+    final static String[] items = { "conical", "spherical", "hemispherical", "cylindrical", 
+				    "tapered cylindrical","flame","inverse conical","tend flame",
+				    "envelope" };
+    
+    final static String[] values = {"0","1","2","3","4","5","6","7","8"};
+    ImageIcon [] shapeIcons;
+
+    /** Returns an ImageIcon, or null if the path was invalid. */
+    protected static ImageIcon createImageIcon(String path,
+					       String description) {
+	java.net.URL imgURL = ShapeBox.class.getResource(path);
+	if (imgURL != null) {
+	    return new ImageIcon(imgURL, description);
+	} else {
+	    System.err.println("Couldn't find file: " + path);
+	    return null;
+	}
+    }
+
+    public ShapeBox(ParamFrame pnt, AbstractParam p) {
+	super(values);
+	parent = pnt;
+	param = (IntParam)p;
+
+	// load Icons
+	shapeIcons = new ImageIcon[items.length];
+	for (int i=0; i<items.length; i++) {
+	    // values[i] = new Integer(i);
+	    shapeIcons[i] = createImageIcon("images/shape"+i+".png","Shape 0");
+	}
+	//	values[8] = new Integer(8);
+
+	CellRenderer renderer= new CellRenderer();
+        //renderer.setPreferredSize(new Dimension(200, 130));
+        setRenderer(renderer);
+
+	setSelectedIndex(param.intValue());
+
+        addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    setParamValue(getSelectedIndex());
+		}
+	    });
+	param.addChangeListener(new ChangeListener() {
+		public void stateChanged(ChangeEvent e) {
+		    setSelectedIndex(param.intValue());
+		}
+	    });
+    }
+
+    void setParamValue(int value) {
+	try {
+	    if (! param.getValue().equals(""+value)) {
+		System.err.println("change "+param.getName()+" from "+param.getValue()+
+				   " to "+value);
+		param.setValue(""+value);
+		parent.setModified(true);
+	    }
+	} catch (ErrorParam err) {
+	    JOptionPane.showMessageDialog(getParent(),err.getMessage(),"Parameter Error",
+					  JOptionPane.ERROR_MESSAGE);
+	    // set focus to this field
+	    requestFocusInWindow();
+	}
+    }
+
+    public Dimension getMaximumSize() {
+	return getPreferredSize();
+    }
+
+
+    class CellRenderer extends JLabel implements ListCellRenderer {
+	public CellRenderer() {
+	    setOpaque(true);
+	}
+	public Component getListCellRendererComponent(
+		      JList list,
+		      Object value,
+		      int index,
+		      boolean isSelected,
+		      boolean cellHasFocus)
+	{
+	    int myIndex = Integer.parseInt(value.toString());
+
+	    if (isSelected) {
+		setBackground(list.getSelectionBackground());
+		setForeground(list.getSelectionForeground());
+	    } else {
+		setBackground(list.getBackground());
+		setForeground(list.getForeground());
+	    }
+	    
+	    //Set the icon and text.  If icon was null, say so.
+	    ImageIcon icon;
+	    if (myIndex>=0 && myIndex<9) {
+		icon = shapeIcons[myIndex];
+		setIcon(icon);
+	    }; 
+
+	    setText(items[myIndex]);
+	    
+	    return this;
+	}
+    };
+
+};
+
+
 
 
 
