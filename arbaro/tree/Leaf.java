@@ -22,7 +22,7 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro;
+package net.sourceforge.arbaro.tree;
 
 import java.io.PrintWriter;
 import java.lang.Math;

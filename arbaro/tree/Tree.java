@@ -23,7 +23,7 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro;
+package net.sourceforge.arbaro.tree;
 
 import java.io.PrintWriter;
 
@@ -33,7 +33,7 @@ import net.sourceforge.arbaro.params.FloatFormat;
 import net.sourceforge.arbaro.params.Params;
 import net.sourceforge.arbaro.transformation.Transformation;
 
-class Tree {
+public class Tree {
     //A class for creation of threedimensional tree objects
 
     // FIXME: create set-functions for some parameters like seed, debug a.s.o.
@@ -104,7 +104,7 @@ class Tree {
 	// leaves
 	if (params.Leaves!=0) {
 	    w.println("#declare " + pov_prefix() + "leaves = union {");
-	    // FIXME split STem.povay into Stem.povray_stems and STem.povray_leaves
+	    // FIXME split Stem.povray into Stem.povray_stems and STem.povray_leaves
 	    trunk.povray(w,params.Levels);
 	    w.println("}");
 	} else { // empty declaration
