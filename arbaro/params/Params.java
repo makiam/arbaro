@@ -163,7 +163,7 @@ public class Params {
 	w.println("    <param name='" + name + "'  value='"+value+"'/>");
     }
 
-    void toXML(PrintWriter w) {
+    public void toXML(PrintWriter w) {
 	w.println("<?xml version='1.0' ?>");
 	w.println();
 	w.println("<arbaro>");
@@ -356,7 +356,9 @@ public class Params {
     public double shape_ratio(double ratio, int shape) {
 
 	switch (shape) { 
-	case CONICAL: return 0.2+0.8*ratio;
+	    //case CONICAL: return 0.2+0.8*ratio;
+	    // need real conical shape for lark, fir, etc.
+	case CONICAL: return ratio;
 	case SPHERICAL: return 0.2+0.8*Math.sin(Math.PI*ratio);
 	case HEMISPHERICAL: return 0.2+0.8*Math.sin(0.5*Math.PI*ratio);
 	case CYLINDRICAL: return 1.0;
@@ -666,7 +668,7 @@ void Tree::setParams(Paramset &paramset) {
 		"use BaseSplits for the first splitting to get a circular\n"+
 		"stem distribution (seen from top).\n");
 	
-	flt4_par("nLength",0.0000001,1.0,1.0,0.5,0.5,0.5,"fractional trunk scaling",
+	flt4_par("nLength",0.0000001,Double.POSITIVE_INFINITY,1.0,0.5,0.5,0.5,"fractional trunk scaling",
 		 "0Length and 0LengthV give the fractional length of the\n"+
 		 "trunk. So with Scale=10 and 0Length=0.8 the length of the\n"+
 		 "trunk will be 8m. Dont' confuse the height of the tree with\n"+
@@ -699,9 +701,9 @@ void Tree::setParams(Paramset &paramset) {
 	
 	flt4_par("nCurve",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle","");
 	
-	flt4_par("nCurveV",0,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle variation","");
+	flt4_par("nCurveV",-90,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle variation","");
 	
-	flt4_par("nCurveBack",0,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle upper stem half","");
+	flt4_par("nCurveBack",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle upper stem half","");
 
 	flt4_par("nDownAngle",0.000001,179.999999,30,30,30,30,"angle from parent","");
 	

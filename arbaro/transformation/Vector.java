@@ -63,6 +63,13 @@ public class Vector {
 	    +fmt.format(coord[Y])+">";
     }
 
+    public String toString() {
+	NumberFormat fmt = FloatFormat.getInstance();
+	return "<"+fmt.format(coord[X])+","
+	    +fmt.format(coord[Y])+","
+	    +fmt.format(coord[Z])+">";
+    }	
+
     public Vector normalize() {
 	double abs = this.abs();
 	return new Vector(coord[X]/abs,coord[Y]/abs,coord[Z]/abs);

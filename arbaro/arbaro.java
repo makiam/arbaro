@@ -22,6 +22,15 @@
 //  #
 //  #**************************************************************************/
 
+/* TODO:
+
+  conical 0.1+... or 0.2+... - may be use special fir-mode
+  evenly leaf distribution for tree with needles like fir, lark,...
+  for needles use a leaf wich hase many needles with downangle 0
+  try using one big mesh for leaves instead of union of discs
+
+*/
+
 import java.io.PrintWriter;
 //import java.io.InputStreamReader;
 //import java.io.InputStream;
@@ -30,10 +39,14 @@ import java.io.PrintWriter;
 import params.Params;
 import params.CfgTreeParser;
 import params.XMLTreeParser;
+import org.xml.sax.InputSource;
 
 public class arbaro {
     static Tree tree;
 
+    static int XMLinput = 0;
+    static int CFGinput = 1;
+    static int XMLoutput = 99;
     static void p(String s) { System.err.println(s); }
     static void p() { System.err.println(); }
 
@@ -87,21 +100,35 @@ public class arbaro {
 	p();
     }
 
+    class opt_val {
+	public String opt;
+	public String val;
+
+	public opt_val(String o, String v) {
+	    opt = o;
+	    val = v;
+	}
+    }
+
+    String getopt(java.util.Vector args, String options, java.util.Vector longOptions) {
+	// if ((String)args.firstElement()).startsWith
+	return "";
+    }
+
     public static void main (String [] args) throws Exception{
 	//	try {
 	tree = new Tree();
       
 	programname();
 
-	/*
-	bool quiet = false;
-	bool debug = false;
+	boolean quiet = false;
+	boolean debug = false;
 	int seed = 13;
 	int levels = -1;
-	OutputFormat output=MESH;
-	int smooth=-1;
-	InputFormat input = XML;
-
+	int output=Params.MESH;
+	double smooth=-1;
+	int input = XMLinput;
+	/*
   struct option long_options[] = {
     {"help", no_argument, 0, 'h'},
     {"quiet", no_argument, 0, 'q'},
@@ -113,67 +140,35 @@ public class arbaro {
     {"xml", no_argument, 0, 'x'},
     {"treecfg", no_argument, 0, 'r'},
     {0, 0, 0, 0}
-  };
+    };*/
 
-  int c;
-  int digit_optind = 0;
 
-  while (1) {
-    int this_option_optind = optind ? optind : 1;
-    int option_index = 0;
-    c = getopt_long (argc, argv, "hvdl:s:m:cx",
-		     long_options, &option_index);
-    if (c == -1)
-      break;
+	for (int i=0; i<args.length; i++) {
 
-    switch (c) {
 
-    case 'h': //  print help information and exit
-      usage();
-      exit(0);
-      break;
-
-    case 'd': 
-      debug = true;
-      break;
-
-    case 'q':
-      quiet = true;
-      break;
-      
-    case 's':
-      if (optarg) {
-	seed = atoi(optarg);
-      }
-      break;
-
-    case 'l':
-      if (optarg) {
-	levels = atoi(optarg);
-      }
-      break;
-
-    case 'c':
-      output = CONES;
-      break;
-
-    case 'm':
-      output = MESH;
-      if (optarg) {
-	smooth = float(optarg);
-      }
-      break;
-
-    case 'x':
-      output = XML;
-      break;
-
-    case 'r':
-      input = CFG;
-      break;
-	
-    }
-  }
+	    if (args[i].equals("-d")) {
+		debug = true;
+	    } else if (args[i].equals("-h")) {
+		usage();
+		System.exit(0);
+	    } else if (args[i].equals("-q")) {
+		quiet = true;
+	    } else if (args[i].equals("-s")) {
+		seed = new Integer(args[++i]).intValue();
+	    } else if (args[i].equals("-l")) {
+		levels = new Integer(args[++i]).intValue();
+	    } else if (args[i].equals("-c")) {
+		output = Params.CONES;
+	    } else if (args[i].equals("-m")) {
+		output = Params.MESH;
+		smooth = new Double(args[++i]).doubleValue();
+	    } else if (args[i].equals("-x")) {
+		output = XMLoutput;
+	    } else if (args[i].equals("-r")) {
+		input = CFGinput;
+	    }
+	}
+		       
     // rest of args should be files    
     // ...
     //if (optind < argc) {
@@ -184,61 +179,54 @@ public class arbaro {
 
     //########## read params from XML file ################
 
-    // FIXME: put this in another file Params.cpp
-    Paramset paramset;
-	*/
 
-
-    //############ create tree #########################
-
-	/*
-    cerr << "Reading params from stdin...\n";
-    if (input == XML) {
-      //read_xml_tree_file(sys.stdin)
-    } else {
-	*/
-	tree.params.debug=false;
-	tree.params.output=Params.MESH;
-	
+    tree.params.debug=debug;
+    tree.params.output=output;
+    // put here or later?
+    if (smooth>=0) tree.params.Smooth = smooth;
+   
+    if (input == CFGinput) {
 	CfgTreeParser parser = new CfgTreeParser();
 	parser.parse(System.in,tree.params);
-      //    }
+    } else {
+	XMLTreeParser parser = new XMLTreeParser();
+	parser.parse(new InputSource(System.in),tree.params);
+    }
 
+    // FIXME: put here or earlier?
+    if (smooth>=0) tree.params.setParam("Smooth",new Double(smooth).toString());
+   
+    tree.params.verbose=(! quiet);
+    tree.params.Seed=seed;
     
-      /*
-      tree.setParams(paramset);
-      tree.debug=debug;
-      tree.verbose=(! quiet);
-      tree.Seed=seed;
-      tree.output = output;
 
-    if (smooth>=0) tree.Smooth = smooth;
     // FIXME: mesh_smooth settings rely on
     // Levels, so maybe there should be a
     // different variable to halt tree creation on
     // a specific level
-    if (levels>=0 && levels<=tree.Levels) {
-      tree.Levels=levels;
-      tree.Leaves=0;
-    }
 
-    if (output==XML) {
-      // save parameters in XML file, don't create tree
-      tree.saveParams(cout);
+    //FIXME: params are not filled yet, the values are still in
+    // the paramDB
+    if (levels>=0 && levels<=tree.params.Levels) {
+	tree.params.setParam("Levels",new Integer(levels).toString());
+	tree.params.setParam("Leaves","0");
+    }
+    
+    if (output==XMLoutput) {
+	// save parameters in XML file, don't create tree
+	tree.params.toXML(new PrintWriter(new OutputStreamWriter(System.out)));
     } else {
-
-      */
-      tree.make();
-
-      PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
-      tree.povray(out);
-      //    }
-
-      //    exit(0);
-      //	} catch (Exception e) { throw e;}
+	
+	
+	tree.make();
+	
+	PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
+	tree.povray(out);
+	System.exit(0);
     }
 
-};
+    };
+}
 
   
 

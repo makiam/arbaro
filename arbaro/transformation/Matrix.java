@@ -42,7 +42,7 @@ public class Matrix {
 	data = new double[(Z+1)*(Z+1)];
 	for (int r=X; r<=Z; r++) {
 	    for (int c=X; c<=Z; c++) {
-		data[r*Z+c] = c==r? 1:0;
+		data[r*3+c] = c==r? 1:0;
 	    }
 	}
     }
@@ -51,38 +51,43 @@ public class Matrix {
 		  double yx, double yy, double yz,
 		  double zx, double zy, double zz) {
 	data = new double[(Z+1)*(Z+1)];
-	data[X*Z+X] = xx;
-	data[X*Z+Y] = xy;
-	data[X*Z+Z] = xz;
-	data[Y*Z+X] = yx;
-	data[Y*Z+Y] = yy;
-	data[Y*Z+Z] = yz;
-	data[Z*Z+X] = zx;
-	data[Z*Z+Y] = zy;
-	data[Z*Z+Z] = zz;
+
+	data[X*3+X] = xx;
+	data[X*3+Y] = xy;
+	data[X*3+Z] = xz;
+	data[Y*3+X] = yx;
+	data[Y*3+Y] = yy;
+	data[Y*3+Z] = yz;
+	data[Z*3+X] = zx;
+	data[Z*3+Y] = zy;
+	data[Z*3+Z] = zz;
+    }
+
+    public String toString() {
+	return "x: "+row(X)+" y: "+row(Y)+" z: "+row(Z);
     }
 
     public Vector row(int r) {
-	return new Vector(data[r*Z+X],data[r*Z+Y],data[r*Z+Z]);
+	return new Vector(data[r*3+X],data[r*3+Y],data[r*3+Z]);
     }
 	
     public Vector col(int c) {
-	return new Vector(data[X*Z+c],data[Y*Z+c],data[Z*Z+c]);
+	return new Vector(data[X*3+c],data[Y*3+c],data[Z*3+c]);
     }
 		
     public double get(int r, int c) {
-	return data[r*Z+c];
+	return data[r*3+c];
     }
 		
     public void set(int r, int c, double value)  {
-	data[r*Z+c] = value;
+	data[r*3+c] = value;
     }
 
     public Matrix transpose() {
 	Matrix T = new Matrix();
 	for (int r=X; r<=Z; r++) {
 	    for (int c=X; c<=Z; c++) {
-		T.set(r,c,data[c*Z+r]);
+		T.set(r,c,data[c*3+r]);
 	    }
 	}
 	return T;
@@ -94,7 +99,7 @@ public class Matrix {
   
 	for (int r=X; r<=Z; r++) {
 	    for (int c=X; c<=Z; c++) {
-		R.set(r,c,data[r*Z+c]*factor);
+		R.set(r,c,data[r*3+c]*factor);
 	    }
 	}
 	return R;
@@ -104,8 +109,8 @@ public class Matrix {
 	//returns the matrix product
 	Matrix R = new Matrix();
   
-	for (int r=0; r<3; r++) {
-	    for (int c=0; c<3; c++) {
+	for (int r=X; r<=Z; r++) {
+	    for (int c=X; c<=Z; c++) {
 		R.set(r,c,row(r).prod(M.col(c)));
 	    }
 	}
@@ -119,7 +124,7 @@ public class Matrix {
   
 	for (int r=X; r<=Z; r++) {
 	    for (int c=X; c<=Z; c++) {
-		R.set(r,c,data[r*Z+c]+M.get(r,c));
+		R.set(r,c,data[r*3+c]+M.get(r,c));
 	    }
 	}
 	return R;

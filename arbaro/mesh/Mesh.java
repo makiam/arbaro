@@ -120,7 +120,13 @@ public class Mesh extends java.util.Vector {
 	//returns the triangles between section sec and next
 	MeshSection next = section.next;
 	java.util.Vector faces = new java.util.Vector();
-	
+
+	if (section.size() ==1 && next.size() == 1) {
+	    //FIXME: normaly this shouldn't occur, only for very small radius?
+	    // I should warn about this?
+	    return faces;
+	}
+
 	if (section.size() == 1) {
 	    for (int i=0; i<next.size(); i++) {
 		faces.addElement(new Face(inx,inx+1+i,inx+1+(i+1)%next.size()));
@@ -146,6 +152,15 @@ public class Mesh extends java.util.Vector {
     }
     
     public void povray(PrintWriter w, boolean output_normals, String indent) throws ErrorMesh {
+	int face_cnt = face_cnt();
+
+	if (face_cnt == 0) {
+	    //FIXME: stem radius to small, can avoid this?
+	    // maybe could avoid this, not makin stems with to small length
+	    System.err.println("WARNING: no faces in mesh - stem radius to small");
+	    return;
+	}
+
 	w.println(indent + "mesh2 {");
 	// output section points
 	w.println(indent+"  vertex_vectors { " + vertex_cnt());

@@ -102,12 +102,10 @@ ostream& operator << (ostream &os, const Transformation &trf) {
 
 	
 
-/*
-string Transformation::str() const {
-  return "x: %s, y: %s, z: %s, t: %s\n" % \
-			(str(self.x()),str(self.y()),\
-			str(self.z()),str(self.vector))
-  */
+    
+    public String toString() {
+	return "x: "+getX()+", y: "+getY()+", z: "+getZ()+", t: "+getT();
+    }
     
 	
     public String povray() {
@@ -129,9 +127,9 @@ string Transformation::str() const {
     public Transformation rotz(double angle) {
 	// local rotation about z-axis
 	angle = angle*Math.PI/180;
-	Matrix rm = new Matrix(Math.cos(angle),-Math.sin(angle),0.0,
-			   Math.sin(angle),Math.cos(angle),0.0,
-			   0.0,0.0,1.0);
+	Matrix rm = new Matrix(Math.cos(angle),-Math.sin(angle),0,
+			   Math.sin(angle),Math.cos(angle),0,
+			   0,0,1);
 	return new Transformation(matrix.prod(rm),vector);
     }
 		

@@ -121,7 +121,7 @@ public class Stem implements StemInterface {
 	DBG(where + ": " + trf.toString());
     }
 
-    void DBG(String dbgstr) {
+    public void DBG(String dbgstr) {
 	// print debug string to stderr if debugging is enabled
 	if (par.debug) System.err.println(tree_position() + ":" + dbgstr);
     }
@@ -136,7 +136,7 @@ public class Stem implements StemInterface {
 	    if (stem.clone_index.size()>0) { 
 		String clonestr = "";
 		for (int i=0; i<stem.clone_index.size(); i++) {
-		    clonestr += "c"+((Integer)clone_index.elementAt(i)).toString();
+		    clonestr += "c"+((Integer)stem.clone_index.elementAt(i)).toString();
 		}
 		pos = "" + stem.index+clonestr+"."+pos;
 	    } else {
@@ -196,7 +196,7 @@ public class Stem implements StemInterface {
 	// FIXME: if length=0 the stem object persists here but without any segments
 	// alternativly make could return an error value, the invoking function
 	// then had to delete this stem
-	if (length>0.00001) {
+	if (length>0.0001) {
 	    prepare_substem_params();
 	    make_segments(0,segment_cnt);
 	}
@@ -301,6 +301,7 @@ public class Stem implements StemInterface {
 	  
 	    // curving
 	    trf=new_direction(trf,s);
+	    TRF("Stem.make_segments(): after new_direction ",trf);
 	    
 	    // segment radius
 	    double rad1 = stem_radius(s*segment_len);
@@ -367,7 +368,7 @@ public class Stem implements StemInterface {
 	    // otherwise the first trunk segment should get a random rotation(?)
 	    if (nsegm == 0 && stemlevel>0) return trf;
 	  
-	    //self.TRF("new_direction before curving",transf)
+	    TRF("Stem.new_direction() before curving",trf);
 	  
 	    // get curving angle
 	    double delta;
@@ -382,6 +383,7 @@ public class Stem implements StemInterface {
 		}
 	    }
 	    delta += split_corr;
+	    DBG("Stem.new_direction(): delta: "+delta);
 	    trf = trf.rotx(delta);
 	  
 	  
@@ -405,7 +407,7 @@ public class Stem implements StemInterface {
 		double rho = 180+lpar.var(180);
 		trf = trf.rotaxisz(delta,rho);
 	    }  
-	    // TRF("new_direction after curving",transf)
+	    TRF("Stem.new_direction() after curving",trf);
 	    
 	    // attraction up/down
 	    if (par.AttractionUp != 0 && stemlevel>=2) {
@@ -426,7 +428,7 @@ public class Stem implements StemInterface {
 		//self.TRF("new_direction ATTRAC:",transf)
 	    }
 	    return trf;
-	}
+    }
 	  
     double stem_base_radius() {
 	if (stemlevel == 0) { // trunk
@@ -480,27 +482,30 @@ public class Stem implements StemInterface {
 		radius=(1-depth)*radius+depth*Math.sqrt(radius*radius-(Z3-radius)*(Z3-radius));
 		//  self.DBG("TAPER>2: Z2: %f, Z3: %f, depth: %f, radius %f\n"%(Z2,Z3,depth,radius))
 	    }	  
-	    
-	    if (stemlevel==0) { 
-		// add flaring (thicker stem base)
-		if (par.Flare != 0) {
-		    double flare = par.Flare * (Math.pow(100,(1-8*Z)) - 1) / 100 + 1;
-		    radius = radius*flare;
-		}
-		// add lobes - this is done in mesh creation not here at the moment
-		if (par.Lobes>0 && angle!=0) {
-		    // FIXME: use the formular from Segment.create_mesh_section() instead
-		    radius = radius*(1.0+par.LobeDepth*Math.sin(par.Lobes*angle*Math.PI/180));
-		}
+	}	    
+	//   DBG("Stem.stem_radius(): stemlevel:"+stemlevel);
+	if (stemlevel==0) { 
+	    // add flaring (thicker stem base)
+	    //DBG("Stem.stem_radius(): Flare: "+par.Flare);
+	    if (par.Flare != 0) {
+		double flare = par.Flare * (Math.pow(100,(1-8*Z)) - 1) / 100.0 + 1;
+		DBG("Stem.stem_radius(): Flare: "+flare+" h: "+h+" Z: "+Z);
+		radius = radius*flare;
+	    }
+	    // add lobes - this is done in mesh creation not here at the moment
+	    if (par.Lobes>0 && angle!=0) {
+		// FIXME: use the formular from Segment.create_mesh_section() instead
+		radius = radius*(1.0+par.LobeDepth*Math.sin(par.Lobes*angle*Math.PI/180));
+	    }
 	     	
 	
-		// FIXME:? this is always part of the formular for base_radius, isn't it?
-		//if self.level==0:
-		// FIXME: don't no if 0ScaleV scales arbitrary for every calculation
-		// here, otherwise this scaling factor should be calced once in trunk.__init__
-		// and only applied here
-		//	radius = radius*(self.tree.nScale[0]+self.var(self.tree.nScaleV[0]))
-	    }
+	    // FIXME:? this is always part of the formular for base_radius, isn't it?
+	    //if self.level==0:
+	    // FIXME: don't no if 0ScaleV scales arbitrary for every calculation
+	    // here, otherwise this scaling factor should be calced once in trunk.__init__
+	    // and only applied here
+	    //	radius = radius*(self.tree.nScale[0]+self.var(self.tree.nScaleV[0]))
+	    
 	}
 
 	DBG("Stem.stem_radius("+h+") = "+radius);
@@ -525,18 +530,18 @@ public class Stem implements StemInterface {
 	double substem_cnt;
 	if (stemlevel==0) {
 	    substem_cnt = stems_max;
-	    substems_per_segment = substem_cnt / segment_cnt / (1-par.BaseSize);
+	    substems_per_segment = substem_cnt / (float)segment_cnt / (1-par.BaseSize);
 	    DBG("Stem.prepare_substem_params(): stems_max: "+ substem_cnt 
 		+ " substems_per_segment: " + substems_per_segment);
 	} else if (stemlevel==1) {
 	    substem_cnt = (int)(stems_max * (0.2 + 0.8*(length/parent.length)) 
 				       / parent.length_child_max);
-	    substems_per_segment = substem_cnt / segment_cnt;
+	    substems_per_segment = substem_cnt / (float)segment_cnt;
 	    //             self.DBG("SS-PRP-%d: smax: %f, len: %f, parlen: %f, lenchildmax: %f\n" % (self.level,
 	    //  	stems_max,self.length,self.parent.length,self.parent.length_child_max))
 	} else {
 	    substem_cnt = (int)(stems_max * (1.0 - 0.5 * offset/parent.length));
-	    substems_per_segment = substem_cnt / segment_cnt;
+	    substems_per_segment = substem_cnt / (float)segment_cnt;
      
 	    //          self.DBG("SS-PRP-%d: sscnt: %f, ss/segm: %f\n" % (self.level,
 	    //  	self.substem_cnt,self.substems_per_segment))
@@ -879,7 +884,7 @@ public class Stem implements StemInterface {
 
 	// lower substem prospensity
 	if (! prunetest) {
-	    substems_per_segment /= nsplits+1;
+	    substems_per_segment /= (float)(nsplits+1);
 	    //      self.DBG("SS-half: %f\n"%self.substems_per_segment)
 	    // FIXME same reduction for leaves_per_segment?
 	}
@@ -906,7 +911,7 @@ public class Stem implements StemInterface {
 	    if (par.output==Params.CONES) {
 
 		boolean union=false;
-		if (segments.size()>1 || substems.size()>0) union = true;
+		if (segments.size()>1 || (substems != null && substems.size()>0)) union = true;
 
 		if (union) w.print(indent + "union { ");
 		w.println("/* " + tree_position() + " */");

@@ -95,7 +95,9 @@ class Segment {
 	// FIXME: if nCurveRes[0] > 10 this division into several
 	// subsegs should be extended over more then one segments?
 	else if (lpar.level==0 && par.Flare!=0 && index==0) {
+	    stem.DBG("Segment.make() - flare");
 	    make_flare(10);
+
 	} else {
 	    make_subsegs(1);
 	}
@@ -139,7 +141,7 @@ class Segment {
 	// helical curving
 	double angle = Math.abs(lpar.nCurveV);
 	// this is the radius of the helix
-	double rad = Math.sqrt(1.0/(Math.cos(angle)*Math.cos(angle)) - 1)*length/Math.PI/2;
+	double rad = Math.sqrt(1.0/(Math.cos(angle)*Math.cos(angle)) - 1)*length/Math.PI/2.0;
 	//self.stem.DBG("HELIX: rad: %f, len: %f\n" % (rad,len))
 	for (int i=0; i<cnt+1; i++) {
 	    Vector pos = new Vector(rad*Math.cos(2*Math.PI*i/cnt)-rad,
@@ -159,11 +161,11 @@ class Segment {
 	    return trf.translate(transf.getZ().mul(where*length));
 	} else { // helix
 	    // get index of the subsegment
-	    int i = (int)(where*subsegs.size()-1);
+	    int i = (int)where*(subsegs.size()-1);
 	    // interpolate position
 	    Vector p1 = ((Subsegment)subsegs.elementAt(i)).pos;
 	    Vector p2 = ((Subsegment)subsegs.elementAt(i+1)).pos;
-	    Vector pos = p1.add(p2.sub(p1)).mul(where - i/(subsegs.size()-1));
+	    Vector pos = p1.add(p2.sub(p1).mul(where - i/(subsegs.size()-1)));
 	    return trf.translate(pos.sub(pos_from()));
 	}
     }

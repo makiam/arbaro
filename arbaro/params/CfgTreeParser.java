@@ -47,7 +47,7 @@ public class CfgTreeParser {
     }
     
     public void parse(LineNumberReader r, Params params) throws Exception {
-	String line = r.readLine();
+	String line = r.readLine().trim();
 	String param;
 	String value;
 	while (line != null) {
