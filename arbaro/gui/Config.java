@@ -79,7 +79,7 @@ class Config extends Properties {
 		}
 	}
 	
-	public String defaultPovrayExe() {
+	static public String defaultPovrayExe() {
 		String os = System.getProperty("os.name");
 		if (os.indexOf("Windows") >= 0) {
 			return "pvengine.exe";

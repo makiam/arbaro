@@ -50,14 +50,40 @@ import net.sourceforge.arbaro.output.*;
  *
  */
 public class Tree {
+	// Outputformats
+	public final static int MESH = 0;
+	public final static int CONES = 1;
+	public final static int DXF = 2;
+	public final static int OBJ=3;
 	
+	final static String[] formats = { "Povray meshes","Povray primitives","AutoCAD DXF","Wavefront OBJ" };
+
 	public Params params;
+
+	int outputType = MESH;
+	String outputPath = System.getProperty("user.dir")
+		+System.getProperty("file.separator")+"pov";
+	int renderW = 400;
+	int renderH = 600;
 	
 	// the trunks (one for trees, many for bushes)
 	java.util.Vector trunks;
 	double trunk_rotangle = 0;
 	
 	Progress progress;
+	
+	Vector maxPoint;
+	Vector minPoint;
+	public Vector getMaxPoint() { return maxPoint; }
+	public Vector getMinPoint() { return minPoint; }
+	public double getHeight() { return maxPoint.getZ(); }
+	public double getWidth() {
+		return Math.sqrt(Math.max(
+				 minPoint.getX()*minPoint.getX()
+				+minPoint.getY()*minPoint.getY(),
+				 maxPoint.getX()*maxPoint.getX()
+				+maxPoint.getY()*maxPoint.getY())); 
+	}
 	
 	// FIXME: may be could use StemEnumerator as a base
 	// and overload only find_next_stem and getNext a little???
@@ -121,6 +147,15 @@ public class Tree {
 	public Tree(Tree other) {
 		params = new Params(other.params);
 		trunks = new java.util.Vector();
+		outputType = other.getOutputType();
+		outputPath = other.getOutputPath();
+		renderW=other.getRenderW();
+		renderH=other.getRenderH();
+		newProgress();
+	}
+	
+	public void clear() {
+		trunks = new java.util.Vector();
 		newProgress();
 	}
 	
@@ -136,13 +171,15 @@ public class Tree {
 	public void make() throws Exception {
 		setupGenProgress();
 		params.prepare();
+		maxPoint = new Vector(-Double.MAX_VALUE,-Double.MAX_VALUE,-Double.MAX_VALUE);
+		minPoint = new Vector(Double.MAX_VALUE,Double.MAX_VALUE,Double.MAX_VALUE);
 		
 		if (params.verbose) {
 			// FIXME: move Seed back to Tree and give it to Params.prepare(Seed) only
-			System.err.println("Tree species: " + getSpecies() + ", Seed: " 
+			System.err.println("Tree species: " + params.Species + ", Seed: " 
 					+ params.Seed);
-			System.err.println("Output: " + (params.outputType == Params.MESH? "mesh":"cones"));
-			if (params.outputType==Params.MESH) { 
+			System.err.println("Output: " + (outputType == MESH? "mesh":"cones"));
+			if (outputType==MESH) { 
 				for (int l=0; l<Math.min(params.Levels,4); l++) {
 					System.err.println("  Level " + l + ": vertices/section: " 
 							+ params.levelParams[l].mesh_points + ", smooth: " 
@@ -150,7 +187,7 @@ public class Tree {
 				}
 			}
 			
-			System.err.println("making " + getSpecies() + "(" + params.Seed + ") ");
+			System.err.println("making " + params.Species + "(" + params.Seed + ") ");
 		}
 		
 		// create the trunk and all its stems and leaves
@@ -165,7 +202,7 @@ public class Tree {
 			dist = lpar.var(lpar.nBranchDist);
 			trf = trf.translate(new Vector(dist*Math.sin(angle),
 					dist*Math.cos(angle),0));
-			Stem trunk = new Stem(this,params,params.levelParams[0],null,0,trf,0);
+			Stem trunk = new Stem(this,params,params.levelParams[0],null,null,0,trf,0);
 			trunks.addElement(trunk);
 			trunk.index=0;
 			trunk.make();
@@ -211,19 +248,20 @@ public class Tree {
 		if (params.verbose) System.err.print("writing tree code ");
 		
 		Output output;
-		if (params.outputType == Params.CONES) {
-			output = new PovConeOutput(this,w);
-			output.write();
-		} else if (params.outputType == Params.MESH) {
-			output = new PovMeshOutput(this,w);
-			output.write();
+		if (outputType == CONES) {
+			output = new PovConeOutput(this,w,progress);
+		} else if (outputType == DXF) {
+			output = new DXFOutput(this,w,progress);
+		} else if (outputType == OBJ) {
+			output = new OBJOutput(this,w,progress);
+		} else {
+			output = new PovMeshOutput(this,w,progress);
 		}
+		output.write();
 		
 		if (params.verbose) System.err.println();
 		progress.endPhase();
 	}
-	
-	
 	
 	public Mesh createStemMesh() throws Exception {
 		progress.beginPhase("Creating mesh",getStemCount());
@@ -244,6 +282,10 @@ public class Tree {
 		return new LeafMesh(params.LeafShape,leafLength,leafWidth,params.LeafStemLen);
 	}
 	
+	public void minMaxTest(Vector pt) {
+		maxPoint.setMaxCoord(pt);
+		minPoint.setMinCoord(pt);
+	}
 	
 	
 	/**
@@ -271,7 +313,7 @@ public class Tree {
 	 * @param group The parameter group name
 	 * @return A hash table with the parameters
 	 */
-	public java.util.Hashtable getParamGroup(int level, String group) {
+	public java.util.TreeMap getParamGroup(int level, String group) {
 		return params.getParamGroup(level,group);
 	}
 	
@@ -302,24 +344,24 @@ public class Tree {
 		params.toXML(out);
 	}
 	
-	/**
-	 * Sets the species name of the tree
-	 * 
-	 * @param sp
-	 */
-	public void setSpecies(String sp) {
-		params.setSpecies(sp);
-	}
-	
-	/**
-	 * Returns the species name of the tree
-	 * 
-	 * @return the species name
-	 */
-	public String getSpecies() {
-		return params.getSpecies();
-	}
-	
+//	/**
+//	 * Sets the species name of the tree
+//	 * 
+//	 * @param sp
+//	 */
+//	public void setSpecies(String sp) {
+//		params.setSpecies(sp);
+//	}
+//	
+//	/**
+//	 * Returns the species name of the tree
+//	 * 
+//	 * @return the species name
+//	 */
+//	public String getSpecies() {
+//		return params.getSpecies();
+//	}
+//	
 	/**
 	 * Returns the random seed for the tree
 	 * 
@@ -338,23 +380,23 @@ public class Tree {
 		params.Seed = s;
 	}
 	
-	/**
-	 * Returns the smooth value. It influences the number of vertices 
-	 * and usage of vertice normals in the generated mesh,
-	 * 
-	 * @return the smooth value (0.0...1.0)
-	 */
-	public double getSmooth() {
-		return params.Smooth;
-	}
-	
-	/**
-	 * Sets the smooth value. It influences the number of vertices 
-	 * and usage of vertice normals in the generated mesh,
-	 */
-	public void setSmooth(double s) {
-		params.Smooth = s;
-	}
+//	/**
+//	 * Returns the smooth value. It influences the number of vertices 
+//	 * and usage of vertice normals in the generated mesh,
+//	 * 
+//	 * @return the smooth value (0.0...1.0)
+//	 */
+//	public double getSmooth() {
+//		return params.Smooth;
+//	}
+//	
+//	/**
+//	 * Sets the smooth value. It influences the number of vertices 
+//	 * and usage of vertice normals in the generated mesh,
+//	 */
+//	public void setSmooth(double s) {
+//		params.Smooth = s;
+//	}
 	
 	public long getLeafCount() {
 		if (params.Leaves==0) return 0;
@@ -367,6 +409,14 @@ public class Tree {
 		return leafCount;
 	}
 	
+	public void setParam(String param, String value) throws ErrorParam {
+		params.setParam(param,value);
+	}
+	
+	public AbstractParam getParam(String param) {
+		return params.getParam(param);
+	}
+	
 	
 	/**
 	 * Sets the output type for the Povray code 
@@ -375,8 +425,40 @@ public class Tree {
 	 * 
 	 * @param output
 	 */
-	public void setOutput(int output) {
-		params.outputType = output;
+	public void setOutputType(int output) {
+		outputType = output;
+	}
+	
+	public int getOutputType() {
+		return outputType;
+	}
+	
+	public static String[] getOutputTypes() {
+		return formats;
+	}
+
+	public String getOutputPath() {
+		return outputPath;
+	}
+	
+	public void setOutputPath(String p) {
+		outputPath=p;
+	}
+	
+	public void setRenderW(int w) {
+		renderW = w;
+	}
+	
+	public void setRenderH(int h) {
+		renderH=h;
+	}
+	
+	public int getRenderH() {
+		return renderH;
+	}
+	
+	public int getRenderW() {
+		return renderW;
 	}
 	
 	public Progress getProgress() {
@@ -440,6 +522,7 @@ public class Tree {
 			System.err.println(e);
 		}
 	}
+
 	
 };
 

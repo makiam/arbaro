@@ -25,6 +25,9 @@
 
 package net.sourceforge.arbaro.mesh;
 
+import java.text.NumberFormat;
+
+import net.sourceforge.arbaro.params.FloatFormat;
 import net.sourceforge.arbaro.transformation.Vector;
 
 /**
@@ -74,9 +77,18 @@ public class MeshSection extends java.util.Vector {
 	 */
 	public Vector normalAt(int i) throws Exception {
 		Vertex v = (Vertex)elementAt(i);
-		if (v.normal == null) throw new ErrorMesh("Error: Normal not set for point "+v.point.povray());
+		if (v.normal == null) throw new ErrorMesh("Error: Normal not set for point "
+				+vectorStr(v.point));
 		return v.normal;
 	}
+	
+	private String vectorStr(Vector v) {
+		NumberFormat fmt = FloatFormat.getInstance();
+		return "<"+fmt.format(v.getX())+","
+		+fmt.format(v.getZ())+","
+		+fmt.format(v.getY())+">";
+	}
+
 	
 	/**
 	 * Returns the point number i.

@@ -27,7 +27,7 @@
 package net.sourceforge.arbaro.mesh;
 
 import java.lang.Math;
-
+import net.sourceforge.arbaro.tree.Stem;
 
 /**
  * 
@@ -38,15 +38,27 @@ import java.lang.Math;
  *
  */
 public class MeshPart extends java.util.Vector {
-	public String tree_position;
+	Stem stem;
 	boolean useNormals;
 	
-	public MeshPart(String treepos, boolean normals) { 
-		tree_position = treepos;
+	public MeshPart(Stem aStem, boolean normals) { 
 		// FIXME normals not yet used,
 		// other mesh output format needed if theire are
 		// less normals then vertices
 		useNormals = normals;
+		stem = aStem;
+	}
+	
+	public Stem getStem() {
+		return stem;
+	}
+	
+	public String getTreePosition() {
+		return stem.getTreePosition();
+	}
+	
+	public int getLevel() {
+		return stem.stemlevel;
 	}
 	
 	/**
@@ -86,7 +98,7 @@ public class MeshPart extends java.util.Vector {
 			
 		} else {
 			System.err.println("WARNING: degnerated MeshPart with only "+size()+" sections at"+
-					" tree position "+tree_position+".");
+					" tree position "+stem.getTreePosition()+".");
 		}
 		
 		//DBG
@@ -145,7 +157,7 @@ public class MeshPart extends java.util.Vector {
 	 * @return
 	 * @throws ErrorMesh
 	 */
-	public java.util.Vector faces(int inx, MeshSection section) throws ErrorMesh {
+	public java.util.Vector faces(long inx, MeshSection section) throws ErrorMesh {
 		MeshSection next = section.next;
 		java.util.Vector faces = new java.util.Vector();
 		
@@ -161,12 +173,12 @@ public class MeshPart extends java.util.Vector {
 				faces.addElement(new Face(inx,inx+1+i,inx+1+(i+1)%next.size()));
 			}
 		} else if (next.size() == 1) {
-			int ninx = inx+section.size();
+			long ninx = inx+section.size();
 			for (int i=0; i<section.size(); i++) {
 				faces.addElement(new Face(inx+i,inx+(i+1)%section.size(),ninx));
 			}
 		} else { // section and next must have same point_cnt>1!!!
-			int ninx = inx+section.size();
+			long ninx = inx+section.size();
 			if (section.size() != next.size()) {
 				throw new ErrorMesh("Error: vertice numbers of two sections "
 						+ "differ ("+inx+","+ninx+")");
@@ -175,6 +187,59 @@ public class MeshPart extends java.util.Vector {
 				faces.addElement(new Face(inx+i,inx+(i+1)%section.size(),ninx+i));
 				faces.addElement(new Face(inx+(i+1)%section.size(),ninx+i,
 						ninx+(i+1)%next.size()));
+			}
+		}
+		return faces;
+	}
+	
+
+	/**
+	 * Returns the triangles between a section and the next
+	 * section.
+	 * 
+	 * @param section
+	 * @return
+	 * @throws ErrorMesh
+	 */
+	public java.util.Vector vFaces(MeshSection section) throws ErrorMesh {
+		MeshSection next = section.next;
+		java.util.Vector faces = new java.util.Vector();
+		
+		if (section.size() ==1 && next.size() == 1) {
+			// normaly this shouldn't occur, only for very small radius?
+			// I should warn about this
+			System.err.println("WARNING: two adjacent mesh sections with only one point.");
+			return faces;
+		}
+		
+		if (section.size() == 1) {
+			for (int i=0; i<next.size(); i++) {
+				faces.addElement(new VFace(
+							section.pointAt(0),
+							next.pointAt(i),
+							next.pointAt((i+1)%next.size())));
+			}
+		} else if (next.size() == 1) {
+			for (int i=0; i<section.size(); i++) {
+				faces.addElement(new VFace(
+						section.pointAt(i),
+						section.pointAt((i+1)%section.size()),
+						next.pointAt(0)));
+			}
+		} else { // section and next must have same point_cnt>1!!!
+			if (section.size() != next.size()) {
+				throw new ErrorMesh("Error: vertice numbers of two sections "
+						+ "differ ("+section.size()+","+next.size()+")");
+			}
+			for (int i=0; i<section.size(); i++) {
+				faces.addElement(new VFace(
+						section.pointAt(i),
+						section.pointAt((i+1)%section.size()),
+						next.pointAt(i)));
+				faces.addElement(new VFace(
+						section.pointAt((i+1)%section.size()),
+						next.pointAt(i),
+						next.pointAt((i+1)%next.size())));
 			}
 		}
 		return faces;

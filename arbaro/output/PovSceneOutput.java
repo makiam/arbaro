@@ -43,7 +43,7 @@ public class PovSceneOutput extends Output {
 	 * @param pw
 	 */
 	public PovSceneOutput(Tree aTree, PrintWriter pw) {
-		super(aTree, pw);
+		super(aTree, pw, null);
 	}
 
     /**
@@ -53,20 +53,20 @@ public class PovSceneOutput extends Output {
      * @return the prefix string
      */
     private String povrayDeclarationPrefix() {
-    	return tree.getSpecies() + "_" + tree.params.Seed + "_";
+    	return tree.params.Species + "_" + tree.params.Seed + "_";
     }
 
     public void write() throws ErrorOutput {
-		w.println("// render as 600x400");
+		w.println("// render as "+tree.getRenderH()+"x"+tree.getRenderW());
 
-		w.println("#include \"" + tree.getSpecies() + ".inc\"");
+		w.println("#include \"" + tree.params.Species + ".inc\"");
 		w.println("background {rgb <0.95,0.95,0.9>}");
 
 		w.println("light_source { <5000,5000,-3000>, rgb 1.2 }");
 		w.println("light_source { <-5000,2000,3000>, rgb 0.5 shadowless }");
 
-		w.println("#declare HEIGHT = " + povrayDeclarationPrefix() + "scale * 1.3;");
-		w.println("#declare WIDTH = 2*HEIGHT/3;");
+		w.println("#declare HEIGHT = " + povrayDeclarationPrefix() + "height * 1.3;");
+		w.println("#declare WIDTH = HEIGHT*"+tree.getRenderW()+"/"+tree.getRenderH()+";");
 
 		w.println("camera { orthographic location <0, HEIGHT*0.45, -100>");
 		w.println("         right <WIDTH, 0, 0> up <0, HEIGHT, 0>");

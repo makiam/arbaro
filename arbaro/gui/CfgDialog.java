@@ -26,18 +26,31 @@ package net.sourceforge.arbaro.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;    
+import javax.swing.*;
+
+import net.sourceforge.arbaro.tree.Tree;
 
 public class CfgDialog {
 	JFrame frame;
 	JPanel mainPanel;
+	JComboBox formatBox;
 	JFileChooser fileChooser;
 	JTextField fileField;
+	JTextField pathField;
+	JTextField widthField;
+	JTextField heightField;
+	JTextField seedField;
+
+	String fileSep = System.getProperty("file.separator");
+
 	Config config;
+	Workplace workplace;
 	
-	public CfgDialog(JFrame parent, Config cfg) {
+	public CfgDialog(Workplace wplace, JFrame parent, Config cfg) {
 		
 		config = cfg;
+		workplace = wplace;
+		
 		frame = new JFrame("Arbaro setup");
 		frame.setIconImage(parent.getIconImage());
 		
@@ -55,35 +68,81 @@ public class CfgDialog {
 		mainPanel.setLayout(grid);
 		mainPanel.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
 		
+		// label constraints
 		GridBagConstraints clabel = new GridBagConstraints();
 		clabel.gridx = 0;
-		//	clabel.ipadx = 5;
 		clabel.anchor = GridBagConstraints.WEST;
+		
+		// text field constraints
 		GridBagConstraints ctext = new GridBagConstraints();
 		ctext.gridx = 1;
-		// ctext.ipadx = 5;
 		ctext.ipady = 4;
 		ctext.anchor = GridBagConstraints.WEST;
 		ctext.insets = new Insets(1,5,1,5);
+		
+		// button constraints
 		GridBagConstraints cbutton = new GridBagConstraints();
 		cbutton.gridx = 2;
 		cbutton.anchor = GridBagConstraints.WEST;
 		
-		// INC file input 
-		JLabel label = new JLabel("POVRay executable:");
-		clabel.gridy = 0;
+		int line=-1;
+		JLabel label;
+		
+		// default export format
+		clabel.gridy = ++line;
+		label = new JLabel("Default export format:");
 		grid.setConstraints(label,clabel);
 		mainPanel.add(label);
 		
+		ctext.gridy = line;
+		formatBox = new JComboBox(Tree.getOutputTypes());
+		formatBox.setEditable(false);
+		formatBox.setSelectedIndex(
+				Integer.parseInt(config.getProperty("export.format","0")));
+		grid.setConstraints(formatBox,ctext);
+		mainPanel.add(formatBox);
+		
+		// default output path
+		clabel.gridy = ++line;
+		label = new JLabel("Output path:");
+		grid.setConstraints(label,clabel);
+		mainPanel.add(label);
+		
+		ctext.gridy = line;
+		pathField = new JTextField(30);
+		pathField.setText(config.getProperty("export.path",
+				System.getProperty("user.dir")+fileSep+"pov"));
+		grid.setConstraints(pathField,ctext);
+		mainPanel.add(pathField);
+		
+		cbutton.gridy = line;
+		JButton selectFile = new JButton("Choose...");
+		selectFile.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				int returnVal = fileChooser.showSaveDialog(frame);
+				if(returnVal == JFileChooser.APPROVE_OPTION) {
+					pathField.setText(fileChooser.getSelectedFile().getPath());
+				}
+			}
+		});
+		grid.setConstraints(selectFile,cbutton);
+		mainPanel.add(selectFile);
+
+		// povray executable  
+		clabel.gridy = ++line;
+		label = new JLabel("POVRay executable:");
+		grid.setConstraints(label,clabel);
+		mainPanel.add(label);
+		
+		ctext.gridy = line;
 		fileField = new JTextField(30);
 		fileField.setText(config.getProperty("povray.executable",
-			config.defaultPovrayExe()));
-		
-		ctext.gridy = 0;
+			Config.defaultPovrayExe()));
 		grid.setConstraints(fileField,ctext);
 		mainPanel.add(fileField);
 		
-		JButton selectFile = new JButton("Choose...");
+		cbutton.gridy = line;
+		selectFile = new JButton("Choose...");
 		selectFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				int returnVal = fileChooser.showSaveDialog(frame);
@@ -92,9 +151,48 @@ public class CfgDialog {
 				}
 			}
 		});
-		cbutton.gridy = 0;
 		grid.setConstraints(selectFile,cbutton);
 		mainPanel.add(selectFile);
+
+		// render width 
+		clabel.gridy = ++line;
+		label = new JLabel("Render width:");
+		grid.setConstraints(label,clabel);
+		mainPanel.add(label);
+		
+		ctext.gridy = line;
+		widthField = new JTextField(10);
+		widthField.setAlignmentX(JTextField.RIGHT_ALIGNMENT);
+		widthField.setText(config.getProperty("povray.width","400"));
+		grid.setConstraints(widthField,ctext);
+		mainPanel.add(widthField);
+
+		// render height
+		clabel.gridy = ++line;
+		label = new JLabel("Render height:");
+		grid.setConstraints(label,clabel);
+		mainPanel.add(label);
+		
+		ctext.gridy = line;
+		heightField = new JTextField(10);
+		heightField.setAlignmentX(JTextField.RIGHT_ALIGNMENT);
+		heightField.setText(config.getProperty("povray.height","600"));
+		grid.setConstraints(heightField,ctext);
+		mainPanel.add(heightField);
+
+		// random seed
+		clabel.gridy = ++line;
+		label = new JLabel("Default seed:");
+		grid.setConstraints(label,clabel);
+		mainPanel.add(label);
+		
+		ctext.gridy = line;
+		seedField = new JTextField(10);
+		seedField.setAlignmentX(JTextField.RIGHT_ALIGNMENT);
+		seedField.setText(config.getProperty("tree.seed","13"));
+		grid.setConstraints(seedField,ctext);
+		mainPanel.add(seedField);
+		
 		
 		// buttons
 		JButton okButton = new JButton("OK");
@@ -123,10 +221,16 @@ public class CfgDialog {
 	
 	class OKButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
+			config.setProperty("export.format",""+formatBox.getSelectedIndex());
+			config.setProperty("export.path",""+pathField.getText());
 			config.setProperty("povray.executable",fileField.getText());
+			config.setProperty("povray.width",widthField.getText());
+			config.setProperty("povray.height",heightField.getText());
+			config.setProperty("tree.seed",seedField.getText());
 			frame.dispose();
 			try {
 				config.store();
+				workplace.applyConfig();
 			} catch (Exception err) {
 				JOptionPane.showMessageDialog(frame,err.getMessage(),
 						"Setup Error",

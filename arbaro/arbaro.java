@@ -44,7 +44,7 @@ public class arbaro {
 	static void println() { System.err.println(); }
 	
 	public static final String programName = 
-		"Arbaro 1.0 - creates trees for rendering with povray from xml parameter files\n"+
+		"Arbaro 2.0 - creates trees objects for rendering from xml parameter files\n"+
 		"(c) 2003-2004 by Wolfram Diestel <diestel@steloj.de> (GPL see file COPYING)\n";
 	
 	static void printProgramName() {
@@ -75,14 +75,20 @@ public class arbaro {
 		println("                         leaves. Levels+1 means calc alle Levels and Leaves, but this");
 		println("                         is the same as not giving this option here");
 		println();
-		println("    -m|--mesh [<smooth>] Output stems as mesh2 objects the optional smooth value influences");
+		println("    -m|--mesh [<smooth>] Output stems as mesh2 objects. The optional smooth value influences");
 		println("                         how much vertices are used for every stem section and for which");
 		println("                         levels normals should be used to hide the triangle borders");
+		println();
+		println("    --dxf [<smooth>]     Output stems as DXF file. The optional smooth value influences");
+		println("                         how much vertices are used for every stem section");
+		println();
+		println("    --obj [<smooth>]     Output stems as Wavefront OBJ file. The optional smooth value influences");
+		println("                         how much vertices are used for every stem section");
 		println();
 		println("    -c|--cones           output stems as unions of cones and spheres, Lobes don't work");
 		println("                         with this option, but source files are a little bit smaller.");
 		println("                         Povray read Mesh2 objects faster. Cones are handy for use with");
-		println("                         KPovmodeler, which doesn't support mesh objects yet.");
+		println("                         KPovmodeler, which doesn't support mesh2 objects yet.");
 		println();
 		println("    -r|--treecfg         Input file is a simple Param=Value list. Needs less typing for");
 		println("                         a new tree than writing XML code");
@@ -107,7 +113,7 @@ public class arbaro {
 		boolean debug = false;
 		int seed = 13;
 		int levels = -1;
-		int output=Params.MESH;
+		int output=Tree.MESH;
 		double smooth=-1;
 		int input = XMLinput;
 		String input_file = null;
@@ -131,9 +137,19 @@ public class arbaro {
 			} else if (args[i].equals("-l") || args[i].equals("--levels")) {
 				levels = new Integer(args[++i]).intValue();
 			} else if (args[i].equals("-c") || args[i].equals("--cones")) {
-				output = Params.CONES;
+				output = Tree.CONES;
 			} else if (args[i].equals("-m") || args[i].equals("--mesh")) {
-				output = Params.MESH;
+				output = Tree.MESH;
+				if (args[i+1].charAt(0) == '0' || args[i+1].charAt(0) == '1') {
+					smooth = new Double(args[++i]).doubleValue();
+				}
+			} else if (args[i].equals("--dxf")) {
+				output = Tree.DXF;
+				if (args[i+1].charAt(0) == '0' || args[i+1].charAt(0) == '1') {
+					smooth = new Double(args[++i]).doubleValue();
+				}
+			} else if (args[i].equals("--obj")) {
+				output = Tree.OBJ;
 				if (args[i+1].charAt(0) == '0' || args[i+1].charAt(0) == '1') {
 					smooth = new Double(args[++i]).doubleValue();
 				}
@@ -164,7 +180,7 @@ public class arbaro {
 		}
 		
 		tree.params.debug=debug;
-		tree.params.outputType=output;
+		tree.setOutputType(output);
 		// put here or later?
 		if (smooth>=0) tree.params.Smooth = smooth;
 		

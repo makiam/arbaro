@@ -47,8 +47,8 @@ public class PovConeOutput extends Output {
 	 * @param aTree
 	 * @param pw
 	 */
-	public PovConeOutput(Tree aTree, PrintWriter pw) {
-		super(aTree, pw);
+	public PovConeOutput(Tree aTree, PrintWriter pw, Progress prg) {
+		super(aTree, pw, prg);
 	}
 	
 	public void write() throws ErrorOutput {
@@ -84,7 +84,7 @@ public class PovConeOutput extends Output {
 	 * @return the prefix string
 	 */
 	private String povrayDeclarationPrefix() {
-		return tree.getSpecies() + "_" + tree.params.Seed + "_";
+		return tree.params.Species + "_" + tree.params.Seed + "_";
 	}
 	
 	/**
@@ -105,8 +105,8 @@ public class PovConeOutput extends Output {
 		NumberFormat frm = FloatFormat.getInstance();
 		
 		// tree scale
-		w.println("#declare " + povrayDeclarationPrefix() + "scale = " 
-				+ frm.format(tree.params.scale_tree) + ";");
+		w.println("#declare " + povrayDeclarationPrefix() + "height = " 
+				+ frm.format(tree.getHeight()) + ";");
 		
 		// leaf declaration
 		if (tree.params.Leaves!=0) writeLeafDeclaration();
@@ -212,14 +212,14 @@ public class PovConeOutput extends Output {
 		for (int i=0; i<s.subsegments.size()-1; i++) {
 			Subsegment ss1 = (Subsegment)s.subsegments.elementAt(i);
 			Subsegment ss2 = (Subsegment)s.subsegments.elementAt(i+1);
-			w.println(indent + "cone   { " + ss1.pos.povray() + ", "
+			w.println(indent + "cone   { " + vectorStr(ss1.pos) + ", "
 					+ fmt.format(ss1.rad) + ", " 
-					+ ss2.pos.povray() + ", " 
+					+ vectorStr(ss2.pos) + ", " 
 					+ fmt.format(ss2.rad) + " }"); 
 			// for helix subsegs put spheres between
 			if (s.lpar.nCurveV<0 && i<s.subsegments.size()-2) {
 				w.println(indent + "sphere { " 
-						+ ss1.pos.povray() + ", "
+						+ vectorStr(ss1.pos) + ", "
 						+ fmt.format(ss1.rad-0.0001) + " }");
 			}
 		}
@@ -228,7 +228,7 @@ public class PovConeOutput extends Output {
 		if ((s.rad2 > 0) && (! s.isLastStemSegment() || 
 				(s.lpar.nTaper>1 && s.lpar.nTaper<=2))) 
 		{  
-			w.println(indent + "sphere { " + s.posTo().povray() + ", "
+			w.println(indent + "sphere { " + vectorStr(s.posTo()) + ", "
 					+ fmt.format(s.rad2-0.0001) + " }");
 		}
 	}
@@ -257,10 +257,10 @@ public class PovConeOutput extends Output {
 		String indent = "    ";
 		
 		w.println(indent + "object { " + povrayDeclarationPrefix() + "leaf " 
-				+ writeTransformation(l.transf)+"}");
+				+ transformationStr(l.transf)+"}");
 	}
 	
-	private String writeTransformation(Transformation trf) {
+	private String transformationStr(Transformation trf) {
 		NumberFormat fmt = FloatFormat.getInstance();
 		Matrix matrix = trf.matrix();
 		Vector vector = trf.vector();
@@ -279,5 +279,11 @@ public class PovConeOutput extends Output {
 		+ fmt.format(vector.getY()) + ">";
 	}
 	
-	
+	private String vectorStr(Vector v) {
+		NumberFormat fmt = FloatFormat.getInstance();
+		return "<"+fmt.format(v.getX())+","
+		+fmt.format(v.getZ())+","
+		+fmt.format(v.getY())+">";
+	}
+
 };

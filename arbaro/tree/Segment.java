@@ -46,6 +46,7 @@ public class Segment {
 	
 	Stem stem;
 	
+	// FIXME: use Enumeration instead of making this public
 	public java.util.Vector subsegments;
 	
 	public Segment(Params params, LevelParams lparams, Stem stm, int inx, 
@@ -62,6 +63,11 @@ public class Segment {
 		// or here in the constructor ?
 		// FIXME: inialize subsegs with a better estimation of size
 		subsegments = new java.util.Vector(10);
+	}
+
+	private void minMaxTest(Vector p1, Vector p2) {
+		stem.minMaxTest(p1);
+		stem.minMaxTest(p2);
 	}
 	
 	/**
@@ -94,6 +100,10 @@ public class Segment {
 		} else {
 			makeSubsegments(1);
 		}
+		
+		// FIXME: for helical stems maybe this test
+		// should be made for all subsegments
+		minMaxTest(posFrom(),posTo());
 	}
 	
 	/**
@@ -204,7 +214,7 @@ public class Segment {
 	 * 
 	 * @return beginning point of the segment
 	 */
-	Vector posFrom() {
+	public Vector posFrom() {
 		// self.stem.DBG("segmenttr0: %s, t: %s\n"%(self.transf_pred,self.transf_pred.t()))
 		return transf.getT();
 	}

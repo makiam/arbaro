@@ -38,6 +38,7 @@ import java.io.FileReader;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.TreeMap;
 
 import javax.swing.event.*;
 
@@ -74,7 +75,7 @@ class CfgTreeParser {
 				param = line.substring(0,equ).trim();
 				value = line.substring(equ+1).trim();
 				if (param.equals("species")) {
-					params.setSpecies(value);
+					params.setParam("Species",value);
 				} else {
 					params.setParam(param,value);
 				}
@@ -96,17 +97,19 @@ class XMLTreeFileHandler extends DefaultHandler {
 	public void startElement(String namespaceURI,String localName,
 			String qName,Attributes atts) throws SAXException {
 		
-		if (qName.equals("species")) {
-			params.setSpecies(atts.getValue("name"));
-		} else if (qName.equals("param")) {
+		try {
 			
-			try {
+			if (qName.equals("species")) {
+				params.setParam("Species",atts.getValue("name"));
+			} else if (qName.equals("param")) {
+				
 				params.setParam(atts.getValue("name"),atts.getValue("value"));
-			} catch (ErrorParam e) {
-				errors += e.getMessage()+"\n";
-				// throw new SAXException(e.getMessage());
 			}
+		} catch (ErrorParam e) {
+			errors += e.getMessage()+"\n";
+			// throw new SAXException(e.getMessage());
 		}
+		
 	}
 	
 	/*
@@ -144,10 +147,6 @@ class XMLTreeParser {
 
 public class Params {
 	
-	// Outputformats
-	public final static int MESH = 0;
-	public final static int CONES = 1;
-	public final static int BLOBS = 2;
 	
 	// Tree Shapes 
 	public final static int CONICAL = 0;
@@ -167,13 +166,14 @@ public class Params {
 	Hashtable paramDB;
 	
 	// debugging etc.
-	public boolean debug;
-	public boolean verbose;
+	public boolean debug=false;
+	public boolean verbose=false;
+	public boolean preview=false;
 	public boolean ignoreVParams;
 	public int stopLevel;
 	
 	// general params
-	String species;
+	public String Species;
 	
 	public double LeafQuality;
 	
@@ -185,8 +185,6 @@ public class Params {
 	public int smooth_mesh_level; // -1..Levels - add average normals 
 	// to mesh points of all levels below
 	
-	
-	public int outputType; // mesh/cones/blobs
 	
 	// the seed
 	public int Seed;
@@ -250,12 +248,11 @@ public class Params {
 		
 		stopLevel = -1;
 		
-		species = "default";
+		Species = "default";
 		
 		LeafQuality = 1;
 		
 		Smooth = 0.5;
-		outputType = MESH; // mesh/cones/blobs
 		
 		// the default seed
 		Seed = 13;
@@ -276,8 +273,7 @@ public class Params {
 		verbose = other.verbose;
 		ignoreVParams = other.ignoreVParams;
 		stopLevel = other.stopLevel;
-		species = other.species;
-		outputType = other.outputType;
+		Species = other.Species;
 		Seed = other.Seed;
 		Smooth = other.Smooth;
 		
@@ -304,12 +300,12 @@ public class Params {
 	}
 	
 	public void setSpecies(String sp) {
-		species = sp;
+		Species = sp;
 		fireStateChanged();
 	}
 	
 	public String getSpecies() {
-		return species;
+		return Species;
 	}
 	
 	// help methods for output of params
@@ -330,7 +326,7 @@ public class Params {
 		w.println("<?xml version='1.0' ?>");
 		w.println();
 		w.println("<arbaro>");
-		w.println("  <species name='" + species + "'>");
+		w.println("  <species name='" + Species + "'>");
 		w.println("    <!-- general params -->");
 		// FIXME: maybe use paramDB to print out params
 		// thus no one could be forgotten?
@@ -434,6 +430,9 @@ public class Params {
 		PruneWidth = getDblParam("PruneWidth");
 		PruneWidthPeak = getDblParam("PruneWidthPeak");
 		_0BaseSplits = getIntParam("0BaseSplits");
+		Species = getStrParam("Species");
+//		Seed = getIntParam("Seed");
+//		outputType = getIntParam("OutFormat");
 		
 		for (int i=0; i<=Math.min(Levels,3); i++) {
 			levelParams[i].fromDB(i==Levels); // i==Levels => leaf level only
@@ -561,59 +560,83 @@ public class Params {
 		}
 	}
 	
-	public Hashtable getParamGroup(int level, String group) {
-		Hashtable result = new Hashtable();
+	public TreeMap getParamGroup(int level, String group) {
+		TreeMap result = new TreeMap();
 		for (Enumeration e = paramDB.elements(); e.hasMoreElements();) {
 			AbstractParam p = (AbstractParam)e.nextElement();
 			if (p.getLevel() == level && p.getGroup().equals(group)) {
-				result.put(p.getName(),p);
+				result.put(new Integer(p.getOrder()),p);
 			}
 		}
 		return result;
 	}
 	
 	// help methods for createing param-db
+	
+	int order;
 	private void intParam(String name, int min, int max, int deflt,
 			String group, String short_desc, String long_desc) {
 		paramDB.put(name,new IntParam(name,min,max,deflt,group,AbstractParam.GENERAL,
-				short_desc,long_desc));
+				order++,short_desc,long_desc));
 	}
+	
+	private void shapeParam(String name, int min, int max, int deflt,
+			String group, String short_desc, String long_desc) {
+		paramDB.put(name,new ShapeParam(name,min,max,deflt,group,AbstractParam.GENERAL,
+				order++,short_desc,long_desc));
+	}	
 	
 	private void int4Param(String name, int min, int max, 
 			int deflt0,int deflt1, int deflt2, int deflt3,
 			String group, String short_desc, String long_desc) {
 		int [] deflt = {deflt0,deflt1,deflt2,deflt3};
+		order++;
 		for (int i=0; i<4; i++) {
 			name = "" + i + name.substring(1);
-			paramDB.put(name,new IntParam(name,min,max,deflt[i],group,i,short_desc,long_desc));
+			paramDB.put(name,new IntParam(name,min,max,deflt[i],group,i,
+					order,short_desc,long_desc));
 		}
 	}
 	
 	private void dblParam(String name, double min, double max, double deflt,
 			String group, String short_desc, String long_desc) {
 		paramDB.put(name,new FloatParam(name,min,max,deflt,group,AbstractParam.GENERAL,
-				short_desc,long_desc));
+				order++,short_desc,long_desc));
 	}
 	
 	private void dbl4Param(String name, double min, double max, 
 			double deflt0, double deflt1, double deflt2, double deflt3,
 			String group, String short_desc, String long_desc) {
 		double [] deflt = {deflt0,deflt1,deflt2,deflt3};
+		order++;
 		for (int i=0; i<4; i++) {
 			name = "" + i + name.substring(1);
-			paramDB.put(name,new FloatParam(name,min,max,deflt[i],group,i,short_desc,long_desc));
+			paramDB.put(name,new FloatParam(name,min,max,deflt[i],group,i,
+					order,short_desc,long_desc));
 		}
+	}
+	
+	private void lshParam(String name, String deflt,
+			String group, String short_desc, String long_desc) {
+		paramDB.put(name,new LeafShapeParam(name,deflt,group,AbstractParam.GENERAL,
+				order++,short_desc,long_desc));
 	}
 	
 	private void strParam(String name, String deflt,
 			String group, String short_desc, String long_desc) {
 		paramDB.put(name,new StringParam(name,deflt,group,AbstractParam.GENERAL,
-				short_desc,long_desc));
+				order++,short_desc,long_desc));
 	}
 	
-	
 	private void registerParams() {
-		intParam ("Shape",0,8,0,"SHAPE","general tree shape id",
+		order=1;
+		
+		strParam("Species","default",
+				"SHAPE","the tree's species",
+				"<strong>Species</strong> is the kind of tree.<br>\n"+
+				"It is used for declarations in the output file.<br>\n");
+
+		shapeParam ("Shape",0,8,0,"SHAPE","general tree shape id",
 				"The <strong>Shape</strong> can be one of:<ul>\n"+
 				"<li>0 - conical</li>\n"+
 				"<li>1 - spherical</li>\n"+
@@ -627,11 +650,15 @@ public class Params {
 				"(see PruneWidth, PruneWidthPeak, PrunePowerLow, PrunePowerHigh)</li></ul>\n"
 		);
 		
-		dblParam ("BaseSize",0.0,1.0,0.25,"SHAPE","fractional branchless area at tree base",
-				"<strong>BaseSize</strong> is the fractional branchless part of the trunk. E.g.\n<ul>"+
-				"<li>BaseSize=&nbsp;&nbsp;0</code> means branches begin on the bottom of the tree,</li>\n"+
-				"<li>BaseSize=0.5</code> means half of the trunk is branchless,</li>\n"+
-				"<li>BaseSize=1.0</code> branches grow out from the peak of the trunk only.</li></ul>\n"
+		intParam("Levels",0,9,3,"SHAPE","levels of recursion",
+				"<strong>Levels</strong> are the levels of recursion when creating the\n"+
+				"stems of the tree.<ul>\n" +
+				"<li>Levels=1 means the tree consist only of the (may be splitting) trunk</li>\n"+
+				"<li>Levels=2 the tree consist of the trunk with one level of branches</li>\n"+
+				"<li>Levels>4 seldom necessary, the parameters of the forth level are used\n"+
+				"for all higher levels.</li></ul>\n"+
+				"Leaves are considered to be one level above the last stem level.<br>\n"+
+				"and uses it's down and rotation angles.\n"
 		);
 		
 		dblParam("Scale",0.000001,Double.POSITIVE_INFINITY,10.0,"SHAPE","average tree size in meters",
@@ -649,28 +676,34 @@ public class Params {
 				"(See Scale)\n"
 		);
 		
-		dblParam("ZScale",0.000001,Double.POSITIVE_INFINITY,1.0,"SHAPE",
-				"additional Z-scaling (not used)<br>",
-				"<strong>ZScale</strong> and ZScaleV are not described in the Weber/Penn paper.<br>\n"+
-				"so theire meaning is unclear and they aren't used at the moment\n"
+		dblParam ("BaseSize",0.0,1.0,0.25,"SHAPE","fractional branchless area at tree base",
+				"<strong>BaseSize</strong> is the fractional branchless part of the trunk. E.g.\n<ul>"+
+				"<li>BaseSize=&nbsp;&nbsp;0</code> means branches begin on the bottom of the tree,</li>\n"+
+				"<li>BaseSize=0.5</code> means half of the trunk is branchless,</li>\n"+
+				"<li>BaseSize=1.0</code> branches grow out from the peak of the trunk only.</li></ul>\n"
 		);
 		
-		dblParam("ZScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"SHAPE",
-				"additional Z-scaling variation (not used)<br>",
-				"ZScale and <strong>ZScaleV</strong> are not described in the Weber/Penn paper.<br>\n"+
-				"so theire meaning is unclear and they aren't used at the moment\n"
+		intParam("0BaseSplits",0,Integer.MAX_VALUE,0,"SHAPE",
+				"stem splits at base of trunk",
+				"<strong>BaseSplits</strong> are the stem splits at the top of the first trunk segment.<br>\n"+
+				"So with BaseSplits=2 you get a trunk splitting into three parts. Other then<br>\n"+
+				"with 0SegSplits the clones are evenly distributed over<br>\n"+
+				"the 360&deg;. So, if you want to use splitting, you should<br>\n"+
+				"use BaseSplits for the first splitting to get a circular<br>\n"+
+				"stem distribution (seen from top).<br>\n"
 		);
 		
-		intParam("Levels",0,9,3,"SHAPE","levels of recursion",
-				"<strong>Levels</strong> are the levels of recursion when creating the\n"+
-				"stems of the tree.<ul>\n" +
-				"<li>Levels=1 means the tree consist only of the (may be splitting) trunk</li>\n"+
-				"<li>Levels=2 the tree consist of the trunk with one level of branches</li>\n"+
-				"<li>Levels>4 seldom necessary, the parameters of the forth level are used\n"+
-				"for all higher levels.</li></ul>\n"+
-				"Leaves are considered to be one level above the last stem level.<br>\n"+
-				"and uses it's down and rotation angles.\n"
-		);
+//		dblParam("ZScale",0.000001,Double.POSITIVE_INFINITY,1.0,"SHAPE",
+//				"additional Z-scaling (not used)<br>",
+//				"<strong>ZScale</strong> and ZScaleV are not described in the Weber/Penn paper.<br>\n"+
+//				"so theire meaning is unclear and they aren't used at the moment\n"
+//		);
+//		
+//		dblParam("ZScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"SHAPE",
+//				"additional Z-scaling variation (not used)<br>",
+//				"ZScale and <strong>ZScaleV</strong> are not described in the Weber/Penn paper.<br>\n"+
+//				"so theire meaning is unclear and they aren't used at the moment\n"
+//		);
 		
 		dblParam("Ratio",0.000001,Double.POSITIVE_INFINITY,0.05,"TRUNK",
 				"trunk radius/length ratio",
@@ -682,7 +715,7 @@ public class Params {
 		);
 		
 		dblParam("RatioPower",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,1.0,
-				"MISC","radius reduction",
+				"SHAPE","radius reduction",
 				"<strong>RatioPower</strong> is a reduction value for the radius of the\n"+
 				"substems.\n<ul>"+
 				"<li>RatioPower=1.0  means the radius decreases linearly with\n"+
@@ -698,7 +731,7 @@ public class Params {
 				"(See Ratio)\n"
 		);
 		
-		dblParam("Flare",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.5,
+		dblParam("Flare",-1.0,Double.POSITIVE_INFINITY,0.5,
 				"TRUNK","exponential expansion at base of tree",
 				"<strong>Flare</strong> makes the trunk base thicker.<ul>\n"+
 				"<li>Flare = 0.0 means base radius is used at trunk base</li>\n"+
@@ -732,7 +765,7 @@ public class Params {
 				"the end of the stem.\n"
 		);
 		
-		strParam("LeafShape","0","LEAVES","leaf shape id",
+		lshParam("LeafShape","0","LEAVES","leaf shape id",
 				"<strong>LeafShape</strong> is the shape of the leaf (\"0\" means oval shape).<br>\n"+
 				"The length and width of the leaf are given by LeafScale and LeafScaleX.<br>\n"+
 				
@@ -779,7 +812,7 @@ public class Params {
 				"1mm wide by LeafScale=0.05 and LeafScaleX=0.02.\n"
 		);
 		
-		dblParam("LeafBend",0,1,0.3,"LEAVESADD","leaf orientation toward light",
+		dblParam("LeafBend",0,1,0.3,"LEAVES","leaf orientation toward light",
 				"With <strong>LeafBend</strong> you can influence, how much leaves are oriented<br>\n"+
 				"outside and upwards.<br>Values near 0.5 are good. For low values the leaves<br>\n"+
 				"are oriented to the stem, for high value to the light.<br>\n"+
@@ -787,7 +820,7 @@ public class Params {
 		);
 		
 		dblParam("LeafStemLen",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.5,
-				"LEAVESADD","fractional leaf stem length",
+				"LEAVES","fractional leaf stem length",
 				"<strong>LeafStemLen</strong is the length of the (virtual) leaf stem.<br>\n"+
 				"It's not drawn, so this is the distance between the stem<br>\n"+
 				"axis and the leaf. For normal trees with many nearly circular<br>\n"+
@@ -797,14 +830,14 @@ public class Params {
 				"allowed for special cases."
 		);
 		
-		intParam ("LeafDistrib",0,8,4,"LEAVESADD","leaf distribution",
+		intParam ("LeafDistrib",0,8,4,"LEAVES","leaf distribution",
 				"<strong>LeafDistrib</strong> determines how leaves are distributed over<br>\n"+
 				"the branches of the last but one stem level. It takes the same<br>\n"+
 				"values like Shape, meaning 3 = even distribution, 0 = most leaves<br>\n"+
 				"outside. Default is 4 (some inside, more outside)."
 		);
 		
-		dblParam("LeafQuality",0.000001,1.0,1.0,"LEAVESADD","leaf quality/leaf count reduction",
+		dblParam("LeafQuality",0.000001,1.0,1.0,"QUALITY","leaf quality/leaf count reduction",
 				"With a <strong>LeafQuality</strong> less then 1.0 you can reduce the number of leaves<br>\n"+
 				"to improve rendering speed and memory usage. The leaves are scaled<br>\n"+
 				"with the same amount to get the same coverage.<br>\n"+
@@ -813,7 +846,7 @@ public class Params {
 				"(See LeafScale)" 
 		);
 		
-		dblParam("Smooth",0.0,1.0,0.5,"MISC","smooth value for mesh creation",
+		dblParam("Smooth",0.0,1.0,0.5,"QUALITY","smooth value for mesh creation",
 				"Higher <strong>Smooth</strong> values creates meshes with more vertices and<br>\n"+
 				"adds normal vectors to them for some or all branching levels.<br>\n"+
 				"Normally you would specify this value on the command line or in<br>\n"+
@@ -823,7 +856,7 @@ public class Params {
 		);
 		
 		dblParam("AttractionUp",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.0,
-				"MISC","upward/downward growth tendency",
+				"SHAPE","upward/downward growth tendency",
 				"<strong>AttractionUp</strong> is the tendency of stems with level>=2 to grow upwards<br>\n"+
 				"(downwards for negative values).<br>\n"+
 				"A value of 1.0 for a horizontal stem means the last segment should point upwards.<br>\n"+
@@ -888,16 +921,6 @@ public class Params {
 				"In this implementation 0ScaleV is used to perturb the<br>\n"+
 				"mesh of the trunk. But use with care, because the mesh<br>\n"+
 				"could got fissures when using too big values.<br>\n"
-		);
-		
-		intParam("0BaseSplits",0,Integer.MAX_VALUE,0,"MISC",
-				"stem splits at base of trunk",
-				"<strong>BaseSplits</strong> are the stem splits at the top of the first trunk segment.<br>\n"+
-				"So with BaseSplits=2 you get a trunk splitting into three parts. Other then<br>\n"+
-				"with 0SegSplits the clones are evenly distributed over<br>\n"+
-				"the 360&deg;. So, if you want to use splitting, you should<br>\n"+
-				"use BaseSplits for the first splitting to get a circular<br>\n"+
-				"stem distribution (seen from top).<br>\n"
 		);
 		
 		dbl4Param("nLength",0.0000001,Double.POSITIVE_INFINITY,1.0,0.5,0.5,0.5,
@@ -1015,6 +1038,27 @@ public class Params {
 				"original model. With 0.0 all branches grow from the segments<br>\n"+
 				"base like for conifers.<br>\n"
 		);
+		
+		
+//		outParam("OutFormat",MESH,CONES,MESH,
+//				"RENDER","the output file format",
+//				"<strong>OutFormat</strong> defines the format of the outputfile for rendering.<br>\n");
+//		
+//		intParam("RenderWidth",15,6000,600,
+//				"RENDER","the width of the rendered image",
+//				"<strong>RenderWidth</strong> is the width of the rendered image,<br>\n"+
+//				"if you render a scene with the tree from Arbaro.");
+//
+//		intParam("RenderHeight",20,8000,800,
+//				"RENDER","the height of the rendered image",
+//				"<strong>RenderHeight</strong> is the height of the rendered image,<br>\n"+
+//				"if you render a scene with the tree from Arbaro.");
+//		
+//		intParam("Seed",0,Integer.MAX_VALUE,13,
+//				"RENDER","the random seed",
+//				"<strong>Seed</strong> is the seed for initializing the random generator<br>\n"+
+//				"making the tree individual. So you can think of it as the tree's seed too.");
+
 	}
 	
 	public void readFromCfg(InputStream is) throws Exception {
@@ -1065,8 +1109,8 @@ public class Params {
 		// ############ general params ##############
 		
 		// disable Z-Scale parameters (they are not used)
-		getParam("ZScale").setEnabled(false);
-		getParam("ZScaleV").setEnabled(false);
+//		getParam("ZScale").setEnabled(false);
+//		getParam("ZScaleV").setEnabled(false);
 		
 		// enable RatioPower/Leaves if Levels>1
 		enable = (((IntParam)getParam("Levels")).intValue() > 1);

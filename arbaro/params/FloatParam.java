@@ -33,8 +33,8 @@ public class FloatParam extends AbstractParam {
     private double value;
 
     FloatParam(String nam, double mn, double mx, double def, String grp, int lev,
-	       String sh, String lng) {
-	super(nam,grp,lev,sh,lng);
+	       int ord, String sh, String lng) {
+	super(nam,grp,lev,ord,sh,lng);
 	min = mn;
 	max = mx;
 	deflt = def;

@@ -30,8 +30,9 @@ public class StringParam extends AbstractParam {
     private String deflt;
     private  String value;
 
-    StringParam(String nam, String def, String grp, int lev, String sh, String lng) {
-	super(nam,grp,lev,sh,lng);
+    StringParam(String nam, String def, String grp, int lev, 
+    		int ord, String sh, String lng) {
+	super(nam,grp,lev,ord,sh,lng);
 	deflt = def;
 	value = "";
     }

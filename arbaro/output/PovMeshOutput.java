@@ -51,8 +51,8 @@ public class PovMeshOutput extends Output {
 	
 	boolean outputStemNormals;
 	
-	public PovMeshOutput(Tree aTree, PrintWriter pw) {
-		super(aTree,pw);
+	public PovMeshOutput(Tree aTree, PrintWriter pw, Progress prg) {
+		super(aTree,pw,prg);
 	}
 	
 	public void write() throws ErrorOutput {
@@ -69,8 +69,8 @@ public class PovMeshOutput extends Output {
 			w.println("************************************************/");
 			
 			// tree scale
-			w.println("#declare " + povrayDeclarationPrefix() + "scale = " 
-					+ frm.format(tree.params.scale_tree) + ";");
+			w.println("#declare " + povrayDeclarationPrefix() + "height = " 
+					+ frm.format(tree.getHeight()) + ";");
 			
 			writeStems();
 			writeLeaves();
@@ -105,7 +105,7 @@ public class PovMeshOutput extends Output {
 	 * @return the prefix string
 	 */
 	private String povrayDeclarationPrefix() {
-		return tree.getSpecies() + "_" + tree.params.Seed + "_";
+		return tree.params.Species + "_" + tree.params.Seed + "_";
 	}
 	
 	private void writeLeaves() throws Exception {
@@ -157,7 +157,7 @@ public class PovMeshOutput extends Output {
 			Leaf l = (Leaf)leaves.nextElement();
 			
 			for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
-				w.print(l.transf.apply(leafMesh.shapeVertexAt(i).point).povray());
+				writeVector(l.transf.apply(leafMesh.shapeVertexAt(i).point));
 				
 				if (i<leafMesh.getShapeVertexCount()-1) {
 					w.print(",");
@@ -227,7 +227,7 @@ public class PovMeshOutput extends Output {
 			Leaf l = (Leaf)leaves.nextElement();
 			
 			for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
-				w.print(l.transf.apply(leafMesh.shapeVertexAt(i).normal).povray());
+				writeVector(l.transf.apply(leafMesh.shapeVertexAt(i).normal));
 				
 				if (i<leafMesh.getShapeVertexCount()-1) {
 					w.print(",");
@@ -292,7 +292,7 @@ public class PovMeshOutput extends Output {
 		
 		// output mesh triangles
 		w.println(indent + "  face_indices { " + face_cnt);
-		int offset = 0;
+		long offset = 0;
 		for (int i=0; i<mesh.size(); i++) { 
 			writeStemFaces((MeshPart)mesh.elementAt(i),offset,indent);
 			offset += ((MeshPart)mesh.elementAt(i)).vertexCount();
@@ -332,7 +332,7 @@ public class PovMeshOutput extends Output {
 	
 	
 	private void writeStemPoints(MeshPart mp, String indent) {
-		w.println(indent + "  /* stem " + mp.tree_position + "*/ ");
+		w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
 		for (int i=0; i<mp.size(); i++) {
 			w.print(indent + "  /*" + i + "*/ ");
 			writeSectionPoints((MeshSection)mp.elementAt(i),indent);
@@ -340,18 +340,18 @@ public class PovMeshOutput extends Output {
 		}
 	}	
 	
-	public void writeStemFaces(MeshPart mp, int firstPt, String indent) 
+	public void writeStemFaces(MeshPart mp, long firstPt, String indent) 
 	throws ErrorMesh {
 		
 		if (mp.faceCount() == 0) {
 			// stem radius to small, this error should be gone
 			// after not making stems with too small length or radius
 			System.err.println("WARNING: no faces in mesh part of stem "+
-					mp.tree_position + " - stem radius too small");
+					mp.getTreePosition() + " - stem radius too small");
 			return;
 		}
 		
-		w.println(indent + "  /* stem " + mp.tree_position + "*/ ");
+		w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
 		for (int i=0; i<mp.size()-1; i++) { 
 			java.util.Vector faces = mp.faces(firstPt,(MeshSection)mp.elementAt(i));
 			firstPt += ((MeshSection)mp.elementAt(i)).size();
@@ -380,7 +380,7 @@ public class PovMeshOutput extends Output {
 		
 		mp.setNormals();
 		
-		w.println(indent + "  /* stem " + mp.tree_position + "*/ ");
+		w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
 		for (int i=0; i<mp.size(); i++) try { 
 			w.print(indent + "  /*" + i + "*/");
 			writeSectionNormals((MeshSection)mp.elementAt(i),indent);
@@ -393,7 +393,7 @@ public class PovMeshOutput extends Output {
 	
 	public void writeSectionPoints(MeshSection ms, String indent) {
 		for (int i=0; i<ms.size(); i++) {
-			w.print(writeVector(((Vertex)ms.elementAt(i)).point));
+			writeVector(((Vertex)ms.elementAt(i)).point);
 			if (ms.next != null || i<ms.size()-1) {
 				w.print(",");
 			}
@@ -407,7 +407,7 @@ public class PovMeshOutput extends Output {
 	
 	public void writeSectionNormals(MeshSection ms, String indent) {
 		for (int i=0; i<ms.size(); i++) {
-			w.print(writeVector(((Vertex)ms.elementAt(i)).normal));
+			writeVector(((Vertex)ms.elementAt(i)).normal);
 			
 			//DBG
 			/*
@@ -429,11 +429,11 @@ public class PovMeshOutput extends Output {
 		}
 	}
 	
-	private String writeVector(Vector v) {
+	private void writeVector(Vector v) {
 		NumberFormat fmt = FloatFormat.getInstance();
-		return "<"+fmt.format(v.getX())+","
+		w.print("<"+fmt.format(v.getX())+","
 		+fmt.format(v.getZ())+","
-		+fmt.format(v.getY())+">";
+		+fmt.format(v.getY())+">");
 	}
 	
 }

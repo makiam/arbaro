@@ -215,6 +215,10 @@ public class LeafMesh {
 		}
 	}
 	
+	public boolean isFlat() {
+		return (shape.getClass() != SphereShape.class);
+	}
+	
 	/**
 	 * Returns the i-th vertex.
 	 * 

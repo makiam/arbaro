@@ -62,23 +62,6 @@ public class Leaf {
 	}
 	
 	/**
-	 * Returns the angle of a 2-dimensional vector (u,v) with the u-axis 
-	 *
-	 * @param v v-coordinate of the vector
-	 * @param u u-coordinate of the vector
-	 * @return a value from (-180..180)
-	 */
-	private double atan2(double v, double u)  {
-		if (u==0) {
-			if (v>=0) return 90;
-			else return -90;
-		} 
-		if (u>0)  return Math.atan(v/u)*180/Math.PI;
-		if (v>=0) return 180 + Math.atan(v/u)*180/Math.PI;
-		return Math.atan(v/u)*180/Math.PI-180;
-	}
-	
-	/**
 	 *	Sets the length and width of a leaf
 	 */
 	private void setLeafDimension() {
@@ -98,8 +81,8 @@ public class Leaf {
 		Vector pos = transf.getT();
 		Vector norm = transf.getY();
 		
-		double tpos = atan2(pos.getY(),pos.getX());
-		double tbend = tpos - atan2(norm.getY(),norm.getX());
+		double tpos = Vector.atan2(pos.getY(),pos.getX());
+		double tbend = tpos - Vector.atan2(norm.getY(),norm.getX());
 		if (tbend>180) tbend = 360-tbend;
 		
 		double bend_angle = par.LeafBend*tbend;
@@ -107,10 +90,10 @@ public class Leaf {
 		
 		// rotation up
 		norm = transf.getY();
-		double fbend = atan2(Math.sqrt(norm.getX()*norm.getX() + norm.getY()*norm.getY()),
+		double fbend = Vector.atan2(Math.sqrt(norm.getX()*norm.getX() + norm.getY()*norm.getY()),
 				norm.getZ());
 		
-		double orientation = atan2(norm.getY(),norm.getX());
+		double orientation = Vector.atan2(norm.getY(),norm.getX());
 		bend_angle = par.LeafBend*fbend;
 		
 		// FIXME: maybe optimize this with a rotation doing all

@@ -24,12 +24,12 @@
 
 package net.sourceforge.arbaro;
 
-import net.sourceforge.arbaro.gui.ParamFrame;    
+import net.sourceforge.arbaro.gui.Workplace;    
 
 public class arbaro_gui {
 
     public static void main(String[] args) {
-	new ParamFrame();
+    	new Workplace();
     }
 }
 

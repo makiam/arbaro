@@ -26,6 +26,9 @@
 
 package net.sourceforge.arbaro.output;
 
+// explaining of §D graphic formats at
+// http://www.dcs.ed.ac.uk/home/mxr/gfx/3d-hi.html
+
 import java.io.PrintWriter;
 import net.sourceforge.arbaro.tree.Tree;
 
@@ -42,12 +45,14 @@ class ErrorOutput extends Exception {
  *
  */
 public abstract class Output {
-	Tree tree;
-	PrintWriter w;
+	protected Tree tree;
+	protected PrintWriter w;
+	protected Progress progress;
 	
-	public Output(Tree aTree, PrintWriter pw) {
+	public Output(Tree aTree, PrintWriter pw, Progress p) {
 		tree = aTree;
 		w = pw;
+		progress = p;
 	}
 	
 	public abstract void write() throws ErrorOutput;
