@@ -26,7 +26,7 @@
 
 package net.sourceforge.arbaro.params;
 
-public class StringParam extends Param {
+public class StringParam extends AbstractParam {
     private String deflt;
     private  String value;
 

@@ -482,7 +482,7 @@ public class Params {
     }
 
     public void setParam(String name, String value) throws ErrorParam {
-	Param p = (Param)paramDB.get(name);
+	AbstractParam p = (AbstractParam)paramDB.get(name);
 	if (p!=null) {
 	    p.setValue(value);
 	    if (debug) {
@@ -499,7 +499,7 @@ void Tree::setParams(Paramset &paramset) {
     for (Params::const_iterator pi = params.begin();
 	 pi != params.end(); pi++) {
 
-      Param *param = pi->second;
+      AbstractParam *param = pi->second;
 
       // FIXME: warn and set default value if parameter is not in paramset
       // don't warn for additional parameters not in the original model
@@ -824,7 +824,7 @@ void Tree::setParams(Paramset &paramset) {
 
 	//	if (debug) {
 	//	System.err.println("REGISTERPARAMS\n");
-	//  System.err.println("Branchdist? "+((Param)paramDB.get("0BranchDist")).name);
+	//  System.err.println("Branchdist? "+((AbstractParam)paramDB.get("0BranchDist")).name);
 	//}
     }
 

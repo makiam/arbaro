@@ -26,7 +26,7 @@
 
 package net.sourceforge.arbaro.params;
 
-public class FloatParam extends Param {
+public class FloatParam extends AbstractParam {
     private double min;
     private double max;
     private double deflt;

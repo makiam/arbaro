@@ -26,12 +26,12 @@
 
 package net.sourceforge.arbaro.params;
 
-public abstract class Param {
+public abstract class AbstractParam {
     String name;
     String short_desc;
     String long_desc;
 
-    public Param(String nam, String sh, String lng) {
+    public AbstractParam(String nam, String sh, String lng) {
 	name = nam;
 	short_desc = sh;
 	long_desc = lng;
@@ -43,3 +43,6 @@ public abstract class Param {
 	System.err.println("WARNING: "+warning);
     }
 }
+
+
+

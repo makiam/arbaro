@@ -26,7 +26,7 @@
 
 package net.sourceforge.arbaro.params;
 
-public class IntParam extends Param {
+public class IntParam extends AbstractParam {
     private int min;
     private int max;
     private int deflt;
