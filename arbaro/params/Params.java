@@ -253,59 +253,61 @@ public class Params {
 
     // help methods for output of params
     private void xml_param(PrintWriter w, String name, int value) {
-	w.println("    <param name='" + name + "'  value='"+value+"'/>");
+	w.println("    <param name='" + name + "' value='"+value+"'/>");
     }
     
     private void xml_param(PrintWriter w, String name, double value) {
-	w.println("    <param name='" + name + "'  value='"+value+"'/>");
+	w.println("    <param name='" + name + "' value='"+value+"'/>");
     }
 
     private void xml_param(PrintWriter w, String name, String value) {
-	w.println("    <param name='" + name + "'  value='"+value+"'/>");
+	w.println("    <param name='" + name + "' value='"+value+"'/>");
     }
 
-    public void toXML(PrintWriter w) {
+    public void toXML(PrintWriter w) throws ErrorParam {
+	prepare(); // read parameters from paramDB
 	w.println("<?xml version='1.0' ?>");
 	w.println();
 	w.println("<arbaro>");
-	w.println("  <species name='" + species + ">");
+	w.println("  <species name='" + species + "'>");
 	w.println("    <!-- general params -->");
 	// FIXME: maybe use paramDB to print out params
 	// thus no one yould be forgotten
-	xml_param(w,"LeafQuality",LeafQuality);
-	xml_param(w,"Smooth",Smooth);
+	xml_param(w,"Shape",Shape);
 	xml_param(w,"Levels",Levels);
+	xml_param(w,"Scale",Scale);
+	xml_param(w,"ScaleV",ScaleV);
+	xml_param(w,"BaseSize",BaseSize);
 	xml_param(w,"Ratio",Ratio);
 	xml_param(w,"RatioPower",RatioPower);
-	xml_param(w,"Shape",Shape);
-	xml_param(w,"BaseSize",BaseSize);
 	xml_param(w,"Flare",Flare);
 	xml_param(w,"Lobes",Lobes);
 	xml_param(w,"LobeDepth",LobeDepth);
+	xml_param(w,"Smooth",Smooth);
 	xml_param(w,"Leaves",Leaves);
 	xml_param(w,"LeafShape",LeafShape);
 	xml_param(w,"LeafScale",LeafScale);
 	xml_param(w,"LeafScaleX",LeafScaleX);
+	xml_param(w,"LeafQuality",LeafQuality);
 	xml_param(w,"LeafStemLen",LeafStemLen);
 	xml_param(w,"LeafDistrib",LeafDistrib);
 	xml_param(w,"LeafBend",LeafBend);
-	xml_param(w,"Scale",Scale);
-	xml_param(w,"ScaleV",ScaleV);
-	xml_param(w,"0Scale",_0Scale); 
-	xml_param(w,"0ScaleV",_0ScaleV);
 	xml_param(w,"AttractionUp",AttractionUp);
 	xml_param(w,"PruneRatio",PruneRatio);
 	xml_param(w,"PrunePowerLow",PrunePowerLow);
 	xml_param(w,"PrunePowerHigh",PrunePowerHigh);
 	xml_param(w,"PruneWidth",PruneWidth);
 	xml_param(w,"PruneWidthPeak",PruneWidthPeak);
+	xml_param(w,"0Scale",_0Scale); 
+	xml_param(w,"0ScaleV",_0ScaleV);
 	xml_param(w,"0BaseSplits",_0BaseSplits);
 
-	for (int i=0; i<Levels; i++) {
-	    levelParams[i].toXML(w);
+	for (int i=0; i <= Math.min(Levels,3); i++) {
+	    levelParams[i].toXML(w,i==Levels); // i==Levels => leaf level only
 	}
 	w.println("  </species>");
 	w.println("</arbaro>");
+	w.flush();
     }
 
 
@@ -806,19 +808,19 @@ void Tree::setParams(Paramset &paramset) {
 	
 	flt4_par("nCurveBack",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle upper stem half","");
 
-	flt4_par("nDownAngle",0.000001,179.999999,30,30,30,30,"angle from parent","");
+	flt4_par("nDownAngle",0.000001,179.999999,0,30,30,30,"angle from parent","");
 	
 	flt4_par("nDownAngleV",-179.9999999,179.9999999,0,0,0,0,"down angle variation","");
 
-	flt4_par("nRotate",-360,360,120,120,120,120,"spirangling angle","");
+	flt4_par("nRotate",-360,360,0,120,120,120,"spirangling angle","");
 
 	flt4_par("nRotateV",-360,360,0,0,0,0,"spiraling angle variation","");
 
 	int4_par("nBranches",0,Integer.MAX_VALUE,1,10,5,5,"number of branches","");
 
-	flt4_par("nBranchDist",0,1,1,1,1,1,"branch distribution over the segment","");
+	flt4_par("nBranchDist",0,1,0,1,1,1,"branch distribution over the segment","");
 
-	flt4_par("nBranchDistV",0,1,0.5,0.5,0.5,0.5,"branch distribution variation","");
+	flt4_par("nBranchDistV",0,1,0,0.5,0.5,0.5,"branch distribution variation","");
 
 	//	if (debug) {
 	//	System.err.println("REGISTERPARAMS\n");

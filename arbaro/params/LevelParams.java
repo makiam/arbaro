@@ -147,33 +147,35 @@ public class LevelParams {
     // help methods for output of params
     private void xml_param(PrintWriter w, String name, int value) {
 	name = "" + level + name.substring(1);
-	w.println("    <param name='" + name + "'  value='"+value+"'/>");
+	w.println("    <param name='" + name + "' value='"+value+"'/>");
     }
     
     private void xml_param(PrintWriter w, String name, double value) {
 	name = "" + level + name.substring(1);
-	w.println("    <param name='" + name + "'  value='"+value+"'/>");
+	w.println("    <param name='" + name + "' value='"+value+"'/>");
     }
 
-    void toXML(PrintWriter w) {
+    void toXML(PrintWriter w, boolean leafLevelOnly) {
 	w.println("    <!-- level " + level  + " -->");
-	xml_param(w,"nTaper",nTaper);
-	xml_param(w,"nCurveRes",nCurveRes);
-	xml_param(w,"nCurve",nCurve);
-	xml_param(w,"nCurveV",nCurveV);
-	xml_param(w,"nCurveBack",nCurveBack);
-	xml_param(w,"nLength",nLength);
-	xml_param(w,"nLengthV",nLengthV);
-	xml_param(w,"nSegSplits",nSegSplits);
-	xml_param(w,"nSplitAngle",nSplitAngle);
-	xml_param(w,"nSplitAngleV",nSplitAngleV);
-	xml_param(w,"nBranches",nBranches);
-	xml_param(w,"nBranchDist",nBranchDist);
-	xml_param(w,"nBranchDistV",nBranchDistV);
 	xml_param(w,"nDownAngle",nDownAngle);
 	xml_param(w,"nDownAngleV",nDownAngleV);
 	xml_param(w,"nRotate",nRotate);
 	xml_param(w,"nRotateV",nRotateV);
+	if (! leafLevelOnly) {
+	    xml_param(w,"nBranches",nBranches);
+	    xml_param(w,"nBranchDist",nBranchDist);
+	    xml_param(w,"nBranchDistV",nBranchDistV);
+	    xml_param(w,"nLength",nLength);
+	    xml_param(w,"nLengthV",nLengthV);
+	    xml_param(w,"nTaper",nTaper);
+	    xml_param(w,"nSegSplits",nSegSplits);
+	    xml_param(w,"nSplitAngle",nSplitAngle);
+	    xml_param(w,"nSplitAngleV",nSplitAngleV);
+	    xml_param(w,"nCurveRes",nCurveRes);
+	    xml_param(w,"nCurve",nCurve);
+	    xml_param(w,"nCurveBack",nCurveBack);
+	    xml_param(w,"nCurveV",nCurveV);
+	}
     }
 
     // help method for loading params

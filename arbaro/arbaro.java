@@ -103,7 +103,7 @@ public class arbaro {
 	return "";
     }
 
-    public static void main (String [] args) throws Exception{
+    public static void main (String [] args) throws Exception {
 	//	try {
 	tree = new Tree();
       
@@ -145,46 +145,48 @@ public class arbaro {
 	    }
 	}
 		       
-    // rest of args should be files    
-    // ...
-    //if (optind < argc) {
-    //   while (optind < argc)
-    //                  argv[optind++]...
-    //           }
-
-
-    //########## read params from XML file ################
-
-
-    tree.params.debug=debug;
-    tree.params.output=output;
-    // put here or later?
-    if (smooth>=0) tree.params.Smooth = smooth;
-
-    System.err.println("Reading parameters from STDIN...");
-   
-    if (input == CFGinput) tree.params.readFromCfg(System.in);
-    else tree.params.readFromXML(System.in);
-
-    // FIXME: put here or earlier?
-    if (smooth>=0) tree.params.setParam("Smooth",new Double(smooth).toString());
-   
-    tree.params.verbose=(! quiet);
-    tree.params.Seed=seed;
-    tree.params.stopLevel = levels;
-
-    if (output==XMLoutput) {
-	// save parameters in XML file, don't create tree
-	tree.params.toXML(new PrintWriter(new OutputStreamWriter(System.out)));
-    } else {
+	// rest of args should be files    
+	// ...
+	//if (optind < argc) {
+	//   while (optind < argc)
+	//                  argv[optind++]...
+	//           }
 	
 	
-	tree.make();
+	//########## read params from XML file ################
 	
-	PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
-	tree.povray(out);
-	System.exit(0);
-    }
+	
+	tree.params.debug=debug;
+	tree.params.output=output;
+	// put here or later?
+	if (smooth>=0) tree.params.Smooth = smooth;
+	
+	System.err.println("Reading parameters from STDIN...");
+	
+	if (input == CFGinput) tree.params.readFromCfg(System.in);
+	else tree.params.readFromXML(System.in);
+	
+	// FIXME: put here or earlier?
+	if (smooth>=0) tree.params.setParam("Smooth",new Double(smooth).toString());
+	
+	tree.params.verbose=(! quiet);
+	tree.params.Seed=seed;
+	tree.params.stopLevel = levels;
+	
+	PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));   
+	
+	if (output==XMLoutput) {
+	    
+	    System.err.println("Writing parameters to STDOUT...");
+	    // save parameters in XML file, don't create tree
+	    tree.params.toXML(out);
+	    
+	} else {
+	    
+	    tree.make();
+	    tree.povray(out);
+	    System.exit(0);
+	}
 
     };
 }
