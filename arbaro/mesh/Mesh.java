@@ -105,7 +105,7 @@ public class Mesh extends java.util.Vector {
 	int cnt = 0;
 	for (int i=0; i<size()-1; i++) {
 	    int c_i = ((MeshSection)elementAt(i)).size();
-	    int c_i1 = ((MeshSection)elementAt(i)).size();
+	    int c_i1 = ((MeshSection)elementAt(i+1)).size();
 	    
 	    if (c_i != c_i1) {
 		cnt += Math.max(c_i,c_i1);

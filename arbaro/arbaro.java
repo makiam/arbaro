@@ -198,20 +198,8 @@ public class arbaro {
    
     tree.params.verbose=(! quiet);
     tree.params.Seed=seed;
-    
+    tree.params.stopLevel = levels;
 
-    // FIXME: mesh_smooth settings rely on
-    // Levels, so maybe there should be a
-    // different variable to halt tree creation on
-    // a specific level
-
-    //FIXME: params are not filled yet, the values are still in
-    // the paramDB
-    if (levels>=0 && levels<=tree.params.Levels) {
-	tree.params.setParam("Levels",new Integer(levels).toString());
-	tree.params.setParam("Leaves","0");
-    }
-    
     if (output==XMLoutput) {
 	// save parameters in XML file, don't create tree
 	tree.params.toXML(new PrintWriter(new OutputStreamWriter(System.out)));

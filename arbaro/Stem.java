@@ -190,15 +190,17 @@ public class Stem implements StemInterface {
 	DBG("Stem.make(): len: "+length+" sgm_cnt: "+ segment_cnt+" base_rad: "+base_radius);
 
 	// FIXME: should pruning occur for the trunk too?
-	if (stemlevel>0 && par.PruneRatio>0) {
+	if (stemlevel>0 && par.PruneRatio > 0) {
 	    pruning();
 	}
 	// FIXME: if length=0 the stem object persists here but without any segments
 	// alternativly make could return an error value, the invoking function
 	// then had to delete this stem
-	if (length>0.0001) {
+	if (length > 0.001 * par.scale_tree) {
 	    prepare_substem_params();
 	    make_segments(0,segment_cnt);
+	} else {
+	    DBG("length "+length+" (after pruning?) to small - stem not created");
 	}
     }
 		
@@ -210,62 +212,60 @@ public class Stem implements StemInterface {
 	double splitcorr = split_corr;
 	double origlen = length;
 	double seglen = segment_len;
-	  	
+	
 	// start pruning
 	prunetest = true;
-	//DBG("PRUNE-test: level: %d, offs: %f, len: %f, segmts: %d\n"%\
-	    //  		(self.level,self.offset,self.length,self.segment_cnt))
+	//DBG("PRUNE-test: level: %d, offs: %f, len: %f, segmts: %d\n"%
+	//  		(self.level,self.offset,self.length,self.segment_cnt))
 	  	
-	    // test length
-	    int segm = make_segments(0,segment_cnt);
-	    //self.DBG("PRUNE-test returned %d\n"%(segm))
-	    while (segm>=0 && length>0.00001) {
-		//self.DBG("PRUNE: level: %d, offs: %f, len: %f, segm: %d/%d\n"%\
-		//			(self.level,self.offset,self.length,segm,self.segment_cnt))
-	  			
-		// restore random state and split values
-		lpar.random.setstate(randstate);
-		lpar.splitErrorValue=spliterrval;
-		split_corr = splitcorr;
-		// delete segments and clones
-		if (clones != null) clones.clear();
-		segments.clear();
-		//FIXME: get somehow a good value how much length should be shortened
-		// calc new length and related values
-		
-		// length = length-seglen
-		
-		// get new length
-		double minlen = length/2; // shorten max. half of length
-		double maxlen = length-origlen/15; // shorten min of 1/15 of orig. len
-		length = Math.min(Math.max(segment_len*segm,minlen),maxlen);
-
-		// calc new values dependent from length
-		segment_len = length/lpar.nCurveRes;
-		base_radius = stem_base_radius();
-		// test once more
-		if (length>0) {
-		    //self.DBG("PRUNE-retry: level: %d, offs: %f, len: %f, segmts: %d\n"%\
-		    //		(self.level,self.offset,self.length,self.segment_cnt))
+	// test length
+	int segm = make_segments(0,segment_cnt);
+	//self.DBG("PRUNE-test returned %d\n"%(segm))
+	while (segm >= 0 && length > 0.001*par.scale_tree) {
+	    //self.DBG("PRUNE: level: %d, offs: %f, len: %f, segm: %d/%d\n"%\
+	    //			(self.level,self.offset,self.length,segm,self.segment_cnt))
+	    
+	    // restore random state and split values
+	    lpar.random.setstate(randstate);
+	    lpar.splitErrorValue=spliterrval;
+	    split_corr = splitcorr;
+	    // delete segments and clones
+	    if (clones != null) clones.clear();
+	    segments.clear();
+	    //FIXME: get somehow a good value how much length should be shortened
+	    // calc new length and related values
+	    
+	    // length = length-seglen
+	    
+	    // get new length
+	    double minlen = length/2; // shorten max. half of length
+	    double maxlen = length-origlen/15; // shorten min of 1/15 of orig. len
+	    length = Math.min(Math.max(segment_len*segm,minlen),maxlen);
+	    
+	    // calc new values dependent from length
+	    segment_len = length/lpar.nCurveRes;
+	    base_radius = stem_base_radius();
+	    // test once more
+	    if (length > 0) {
+		//self.DBG("PRUNE-retry: level: %d, offs: %f, len: %f, segmts: %d\n"%\
+		//		(self.level,self.offset,self.length,self.segment_cnt))
 	  	
-		    segm = make_segments(0,segment_cnt);
-	  			
-		    // this length fits the envelope, 
-		    // diminish the effect corresp. to PruneRatio
-		    length = origlen - (origlen-length)*par.PruneRatio;
-	  	
-		    // restore random state and split values
-		    lpar.random.setstate(randstate);
-		    lpar.splitErrorValue=spliterrval;
-		    split_corr = splitcorr;
-		    // delete segments and clones
-		    if (clones != null) clones.clear();
-		    segments.clear();
-		    prunetest = false;
-		    //self.DBG("PRUNE-ok: len: %f, segm: %d/%d\n"%(self.length,segm,self.segment_cnt))
-
-		}
+		segm = make_segments(0,segment_cnt);
 	    }
+	}
+	// this length fits the envelope, 
+	// diminish the effect corresp. to PruneRatio
+	length = origlen - (origlen-length)*par.PruneRatio;
+	  	
+	// restore random state and split values
+	lpar.random.setstate(randstate);
+	lpar.splitErrorValue=spliterrval;
+	split_corr = splitcorr;
+	// delete segments and clones
+	if (clones != null) clones.clear();
+	segments.clear();
+	prunetest = false;
+	//self.DBG("PRUNE-ok: len: %f, segm: %d/%d\n"%(self.length,segm,self.segment_cnt))
     }
    
     double stem_length() {
@@ -537,14 +537,11 @@ public class Stem implements StemInterface {
 	    substem_cnt = (int)(stems_max * (0.2 + 0.8*(length/parent.length)) 
 				       / parent.length_child_max);
 	    substems_per_segment = substem_cnt / (float)segment_cnt;
-	    //             self.DBG("SS-PRP-%d: smax: %f, len: %f, parlen: %f, lenchildmax: %f\n" % (self.level,
-	    //  	stems_max,self.length,self.parent.length,self.parent.length_child_max))
+	    DBG("Stem.prepare_substem_params(): substem_cnt: "+ substem_cnt 
+		+ " substems_per_segment: " + substems_per_segment);
 	} else {
 	    substem_cnt = (int)(stems_max * (1.0 - 0.5 * offset/parent.length));
 	    substems_per_segment = substem_cnt / (float)segment_cnt;
-     
-	    //          self.DBG("SS-PRP-%d: sscnt: %f, ss/segm: %f\n" % (self.level,
-	    //  	self.substem_cnt,self.substems_per_segment))
 	}
 	substem_rotangle = 0;
 	  
@@ -562,7 +559,8 @@ public class Stem implements StemInterface {
 	    System.err.println("WARNING: trunk cannot have leaves, no leaves are created");
 	    return 0;
 	}
-	return (int)(Math.abs(par.Leaves) * par.shape_ratio(offset/parent.length,4) 
+	return (int)(Math.abs(par.Leaves) 
+		     * par.shape_ratio(offset/parent.length,par.LeafDistrib) 
 		     * par.LeafQuality);
     }
 

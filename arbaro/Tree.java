@@ -51,7 +51,7 @@ class Tree {
 			       + params.Seed);
 	    System.err.println("Output: " + (params.output == Params.MESH? "mesh":"cones"));
 	    if (params.output==Params.MESH) { 
-		for (int l=0; l<Math.min(params.Levels,3); l++) {
+		for (int l=0; l<Math.min(params.Levels,4); l++) {
 		    System.err.println("  Level " + l + ": vertices/section: " 
 				       + params.levelParams[l].mesh_points + ", smooth: " 
 				       + (params.smooth_mesh_level>=l? "yes" : "no"));

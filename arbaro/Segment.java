@@ -1,6 +1,7 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - Segment class - a segment is a part of a stem
+//  #    $Id$  
+//  #            - Segment class - a segment is a part of a stem
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
 //  #
@@ -139,9 +140,11 @@ class Segment {
 
     private void make_helix(int cnt) {
 	// helical curving
-	double angle = Math.abs(lpar.nCurveV);
+	double angle = Math.abs(lpar.nCurveV)/180*Math.PI;
 	// this is the radius of the helix
 	double rad = Math.sqrt(1.0/(Math.cos(angle)*Math.cos(angle)) - 1)*length/Math.PI/2.0;
+	stem.DBG("Segment.make_helix angle: "+angle+" len: "+length+" rad: "+rad);
+
 	//self.stem.DBG("HELIX: rad: %f, len: %f\n" % (rad,len))
 	for (int i=0; i<cnt+1; i++) {
 	    Vector pos = new Vector(rad*Math.cos(2*Math.PI*i/cnt)-rad,

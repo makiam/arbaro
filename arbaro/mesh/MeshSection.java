@@ -98,9 +98,15 @@ public class MeshSection extends java.util.Vector {
 	// n= (a1*b2 - a2*b1, a2*b0 - a0*b2, a0*b1 - a1*b0)
 	Vector u = (a.sub(b)).normalize();
 	Vector v = (c.sub(b)).normalize();
-	return new Vector(u.getY()*v.getZ() - u.getZ()*v.getY(),
+	Vector norm = new Vector(u.getY()*v.getZ() - u.getZ()*v.getY(),
 		      u.getZ()*v.getX() - u.getX()*v.getZ(),
 		      u.getX()*v.getY() - u.getY()*v.getX()).normalize();
+	if (Double.isNaN(norm.getX()) && Double.isNaN(norm.getY()) 
+	    && Double.isNaN(norm.getZ())) {
+	    System.err.println("WARNING: invalid normal vector - stem radius too small?");
+	    norm = new Vector(0,0,1);
+	}
+	return norm;
     }
 	  	  
     public void set_normals_vector(Vector vec) {

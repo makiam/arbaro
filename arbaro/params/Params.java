@@ -23,7 +23,7 @@
 //  #
 //  #**************************************************************************/
 
-package params;
+package net.sourceforge.arbaro.params;
 
 import java.io.PrintWriter;
 import params.LevelParams;
@@ -54,13 +54,13 @@ public class Params {
     public LevelParams [] levelParams;
     java.util.Hashtable paramDB;
 
-    // general Params
-    // debugging
+    // debugging etc.
     public boolean debug;
     public boolean verbose;
     public boolean ignoreVParams;
+    public int stopLevel;
 
-    // default param values
+    // general params
     public String species;
       
     public double LeafQuality;
@@ -101,6 +101,7 @@ public class Params {
     // new introduced - not in the paper
     public double LeafStemLen;
     public double LeafBend;
+    public int LeafDistrib;
        
     // tree scale
     public double Scale;
@@ -129,6 +130,8 @@ public class Params {
 	debug = false;
 	verbose = true;
 	ignoreVParams = false;
+
+	stopLevel = -1;
 	
 	species = "default";
     
@@ -186,6 +189,7 @@ public class Params {
 	xml_param(w,"LeafScale",LeafScale);
 	xml_param(w,"LeafScaleX",LeafScaleX);
 	xml_param(w,"LeafStemLen",LeafStemLen);
+	xml_param(w,"LeafDistrib",LeafDistrib);
 	xml_param(w,"LeafBend",LeafBend);
 	xml_param(w,"Scale",Scale);
 	xml_param(w,"ScaleV",ScaleV);
@@ -251,6 +255,7 @@ public class Params {
 	LeafScale = dbl_param("LeafScale");
 	LeafScaleX = dbl_param("LeafScaleX");
 	LeafStemLen = dbl_param("LeafStemLen");
+	LeafDistrib = int_param("LeafDistrib");
 	LeafBend = dbl_param("LeafBend");
 	Scale = dbl_param("Scale");
 	ScaleV = dbl_param("ScaleV");
@@ -274,7 +279,9 @@ public class Params {
 
 	// read in parameter values from ParamDB
 	fromDB();
-      
+
+
+   
 	if (ignoreVParams) {
 	    ScaleV=0;
 	    for (int i=1; i<4; i++) {
@@ -288,28 +295,11 @@ public class Params {
 	    }
 	}
 	
-	// check params
-	if (Shape>ENVELOPE || Shape<CONICAL) {
-	    throw new ErrorParam("Shape must be in 0..8. It's "+Shape+ " now.");
-	}
-    
-	// FIXME: do this in LevleParams.prepare() ?
+	// additional params checks
 	for (int l=0; l < Math.min(Levels,4); l++) {
 	    LevelParams lp = levelParams[l];
 	    if (lp.nSegSplits>0 && lp.nSplitAngle==0) {
 		throw new ErrorParam("nSplitAngle may not be 0.");
-	    }
-	    if (lp.nCurveV<=-90) {
-		throw new ErrorParam("nCurveV must be greater then -90");
-	    }
-	    if (lp.nCurveRes<=0) {
-		throw new ErrorParam("nCurveRes must be greater then 0");
-	    }
-	    if (lp.nTaper<0) {
-		throw new ErrorParam("nTaper must be greater then 0");
-	    }
-	    if (lp.nTaper>=3) {
-		throw new ErrorParam("nTaper must be less then 3");
 	    }
 	}
 	         
@@ -344,6 +334,12 @@ public class Params {
 	for (int i=1; i<4; i++) {
 	    levelParams[i].mesh_points = 
 		Math.max(3,(int)(levelParams[i].mesh_points*(1+1.5*mesh_quality)));
+	}
+
+	// stop generation at some level?
+	if (stopLevel>=0 && stopLevel<=Levels) {
+	    Levels = stopLevel;
+	    Leaves = 0;
 	}
 
 	scale_tree = Scale + levelParams[0].random.uniform(-ScaleV,ScaleV);
@@ -596,12 +592,19 @@ void Tree::setParams(Paramset &paramset) {
 		"are oriented to the stem with high value to the light.\n"+
 		"For trees with bi long leaves like palms you should use lower values.\n");
 	
-	flt_par("LeafStemLen",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.5,"fractional leaf stem length",
+	flt_par("LeafStemLen",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.5,
+		"fractional leaf stem length",
 		"The length of the leaf stem. For normal trees with many nearly circular\n"+
 		"leaves the default value of 0.5 (meaning the stem has half of the length\n"+
 		"of the leaf) is quite good. For other trees like palms with long leaves\n"+
 		"or some herbs you need a LeafStemLen near 0. Negative stem length is "+
 		"allowed for special cases.");
+
+	int_par ("LeafDistrib",0,8,4,"leaf distribution",
+		 "LeafDistrib determines how leaves are distributed over\n"+
+		 "the branches of the last but one stem level. It takes the same\n"+
+		 "values like Shape, meaning 3 = even distribution, 0 = most leaves\n"+
+		 "outside. Default is 4 (some inside, more outside).");
 		
 	flt_par("LeafQuality",0.000001,1.0,1.0,"leaf quality/leaf count reduction",
 		"With a LeafQuality less then 1.0 you can reduce the number of leaves\n"+
