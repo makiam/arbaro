@@ -160,6 +160,8 @@ public class Params {
     public final static int TEND_FLAME = 7;
     public final static int ENVELOPE = 8;
 
+    public double leavesErrorValue;
+
     public LevelParams [] levelParams;
     public Random random;
     Hashtable paramDB;
@@ -332,7 +334,7 @@ public class Params {
 	w.println("  <species name='" + species + "'>");
 	w.println("    <!-- general params -->");
 	// FIXME: maybe use paramDB to print out params
-	// thus no one yould be forgotten
+	// thus no one could be forgotten
 	xml_param(w,"Shape",Shape);
 	xml_param(w,"Levels",Levels);
 	xml_param(w,"Scale",Scale);
@@ -512,73 +514,53 @@ public class Params {
     }
     
     public double shape_ratio(double ratio) {
-	return shape_ratio(ratio,Shape);
+    	return shape_ratio(ratio,Shape);
     }
 
     public double shape_ratio(double ratio, int shape) {
-
-	switch (shape) { 
-	    //case CONICAL: return 0.2+0.8*ratio;
-	    // need real conical shape for lark, fir, etc.
-	case CONICAL: return ratio;
-	case SPHERICAL: return 0.2+0.8*Math.sin(Math.PI*ratio);
-	case HEMISPHERICAL: return 0.2+0.8*Math.sin(0.5*Math.PI*ratio);
-	case CYLINDRICAL: return 1.0;
-	case TAPERED_CYLINDRICAL: return 0.5+0.5*ratio;
-	case FLAME: 
-	    return ratio<=0.7? 
-		ratio/0.7 : 
-		    (1-ratio)/0.3;
-	case INVERSE_CONICAL: return 1-0.8*ratio;
-	case TEND_FLAME: 
-	    return ratio<=0.7? 
-		0.5+0.5*ratio/0.7 :
-		    0.5+0.5*(1-ratio)/0.3;
-	case ENVELOPE:
-	    if (ratio<0 || ratio>1) {
-		return 0;
-	    } else if (ratio<(1-PruneWidthPeak)) {
-		return Math.pow(ratio/(1-PruneWidthPeak),PrunePowerHigh);
-	    } else {
-		return Math.pow((1-ratio)/(1-PruneWidthPeak),PrunePowerLow);
-	    }
-	    // tested in prepare() default: throw new ErrorParam("Shape must be between 0 and 8");
-	}
-	return 0; // shouldn't reach here
+    	
+    	switch (shape) { 
+    	//case CONICAL: return 0.2+0.8*ratio;
+    	// need real conical shape for lark, fir, etc.
+    	case CONICAL: return ratio; // FIXME: this would be better: 0.05+0.95*ratio; ?
+    	case SPHERICAL: return 0.2+0.8*Math.sin(Math.PI*ratio);
+    	case HEMISPHERICAL: return 0.2+0.8*Math.sin(0.5*Math.PI*ratio);
+    	case CYLINDRICAL: return 1.0;
+    	case TAPERED_CYLINDRICAL: return 0.5+0.5*ratio;
+    	case FLAME: 
+    		return ratio<=0.7? 
+    				ratio/0.7 : 
+    					(1-ratio)/0.3;
+    	case INVERSE_CONICAL: return 1-0.8*ratio;
+    	case TEND_FLAME: 
+    		return ratio<=0.7? 
+    				0.5+0.5*ratio/0.7 :
+    					0.5+0.5*(1-ratio)/0.3;
+    	case ENVELOPE:
+    		if (ratio<0 || ratio>1) {
+    			return 0;
+    		} else if (ratio<(1-PruneWidthPeak)) {
+    			return Math.pow(ratio/(1-PruneWidthPeak),PrunePowerHigh);
+    		} else {
+    			return Math.pow((1-ratio)/(1-PruneWidthPeak),PrunePowerLow);
+    		}
+    		// tested in prepare() default: throw new ErrorParam("Shape must be between 0 and 8");
+    	}
+    	return 0; // shouldn't reach here
     }
-
+    
     public void setParam(String name, String value) throws ErrorParam {
-	AbstractParam p = (AbstractParam)paramDB.get(name);
-	if (p!=null) {
-	    p.setValue(value);
-	    if (debug) {
-		System.err.println("Params.setParam(): set "+name+" to "+value);
-	    }
-
-	} else {
-	    throw new ErrorParam("Unknown parameter "+name+"!");
-	}
+    	AbstractParam p = (AbstractParam)paramDB.get(name);
+    	if (p!=null) {
+    		p.setValue(value);
+    		if (debug) {
+    			System.err.println("Params.setParam(): set "+name+" to "+value);
+    		}
+    		
+    	} else {
+    		throw new ErrorParam("Unknown parameter "+name+"!");
+    	}
     }
-
-    /*
-void Tree::setParams(Paramset &paramset) {
-    for (Params::const_iterator pi = params.begin();
-	 pi != params.end(); pi++) {
-
-      AbstractParam *param = pi->second;
-
-      // FIXME: warn and set default value if parameter is not in paramset
-      // don't warn for additional parameters not in the original model
-      if (! param->has_levels) {
-	param->set_value(paramset[param->name]);
-      } else {
-	for (int l=0; l<4; l++) {
-	  param.set_value(paramset[toString(l)+param.name.copy(0,param.name.length()-1)]);
-	}
-      }
-    }
-}
-    */
 
     public Hashtable getParamGroup(int level, String group) {
 	Hashtable result = new Hashtable();
@@ -633,358 +615,363 @@ void Tree::setParams(Paramset &paramset) {
 
     private void register_params() {
 	int_par ("Shape",0,8,0,"SHAPE","general tree shape id",
-		 "The Shape can be one of: \n"+
-		 "0 - conical\n"+
-		 "1 - spherical\n"+
-		 "2 - hemispherical\n"+
-		 "3 - cylindrical\n"+
-		 "4 - tapered cylindrical\n"+
-		 "5 - flame\n"+
-		 "6 - inverse conical\n"+
-		 "7 - tend flame\n"+
-		 "8 - envelope - use pruning envelope\n"+
-		 "(see PruneWidth, PruneWidtPeak, PrunePowerLow, PrunePowerHigh)\n");
+		 "The <strong>Shape</strong> can be one of:<ul>\n"+
+		 "<li>0 - conical</li>\n"+
+		 "<li>1 - spherical</li>\n"+
+		 "<li>2 - hemispherical</li>\n"+
+		 "<li>3 - cylindrical</li>\n"+
+		 "<li>4 - tapered cylindrical</li>\n"+
+		 "<li>5 - flame</li>\n"+
+		 "<li>6 - inverse conical</li>\n"+
+		 "<li>7 - tend flame</li>\n"+
+		 "<li>8 - envelope - uses pruning envelope<br>\n"+
+		 "(see PruneWidth, PruneWidthPeak, PrunePowerLow, PrunePowerHigh)</li></ul>\n");
 
 	flt_par ("BaseSize",0.0,1.0,0.25,"SHAPE","fractional branchless area at tree base",
-		 "BaseSize is the fractional branchless part of the trunk. E.g.\n"+
-		 "BaseSize=0   means branches begin on the bottom of the tree,\n"+
-		 "BaseSize=0.5 means half of the trunk is branchless,\n"+
-		 "BaseSize=1.0 branches grow only from the peak of the trunk.\n");
+		 "<strong>BaseSize</strong> is the fractional branchless part of the trunk. E.g.<br>\n<ul>"+
+		 "<li>BaseSize=&nbsp;&nbsp;0</code> means branches begin on the bottom of the tree,</li>\n"+
+		 "<li>BaseSize=0.5</code> means half of the trunk is branchless,</li>\n"+
+		 "<li>BaseSize=1.0</code> branches grow out from the peak of the trunk only.</li></ul>\n");
 
 	flt_par("Scale",0.000001,Double.POSITIVE_INFINITY,10.0,"SHAPE","average tree size in meters",
-		"Scale gives the average tree size in meters.\n"+
-		"Scale = 10.0, ScaleV = 2.0 means, trees of this species\n"+
-		"reach from 8.0 to 12.0 meters.\n"+
-		"Note, that the trunk length can be different from the tree size.\n"+
+		"<strong>Scale</strong> is the average tree size in meters.<br>\n"+
+		"With Scale = 10.0 and ScaleV = 2.0 trees of this species<br>\n"+
+		"reach from 8.0 to 12.0 meters.<br>\n"+
+		"Note, that the trunk length can be different from the tree size.<br>\n"+
 		"(See 0Length and 0LengthV)\n");
 
 	flt_par("ScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"SHAPE","variation of tree size in meters",
-		"ScaleV gives the variation range of the tree size in meters.\n"+
-		"Scale = 10.0, ScaleV = 2.0 means, trees of this species\n"+
+		"<strong>ScaleV</strong> is the variation range of the tree size in meters.<br>\n"+
+		"Scale = 10.0, ScaleV = 2.0 means trees of this species\n"+
 		"reach from 8.0 to 12.0 meters.\n"+
 		"(See Scale)\n");
 
 	flt_par("ZScale",0.000001,Double.POSITIVE_INFINITY,1.0,"SHAPE",
-		"additional Z-scaling (not used)",
-		"ZScale and ZScaleV are not described in the Weber/Penn paper.\n"+
+		"additional Z-scaling (not used)<br>",
+		"<strong>ZScale</strong> and ZScaleV are not described in the Weber/Penn paper.<br>\n"+
 		"so theire meaning is unclear and they aren't used at the moment\n");
 
 	flt_par("ZScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"SHAPE",
-		"additional Z-scaling variation (not used)",
-		"ZScale and ZScaleV are not described in the Weber/Penn paper.\n"+
+		"additional Z-scaling variation (not used)<br>",
+		"ZScale and <strong>ZScaleV</strong> are not described in the Weber/Penn paper.<br>\n"+
 		"so theire meaning is unclear and they aren't used at the moment\n");
 
 	int_par("Levels",0,9,3,"SHAPE","levels of recursion",
-		"Levels are the levels of recursion when creating the\n"+
-		"stems of the tree.\n" +
-		"Levels=1 means the tree consist only of the (may be splitting) trunk\n"+
-		"Levels=2 the tree consist of the trunk with one level of branches\n"+
-		"Levels>4 seldom necesarry, the parameters of the forth level are used\n"+
-		"Leaves are considered to be one level above the last stem level.\n");
+		"<strong>Levels</strong> are the levels of recursion when creating the\n"+
+		"stems of the tree.<ul>\n" +
+		"<li>Levels=1 means the tree consist only of the (may be splitting) trunk</li>\n"+
+		"<li>Levels=2 the tree consist of the trunk with one level of branches</li>\n"+
+		"<li>Levels>4 seldom necessary, the parameters of the forth level are used\n"+
+		"for all higher levels.</li></ul>\n"+
+		"Leaves are considered to be one level above the last stem level.<br>\n"+
+		"and use it's down and rotation angles.\n");
 
 	flt_par("Ratio",0.000001,Double.POSITIVE_INFINITY,0.05,"TRUNK",
 		"trunk radius/length ratio",
-		"Ratio gives the radius/length ratio of the trunk.\n"+
-		"Ratio=0.05 means the trunk is 1/20 as thick as it is long,\n"+
-		"t.e. a 10m long trunk has a base radius of 50cm.\n"+
-		"Note, that the real base radius could be greater, when Flare\n"+
+		"<strong>Ratio</strong> is the radius/length ratio of the trunk.<br>\n"+
+		"Ratio=0.05 means the trunk is 1/20 as thick as it is long,<br>\n"+
+		"t.e. a 10m long trunk has a base radius of 50cm.<br>\n"+
+		"Note, that the real base radius could be greater, when Flare<br>\n"+
 		"and/or Lobes are used. (See Flare, Lobes, LobesDepth, RatioPower)\n");
 
 	flt_par("RatioPower",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,1.0,
 		"MISC","radius reduction",
-		"RatioPower gives a reduction value for the radius of the\n"+
-		"substems.\n"+
-		"RatioPower=1.0  means the radius decreases linearly with\n"+
-		"decreasing stem length\n"+
-		"RatioPower=2.0  means it decreases with the second power\n"+
-		"RatioPower=0.0  means radius is the same as parent radius\n"+
-		"(t.e. it doesn't depend of the length)\n"+
-		"RatioPower=-1.0 means the shorter the stem the thicker it is\n"+
-		"(radius = parent radius * 1 / length)\n"+
-		"Note, that the radius of a stem cannot be greater then\n"+
-		"the parent radius at the stem offset. So with negative RatioPower\n"+
-		"you cannot create stems thicker than it's parent. Instead you\n"+
-		"can use it to make stems thinner, which are longer than it's parent.\n"+
+		"<strong>RatioPower</strong> is a reduction value for the radius of the\n"+
+		"substems.<br>\n<ul>"+
+		"<li>RatioPower=1.0  means the radius decreases linearly with\n"+
+		"decreasing stem length</li>\n"+
+		"<li>RatioPower=2.0  means it decreases with the second power</li>\n"+
+		"<li>RatioPower=0.0  means radius is the same as parent radius\n"+
+		"(t.e. it doesn't depend of the length)</li>\n"+
+		"<li>RatioPower=-1.0 means the shorter the stem the thicker it is\n"+
+		"(radius = parent radius * 1 / length)</li></ul>\n"+
+		"Note, that the radius of a stem cannot be greater then<br>\n"+
+		"the parent radius at the stem offset. So with negative RatioPower<br>\n"+
+		"you cannot create stems thicker than it's parent. Instead you<br>\n"+
+		"can use it to make stems thinner, which are longer than it's parent.<br>\n"+
 		"(See Ratio)\n");
 	
 	flt_par("Flare",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.5,
 		"TRUNK","exponential expansion at base of tree",
-		"Flare makes the trunk base thicker.\n"+
-		"Flare = 0.0 means base radius is used at trunk base\n"+
-		"Flare = 1.0 means trunk base is twice as thick as it's base radius\n"+
-		"(See Ratio)\n"+
+		"<strong>Flare</strong> makes the trunk base thicker.<ul>\n"+
+		"<li>Flare = 0.0 means base radius is used at trunk base</li>\n"+
+		"<li>Flare = 1.0 means trunk base is twice as thick as it's base radius\n"+
+		"(See Ratio)</li></ul>\n"+
 		"Note, that using Lobes make the trunk base thicker too.\n"+
 		"(See Lobes, LobeDepth)\n");
 
 	int_par("Lobes",0,Integer.MAX_VALUE,0,"TRUNK",
 		"sinusoidal cross-section variation",
-		"With Lobes you define how much lobes (this are variations in it's\n"+
-		"cross-section) the trunk will have. This isn't supported for \n"+
-		"cones output, but for mesh only.\n"+
+		"With <strong>Lobes</strong> you define how much lobes (this are variations in it's<br>\n"+
+		"cross-section) the trunk will have. This isn't supported for<br>\n"+
+		"cones output, but for mesh only.<br>\n"+
 		"(See LobeDepth too)\n");
 	
 	flt_par("LobeDepth",0,Double.POSITIVE_INFINITY,0,
 		"TRUNK","amplitude of cross-section variation",
-		"LobeDepth defines, how deep the lobes of the trunk will be.\n"+
-		"This is the amplitude of the sinusoidal cross-section variations.\n"+
+		"<strong>LobeDepth</strong> defines, how deep the lobes of the trunk will be.<br>\n"+
+		"This is the amplitude of the sinusoidal cross-section variations.<br>\n"+
 		"(See Lobes)\n");
 		
 	int_par("Leaves",Integer.MIN_VALUE,Integer.MAX_VALUE,0,
 		"LEAVES","number of leaves per stem",
-		"Leaves gives the maximal number of leaves per stem.\n"+
-		"Leaves grow only from stems of the last level. The\n"+
-		"actual number of leaves on a stem depending on the\n"+
-		"stem offset and length, can be smaller than Leaves.\n"+
+		"<strong>Leaves</strong> is the maximal number of leaves per stem.<br>\n"+
+		"Leaves grow only from stems of the last level. The actual number of leaves on a stem,<br>\n"+
+		"depending on the stem offset and length, can be smaller than Leaves.<br>\n"+
 		"When Leaves is negativ, the leaves grow in a fan at\n"+
 		"the end of the stem.\n");
 	
 	str_par("LeafShape","0","LEAVES","leaf shape id",
-		"LeafShape gives the shape of the leaf. \"0\"\n" +
-		"means oval shape. The length and width of the \n"+
-		"leaf are given by LeafScale and LeafScaleX.\n"+
-		"Other possible values of LeafShape references\n"+
-		"to the declarations in arbaro.inc. At the moment\n"+
-		"there are:\n"+
-		"\"disc\" the standard oval form of a leaf, defined\n"+
-		"as a unit circle of radius 0.5m. The real\n"+
-		"length and with ar given by the LeafScale \n"+
-		"parameters.\n"+
-		"\"sphere\" a spherical form, you can use this to \n"+
-		"simulate seed on herbs or knots on branches\n"+
-		"like in the desert bush. You can use the\n"+
-		"sphere shape for needles to, because they\n"+
-		"are visible from all sides\n"+
-		"\"palm\" a palm leaf, this are two disc halfs put together\n"+
-		"with an angle between them. So they are visible\n"+
-		"also from the side and the light effects are\n"+
-		"more typically, especialy for fan palms seen\n"+
-		"from small distances.\n");
+		"<strong>LeafShape</strong> is the shape of the leaf (\"0\" means oval shape).<br>\n"+
+		"The length and width of the leaf are given by LeafScale and LeafScaleX.<br>\n"+
+
+		"When creating a mesh at the moment you can use the following values:<ul>\n"+
+		"<li>\"disc\" - a surface consisting of 6 triangles approximating an oval shape</li>\n"+
+		"<li>\"sphere\" - an ikosaeder approximating a shperical shape,<br>\n"+
+		"useful for making knots or seeds instead of leaves, or for high quality needles</li>\n"+
+		"<li>\"disc1\", \"disc2\", ... - a surface consisting of 1, 2, ... triangles approximating an oval shape<br>\n"+
+		"lower values are useful for low quality needles or leaves, to reduce mesh size,<br>\n"+
+		"values between 6 and 10 are quite good for big, round leaves.</li>\n"+
+		"<li>any other - same like disc</li></ul>\n"+
+		
+		"When using primitives output, the possible values of LeafShape references<br>\n"+
+		"the declarations in arbaro.inc. At the moment there are:<ul>\n"+
+		"<li>\"disc\" the standard oval form of a leaf, defined<br>\n"+
+		"as a unit circle of radius 0.5m. The real<br>\n"+
+		"length and width are given by the LeafScale parameters.</li>\n"+
+		"<li>\"sphere\" a spherical form, you can use to<br>\n"+
+		"simulate seed on herbs or knots on branches like in the<br>\n"+
+		"desert bush. You can use the sphere shape for needles too,<br>\n"+
+		"thus they are visible from all sides</li>\n"+
+		"<li>\"palm\" a palm leaf, this are two disc halfs put together<br>\n"+
+		"with an angle between them. So they are visible<br>\n"+
+		"also from the side and the light effects are<br>\n"+
+		"more typically, especialy for fan palms seen from small distances.</li>\n"+
+		"<li>any other - add your own leaf shape to the file arbaro.inc</li></ul>\n");
 	
 	flt_par("LeafScale",0.000001,Double.POSITIVE_INFINITY,0.2,
 		"LEAVES","leaf length",
-		"LeafScale gives the length of the leaf in meters. \n"+
+		"<strong>LeafScale</strong> is the length of the leaf in meters.<br>\n"+
 		"The unit leaf is scaled in z-direction (y-direction in Povray)\n"+
 		"by this factor. (See LeafShape, LeafScaleX)\n");
 	
 	flt_par("LeafScaleX",0.000001,Double.POSITIVE_INFINITY,0.5,"LEAVES",
 		"fractional leaf width",
-		"LeafScaleX gives the fractional width of the leaf\n"+
-		"relativly to it's length. So \n"+
-		"LeafScaleX=0.5 means the leaf is half as wide as long\n"+
-		"LeafScaleX=1.0 means the leaf is a circle\n"+
+		"<strong>LeafScaleX</strong> is the fractional width of the leaf<br>\n"+
+		"relativly to it's length. So<ul>\n"+
+		"<li>LeafScaleX=0.5 means the leaf is half as wide as long</li>\n"+
+		"<li>LeafScaleX=1.0 means the leaf is like a circle</li></ul>\n"+
 		"The unit leaf is scaled by LeafScale*LeafScaleX in x- and\n"+
-		"y-direction (x- and z-direction in Povray). So the spherical\n"+
-		"leaf is transformed to a needle 5cm long and 1mm wide \n"+
-		"by LeafScale=0.05 and LeafScaleX=0.02.\n");
+		"y-direction (x- and z-direction in Povray).<br>\n"+
+		"So the spherical leaf is transformed to a needle 5cm long and<br>\n"+
+		"1mm wide by LeafScale=0.05 and LeafScaleX=0.02.\n");
 
 	flt_par("LeafBend",0,1,0.3,"LEAVESADD","leaf orientation toward light",
-		"With LeafBend you can influence, how much leaves are oriented\n"+
-		"outside and upwards. Values near 0.5 are good. For low values the leaves\n"+
-		"are oriented to the stem, for high value to the light.\n"+
+		"With <strong>LeafBend</strong> you can influence, how much leaves are oriented<br>\n"+
+		"outside and upwards.<br>Values near 0.5 are good. For low values the leaves<br>\n"+
+		"are oriented to the stem, for high value to the light.<br>\n"+
 		"For trees with long leaves like palms you should use lower values.\n");
 	
 	flt_par("LeafStemLen",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.5,
 		"LEAVESADD","fractional leaf stem length",
-		"The length of the leaf stem. For normal trees with many nearly circular\n"+
-		"leaves the default value of 0.5 (meaning the stem has half of the length\n"+
-		"of the leaf) is quite good. For other trees like palms with long leaves\n"+
+		"<strong>LeafStemLen</strong is the length of the (virtual) leaf stem.<br>\n"+
+		"It's not drawn, so this is the distance between the stem axis and the leaf.<br>\n"+
+		"For normal trees with many nearly circular<br>\n"+
+		"leaves the default value of 0.5 (meaning the stem has half of the length<br>\n"+
+		"of the leaf) is quite good. For other trees like palms with long leaves<br>\n"+
 		"or some herbs you need a LeafStemLen near 0. Negative stem length is "+
 		"allowed for special cases.");
 
 	int_par ("LeafDistrib",0,8,4,"LEAVESADD","leaf distribution",
-		 "LeafDistrib determines how leaves are distributed over\n"+
-		 "the branches of the last but one stem level. It takes the same\n"+
-		 "values like Shape, meaning 3 = even distribution, 0 = most leaves\n"+
+		 "<strong>LeafDistrib</strong> determines how leaves are distributed over<br>\n"+
+		 "the branches of the last but one stem level. It takes the same<br>\n"+
+		 "values like Shape, meaning 3 = even distribution, 0 = most leaves<br>\n"+
 		 "outside. Default is 4 (some inside, more outside).");
 		
 	flt_par("LeafQuality",0.000001,1.0,1.0,"LEAVESADD","leaf quality/leaf count reduction",
-		"With a LeafQuality less then 1.0 you can reduce the number of leaves\n"+
-		"to improve rendering speed and memory usage. The leaves are scaled\n"+
-		"with the same amount to get the same coverage.\n"+
-		"For trees in the background of the scene you will use a reduced\n"+
-		"LeafQuality around 0.9. Very small values would cause strange results.\n"+
+		"With a <strong>LeafQuality</strong> less then 1.0 you can reduce the number of leaves<br>\n"+
+		"to improve rendering speed and memory usage. The leaves are scaled<br>\n"+
+		"with the same amount to get the same coverage.<br>\n"+
+		"For trees in the background of the scene you will use a reduced<br>\n"+
+		"LeafQuality around 0.9. Very small values would cause strange results.<br>\n"+
 		"(See LeafScale)" );
 
 	flt_par("Smooth",0.0,1.0,0.5,"MISC","smooth value for mesh creation",
-		"Higher Smooth values creates meshes with more vertices and\n"+
-		"adds normal vectors to them for some or all branching levels.\n"+
-		"normally you would specify this value on the command line, but for\n"+
-		"some species a special default smooth value could be best\n"+
-		"E.g. for shave-grass a low smooth value is best, because this herb\n"+
+		"Higher <strong>Smooth</strong> values creates meshes with more vertices and<br>\n"+
+		"adds normal vectors to them for some or all branching levels.<br>\n"+
+		"Normally you would specify this value on the command line or in the rendering dialog,<br>\n"+
+		"but for some species a special default smooth value could be best<br>\n"+
+		"E.g. for shave-grass a low smooth value is best, because this herb<br>\n"+
 		"has angular stems.");
 		
 	flt_par("AttractionUp",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.0,
 		"MISC","upward/downward growth tendency",
-		"AttractionUp gives the tendency of stems with level>=2 to grow\n"+
-		"upwards (downwards for negative values). A value of 1.0 means\n"+
-		"the last segment should point upward. Greater values means \n"+
-		"earlier reaching of upward direction. Values of 10 and greater\n"+
-		"could cause overcorrection resulting in a snaking oscillation.\n"+
-		"The weeping willow has an AttractionUp value of -3.\n");
+		"<strong>AttractionUp</strong> is the tendency of stems with level>=2 to grow upwards<br>\n"+
+		"(downwards for negative values).<br>\n"+
+		"A value of 1.0 for a horizontal stem means the last segment should point upwards.<br>\n"+
+		"Greater values means earlier reaching of upward direction. Values of 10 and greater<br>\n"+
+		"could cause overcorrection resulting in a snaking oscillation.<br>\n"+
+		"As an example see the weeping willow, which has a negative AttractionUp value.\n");
 	
 	flt_par("PruneRatio",0.0,1.0,0.0,"PRUNING",
 		"fractional effect of pruning",
-		"Pruning ratio. A Ratio of 1.0 means all branches are inside\n"+
+		"A <strong>PruneRatio</strong> of 1.0 means all branches are inside<br>\n"+
 		"the envelope. 0.0 means no pruning.\n");
 
 	flt_par("PruneWidth",0.0,1.0,0.5,"PRUNING","width of envelope peak",
-		"This is the fractional width of the pruning envelope at the\n"+
-		"peak. 0.5 means the tree is half as wide as high.\n");
+		"<strong>PruneWidth</strong> is the fractional width of the pruning envelope at the<br>\n"+
+		"peak. 0.5 means the tree is half as wide as high.<br>\n"+
+		"This parameter is used for shape \"envelope\" too, even if PruneRatio is off.\n");
 
 	flt_par("PruneWidthPeak",0.0,1.0,0.5,"PRUNING","position of envelope peak",
-		"Fractional height of the envelope peak. 0.5 means upper part\n"+
-		"en lower part of the envelope have the same height.\n");
+		"<strong>PruneWidthPeak</strong is the fractional height of the envelope peak.<br>\n"+
+		"0.5 means upper part and lower part of the envelope have the same height.<br>\n"+
+		"This parameter is used for shape \"envelope\" too, even if PruneRatio is off.\n");
 
 	flt_par("PrunePowerLow",0.0,Double.POSITIVE_INFINITY,0.5,"PRUNING",
 		"curvature of envelope",
-		"Describes the envelope curve below the peak. A value\n"+
-		"of 1 means linear decreasing Higher values means concave,\n"+
-		"lower values convex curve.\n");
-	
+		"<strong>PrunePowerLow</strong> describes the envelope curve below the peak.<br>\n"+
+		"A value of 1 means linear decreasing. Higher values means concave,<br>\n"+
+		"lower values convex curve.<br>\n"+
+		"This parameter is used for shape \"envelope\" too, even if PruneRatio is off.\n");
+
 	flt_par("PrunePowerHigh",0.0,Double.POSITIVE_INFINITY,0.5,"PRUNING",
 		"curvature of envelope",
-		"Describes the envelope curve above the peak. A value\n"+
-		"of 1 means linear decreasing Higher values means concave,\n"+
-		"lower values convex curve.\n");
+		"<strong>PrunePowerHigh</strong> describes the envelope curve above the peak.<br>\n"+
+		"A value of 1 means linear decreasing Higher values means concave,<br>\n"+
+		"lower values convex curve.<br>\n"+
+		"This parameter is used for shape \"envelope\" too, even if PruneRatio is off.\n");
 
 	flt_par("0Scale",0.000001,Double.POSITIVE_INFINITY,1.0,
 		"TRUNK","extra trunk scaling",
-		"0Scale and 0ScaleV makes the trunk thicker. This parameters\n"+
-		"exists for the level 0 only. From the Weber/Penn paper it is\n"+
-		"not clear, why there are two trunk scaling parameters \n"+
-		"0Scale and Ratio. See Ratio, 0ScaleV, Scale, ScaleV.\n"+
-		"In this implementation 0Scale does not influence the trunk base radius\n"+
-		"but is applied finally to the stem_radius formular. Thus the\n"+
-		"trunk radius could be influenced independently from the\n"+
-		"Ratio/RatioPower parameters and the periodic tapering\n"+
-		"could be scaled, that the sections are elongated spheres.\n");
+		"<strong>0Scale</strong> and 0ScaleV makes the trunk thicker.<br>\n"+
+		"This parameters exists for the level 0 only. From the Weber/Penn paper it is<br>\n"+
+		"not clear, why there are two trunk scaling parameters<br> \n"+
+		"0Scale and Ratio. See Ratio, 0ScaleV, Scale, ScaleV.<br>\n"+
+		"In this implementation 0Scale does not influence the trunk base radius<br>\n"+
+		"but is applied finally to the stem_radius formular. Thus the<br>\n"+
+		"trunk radius could be influenced independently from the<br>\n"+
+		"Ratio/RatioPower parameters and the periodic tapering (0Taper > 2.0)<br>\n"+
+		"could be scaled, so that the sections are elongated spheres.\n");
 	
 	flt_par("0ScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"TRUNK",
 		"variation for extra trunk scaling",
-		"0Scale and 0ScaleV makes the trunk thicker. This parameters\n"+
-		"exists for the level 0 only. From the Weber/Penn paper it is\n"+
-		"not clear, why there are two trunk scaling parameters\n"+
-		"0Scale and Ratio. See Ratio, 0ScaleV, Scale, ScaleV.\n"+
-		"In this implementation 0ScaleV is used to perturb the\n"+
-		"mesh of the trunk. But use with care, because the mesh\n"+
-		"could get fissures for too big values.\n");
+		"0Scale and <strong>0ScaleV</strong> makes the trunk thicker. This parameters<br>\n"+
+		"exists for the level 0 only. From the Weber/Penn paper it is<br>\n"+
+		"not clear, why there are two trunk scaling parameters<br>\n"+
+		"0Scale and Ratio. See Ratio, 0ScaleV, Scale, ScaleV.<br>\n"+
+		"In this implementation 0ScaleV is used to perturb the<br>\n"+
+		"mesh of the trunk. But use with care, because the mesh<br>\n"+
+		"could get fissures when using too big values.<br>\n");
 	
 	int_par("0BaseSplits",0,Integer.MAX_VALUE,0,"MISC",
 		"stem splits at base of trunk",
-		"BaseSplit determines how many clones are created at\n"+
-		"the top of the first trunk segment. So with BaseSplits=2\n"+
-		"you get a trunk splitting into three parts. Other then\n"+
-		"with 0SegSplits the clones are evenly distributed over\n"+
-		"the 360�. So, if you want to use splitting, you should\n"+
-		"use BaseSplits for the first splitting to get a circular\n"+
-		"stem distribution (seen from top).\n");
+		"<strong>BaseSplits</strong> are the stem splits at the top of the first trunk segment.<br>\n"+
+		"So with BaseSplits=2 you get a trunk splitting into three parts. Other then<br>\n"+
+		"with 0SegSplits the clones are evenly distributed over<br>\n"+
+		"the 360&deg;. So, if you want to use splitting, you should<br>\n"+
+		"use BaseSplits for the first splitting to get a circular<br>\n"+
+		"stem distribution (seen from top).<br>\n");
 	
 	flt4_par("nLength",0.0000001,Double.POSITIVE_INFINITY,1.0,0.5,0.5,0.5,
 		 "LENTAPER","fractional trunk scaling",
-		 "0Length and 0LengthV give the fractional length of the\n"+
-		 "trunk. So with Scale=10 and 0Length=0.8 the length of the\n"+
-		 "trunk will be 8m. Dont' confuse the height of the tree with\n"+
-		 "the length of the trunk here.\n"+
-		 "nLength and nLengthV give the fractional length of a stem\n"+
-		 "relating to the length of it's parent length\n");
+		 "<strong>0Length</strong> and 0LengthV give the fractional length of the<br>\n"+
+		 "trunk. So with Scale=10 and 0Length=0.8 the length of the<br>\n"+
+		 "trunk will be 8m. Dont' confuse the height of the tree with<br>\n"+
+		 "the length of the trunk here.<br><br>\n"+
+		 "<strong>nLength</strong> and nLengthV defines the fractional length of a stem<br>\n"+
+		 "relating to the length of it's parent length<br>\n");
 	
 	flt4_par("nLengthV",0.0,Double.POSITIVE_INFINITY,0.0,0.0,0.0,0.0,
 		 "LENTAPER","variation of fractional trunk scaling",
-		 "nLengthV gives the variation for nLength.\n");
+		 "<strong>nLengthV</strong> is the variation for nLength.<br>\n");
 	
 	flt4_par("nTaper",0.0,2.99999999,1.0,1.0,1.0,1.0,
 		 "LENTAPER","cross-section scaling",
-		 "nTaper gives the tapering of the stem along its length.\n"+
-		 "0 - non-tapering cylinder\n"+
-		 "1 - taper to a point (cone)\n"+
-		 "2 - taper to a spherical end\n"+
-		 "3 - periodic tapering (concatenated spheres)\n"+
-		 "You can use fractional values, to get intermediate results.\n");
+		 "<strong>nTaper</strong> is the tapering of the stem along its length.<ul>\n"+
+		 "<li>0 - non-tapering cylinder</li>\n"+
+		 "<li>1 - taper to a point (cone)</li>\n"+
+		 "<li>2 - taper to a spherical end</li>\n"+
+		 "<li>3 - periodic tapering (concatenated spheres)</li></ul>\n"+
+		 "You can use fractional values, to get intermediate results.<br>\n");
 	
 	flt4_par("nSegSplits",0,Double.POSITIVE_INFINITY,0,0,0,0,
 		 "SPLITTING","stem splits per segment",
-		 "nSegSplits determines how much splits per segment occures.\n"+
-		 "Normally you would use a value between 0.0 and 1.0. A value of\n"+
-		 "0.5 means a split at every second segment. If you use splitting\n"+
-		 "for the trunk you should use 0BaseSplits for the first split, \n"+
+		 "<strong>nSegSplits</strong> determines how much splits per segment occures.<br><br>\n"+
+		 "Normally you would use a value between 0.0 and 1.0. A value of<br>\n"+
+		 "0.5 means a split at every second segment. If you use splitting<br>\n"+
+		 "for the trunk you should use 0BaseSplits for the first split, <br>\n"+
 		 "otherwise the tree will tend to one side.");
 	
 	flt4_par("nSplitAngle",0,180,0,0,0,0,"SPLITTING",
 		 "splitting angle",
-		 "nSplitAngle is the vertical splitting angle. A horizontal diverging\n"+
-		 "angle will be added too, but this one you cannot influence with parameters.\n"+
-		 "The declination of the splitting branches won't exceed the splitting angle.\n");
+		 "<strong>nSplitAngle</strong> is the vertical splitting angle. A horizontal diverging<br>\n"+
+		 "angle will be added too, but this one you cannot influence with parameters.<br>\n"+
+		 "The declination of the splitting branches won't exceed the splitting angle.<br>\n");
 
 	flt4_par("nSplitAngleV",0,180,0,0,0,0,"SPLITTING",
 		 "splitting angle variation",
-		 "This is the variation of the splitting angle. See nSplitAngle.\n");
+		 "<strong>nSplitAngleV</strong> is the variation of the splitting angle. See nSplitAngle.<br>\n");
 	
 	int4_par("nCurveRes",1,Integer.MAX_VALUE,3,3,1,1,
 		 "CURVATURE","curvature resolution",
-		 "nCurveRes determines how many segments the branches consist of.\n"+
-		 "Normally you will use higher values for the first levels, and low\n"+
-		 "values for the higher levels.\n");
+		 "<strong>nCurveRes</strong> determines how many segments the branches consist of.<br><br>\n"+
+		 "Normally you will use higher values for the first levels, and low<br>\n"+
+		 "values for the higher levels.<br>\n");
 	
 	flt4_par("nCurve",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,
 		 "CURVATURE","curving angle",
-		 "This is the angle the branches are declined over theire whole length.\n"+
-		 "If nCurveBack is used, the curving angle is distributed only over the\n"+
-		 "first half of the stem.\n");
+		 "<strong>nCurve</strong> is the angle the branches are declined over theire whole length.<br>\n"+
+		 "If nCurveBack is used, the curving angle is distributed only over the<br>\n"+
+		 "first half of the stem.<br>\n");
 	
 	flt4_par("nCurveV",-90,Double.POSITIVE_INFINITY,0,0,0,0,
 		 "CURVATURE","curving angle variation",
-		 "This is the variation of the curving angle. See nCurve, nCurveBack.\n"+
-		 "A negative value means helical curvature\n");
+		 "<strong>nCurveV</strong> is the variation of the curving angle. See nCurve, nCurveBack.<br>\n"+
+		 "A negative value means helical curvature<br>\n");
 	
 	flt4_par("nCurveBack",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,
 		 "CURVATURE","curving angle upper stem half",
-		 "Using nCurveBack you can give the stem an S-like shape.\n"+
-		 "The first half of the stem the nCurve value is applied.\n"+
-		 "The second half the nCurveBack value.\n"+
-		 "It's also possible to give both parameter the same sign to\n"+
-		 "get different curving over the stem length, instead of a S-shape\n");
+		 "Using <strong>nCurveBack</strong> you can give the stem an S-like shape.<br>\n"+
+		 "The first half of the stem the nCurve value is applied.<br>\n"+
+		 "The second half the nCurveBack value.<br><br>\n"+
+		 "It's also possible to give both parameter the same sign to<br>\n"+
+		 "get different curving over the stem length, instead of a S-shape<br>\n");
 
 	flt4_par("nDownAngle",-179.9999999,179.999999,0,30,30,30,
 		 "BRANCHING","angle from parent",
-		 "nDownAngle is the angle between a stem and it's parent.\n");
+		 "<strong>nDownAngle</strong> is the angle between a stem and it's parent.<br>\n");
 	
 	flt4_par("nDownAngleV",-179.9999999,179.9999999,0,0,0,0,
 		 "BRANCHING","down angle variation",
-		 "This is the variation of the downangle. See nDownAngle.\n"+
-		 "Using a negative value, the nDownAngleV is variated over the\n"+
-		 "length of the stem, so that the lower branches have a bigger\n"+
-		 "downangle then the higher branches.\n");
+		 "<strong>nDownAngleV</strong> is the variation of the downangle. See nDownAngle.<br>\n"+
+		 "Using a negative value, the nDownAngleV is variated over the<br>\n"+
+		 "length of the stem, so that the lower branches have a bigger<br>\n"+
+		 "downangle then the higher branches.<br>\n");
 
 	flt4_par("nRotate",-360,360,0,120,120,120,
 		 "BRANCHING","spirangling angle",
-		 "This is the angle, the branches are rotating around the parent\n"+
-		 "If nRotate is negative the branches are located on alternating\n"+
-		 "sides of the parent.\n");
+		 "<strong>nRotate</strong> is the angle, the branches are rotating around the parent<br>\n"+
+		 "If nRotate is negative the branches are located on alternating<br>\n"+
+		 "sides of the parent.<br>\n");
 
 	flt4_par("nRotateV",-360,360,0,0,0,0,
 		 "BRANCHING","spiraling angle variation",
-		 "This is the variation of nRotate.\n");
+		 "<strong>nRotateV</strong> is the variation of nRotate.<br>\n");
 
 	int4_par("nBranches",0,Integer.MAX_VALUE,1,10,5,5,
 		 "BRANCHING","number of branches",
-		 "Maximal number of branches on a parent stem.\n"+
-		 "The number of branches are reduced proportional to the\n"+
-		 "length of theire parent.\n");
+		 "<strong>nBranches</strong> is the maximal number of branches on a parent stem.<br>\n"+
+		 "The number of branches are reduced proportional to the<br>\n"+
+		 "relative length of theire parent.<br>\n");
 
 	flt4_par("nBranchDist",0,1,0,1,1,1,
 		 "BRANCHING","branch distribution along the segment",
-		 "This is an additional parameter of Arbaro, it influences the\n"+
-		 "distribution of branches over a segment of the parent stem.\n"+
-		 "With 1.0 you get evenly distribution of branches like in the\n"+
-		 "original model. With 0.0 all branches grow from the segments\n"+
-		 "base like for conifers.\n");
-
-	/*	flt4_par("nBranchDistV",0,1,0,0.5,0.5,0.5,
-		 "ADDBRANCH","branch distribution variation",
-		 "This is the variation of branch distribution.\n"+
-		 "A value of 0.0 means evenly distribution of branches over\n"+
-		 "the parent segment. With a value of 1.0 a branch can grow\n"+
-		 "from any point between the preceeding and the following branch.\n"); */
+		 "<strong>nBranchDist</strong> is an additional parameter of Arbaro, it influences the<br>\n"+
+		 "distribution of branches over a segment of the parent stem.<br>\n"+
+		 "With 1.0 you get evenly distribution of branches like in the<br>\n"+
+		 "original model. With 0.0 all branches grow from the segments<br>\n"+
+		 "base like for conifers.<br>\n");
     }
 
     public void readFromCfg(InputStream is) throws Exception {
@@ -1002,7 +989,7 @@ void Tree::setParams(Paramset &paramset) {
     }
 
     public AbstractParam getParam(String parname) {
-	return (AbstractParam)paramDB.get(parname);
+    	return (AbstractParam)paramDB.get(parname);
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -1024,6 +1011,103 @@ void Tree::setParams(Paramset &paramset) {
 	    }
 	}
     }
+    
+    /**
+     * Enables or disables params depending on other
+     * params values. 
+     */
+    public void enableDisable() {
+    	boolean enable;
+    	
+    	// ############ general params ##############
+    	
+    	// disable Z-Scale parameters (they are not used)
+    	getParam("ZScale").setEnabled(false);
+    	getParam("ZScaleV").setEnabled(false);
+    	
+    	// enable RatioPower/Leaves if Levels>1
+    	enable = (((IntParam)getParam("Levels")).intValue() > 1);
+    	getParam("RatioPower").setEnabled(enable);
+    	getParam("Leaves").setEnabled(enable);
+
+    	// enable leaf params if Leaves != 0
+    	enable = (((IntParam)getParam("Leaves")).intValue() != 0 &&
+    			((IntParam)getParam("Levels")).intValue() > 1);
+    	getParam("LeafShape").setEnabled(enable);
+    	getParam("LeafScale").setEnabled(enable);
+    	getParam("LeafScaleX").setEnabled(enable);
+    	getParam("LeafBend").setEnabled(enable);
+    	getParam("LeafDistrib").setEnabled(enable);
+    	getParam("LeafQuality").setEnabled(enable);
+    	getParam("LeafStemLen").setEnabled(enable);
+    	
+    	// enable Pruning parameters, if PruneRatio>0 or Shape=envelope
+    	enable = (((IntParam)getParam("Shape")).intValue() == 8 ||
+    			((FloatParam)getParam("PruneRatio")).doubleValue()>0);
+    	getParam("PrunePowerHigh").setEnabled(enable);
+    	getParam("PrunePowerLow").setEnabled(enable);
+    	getParam("PruneWidth").setEnabled(enable);
+    	getParam("PruneWidthPeak").setEnabled(enable);
+    	
+    	// enable LobeDepth if Lobes>0
+    	enable = (((IntParam)getParam("Lobes")).intValue() > 0);
+    	getParam("LobeDepth").setEnabled(enable);
+
+    	// enable AttractionUp if Levels>2
+    	enable = (((IntParam)getParam("Levels")).intValue() > 2);
+    	getParam("AttractionUp").setEnabled(enable);
+
+    	// ############## disable unused levels ###########
+
+    	for (int i=0; i<4; i++) {
+    		
+    		enable = i<((IntParam)getParam("Levels")).intValue();
+    		
+    		getParam(""+i+"Length").setEnabled(enable);
+    		getParam(""+i+"LengthV").setEnabled(enable);
+    		getParam(""+i+"Taper").setEnabled(enable);
+
+    		getParam(""+i+"Curve").setEnabled(enable);
+    		getParam(""+i+"CurveV").setEnabled(enable);
+    		getParam(""+i+"CurveRes").setEnabled(enable);
+    		getParam(""+i+"CurveBack").setEnabled(enable);
+
+    		getParam(""+i+"SegSplits").setEnabled(enable);
+    		getParam(""+i+"SplitAngle").setEnabled(enable);
+    		getParam(""+i+"SplitAngleV").setEnabled(enable);
+
+    		getParam(""+i+"BranchDist").setEnabled(enable);
+    		getParam(""+i+"Branches").setEnabled(enable);
+    		
+    		// down and rotation angle of last level are
+        	// used for leaves
+    		enable = enable || 
+				(((IntParam)getParam("Leaves")).intValue() != 0 &&
+						i==((IntParam)getParam("Levels")).intValue());
+    		
+    		getParam(""+i+"DownAngle").setEnabled(enable);
+    		getParam(""+i+"DownAngleV").setEnabled(enable);
+    		getParam(""+i+"Rotate").setEnabled(enable);
+    		getParam(""+i+"RotateV").setEnabled(enable);
+    	}
+    	
+    	for (int i=0; i<((IntParam)getParam("Levels")).intValue() && i<4; i++) {
+
+    		// enable nSplitAngle/nSplitAngleV if nSegSplits>0
+    		enable = (((FloatParam)getParam(""+i+"SegSplits")).doubleValue()>0) ||
+				(i==0 && ((IntParam)getParam("0BaseSplits")).intValue()>0);
+    		getParam(""+i+"SplitAngle").setEnabled(enable);
+    		getParam(""+i+"SplitAngleV").setEnabled(enable);
+    		
+    		// enable Curving parameters only when CurveRes>1
+    		enable = (((IntParam)getParam(""+i+"CurveRes")).intValue()>1);
+    		getParam(""+i+"Curve").setEnabled(enable);
+    		getParam(""+i+"CurveV").setEnabled(enable);
+    		getParam(""+i+"CurveBack").setEnabled(enable);
+    	}
+    	
+    }
+    
 };
 
 

@@ -52,21 +52,21 @@ public class FloatParam extends AbstractParam {
     }
 
     public void setValue(String val) throws ErrorParam {
-	double d;
-	try {
-	    d = Double.parseDouble(val);
-	} catch (NumberFormatException e) {
-	    throw new ErrorParam("Error setting value of "+name+". \""+val+"\" isn't a valid number.");
-	}
-	    
-	if (d<min) {
-	    throw new ErrorParam("Value of "+name+" should be greater then or equal to "+min);
-	}
-	if (d>max) {
-	    throw new ErrorParam("Value of "+name+" should be less then or equal to "+max);
-	}
-	value = d;
-	fireStateChanged();
+    	double d;
+    	try {
+    		d = Double.parseDouble(val);
+    	} catch (NumberFormatException e) {
+    		throw new ErrorParam("Error setting value of "+name+". \""+val+"\" isn't a valid number.");
+    	}
+    	
+    	if (d<min) {
+    		throw new ErrorParam("Value of "+name+" should be greater then or equal to "+min);
+    	}
+    	if (d>max) {
+    		throw new ErrorParam("Value of "+name+" should be less then or equal to "+max);
+    	}
+    	value = d;
+    	fireStateChanged();
     }
 
     public String getValue() {
@@ -79,28 +79,28 @@ public class FloatParam extends AbstractParam {
     }
 
     public double doubleValue() {
-	if (empty()) {
-	    warn(name+" not given, using default value("+deflt+")");
-	    // set value to default, t.e. don't warn again
-	    value=deflt;
-	    fireStateChanged();
-	}
-	return value;
+    	if (empty()) {
+    		warn(name+" not given, using default value("+deflt+")");
+    		// set value to default, t.e. don't warn again
+    		value=deflt;
+    		fireStateChanged();
+    	}
+    	return value;
     }
 
     public String getLongDesc() {
-	String desc = super.getLongDesc();
-	desc += "\n";
-	if (! Double.isNaN(min)) {
-	    desc += "Minimum: "+min+"\n";
-	}
-	if (! Double.isNaN(max)) {
-	    desc += "Maximum: "+max+"\n";
-	}
-	if (! Double.isNaN(deflt)) {
-	    desc += "Default: "+deflt+"\n";
-	}
-	return desc;
+    	String desc = super.getLongDesc();
+    	desc += "<br>";
+    	if (! Double.isNaN(min)) {
+    		desc += "Minimum: "+min+"\n";
+    	}
+    	if (! Double.isNaN(max)) {
+    		desc += "Maximum: "+max+"\n";
+    	}
+    	if (! Double.isNaN(deflt)) {
+    		desc += "Default: "+deflt+"\n";
+    	}
+    	return desc;
     }
 };
 

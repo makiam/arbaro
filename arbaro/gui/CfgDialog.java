@@ -37,10 +37,11 @@ public class CfgDialog {
     JTextField fileField;
     Config config;
 
-    public CfgDialog(Config cfg) {
+    public CfgDialog(JFrame parent, Config cfg) {
 
 	config = cfg;
 	frame = new JFrame("Arbaro setup");
+	frame.setIconImage(parent.getIconImage());
 
 	fileChooser = new JFileChooser();
 	// fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")"));

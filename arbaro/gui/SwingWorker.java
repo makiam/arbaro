@@ -68,6 +68,13 @@ public abstract class SwingWorker {
         Thread t = threadVar.get();
         if (t != null) {
             t.interrupt();
+//            boolean intr = t.isInterrupted();
+//            if (intr)
+//            	System.err.println("IS INTERRUPTED");
+//            else             System.err.println("NOT INTERRUPTED");
+            // FIXME: interrupt() doesn't seem to work, so use stop()
+            t.stop();
+
         }
         threadVar.clear();
     }

@@ -66,7 +66,6 @@ public class LevelParams {
     // Error values for splitting, substem and leaf distribution
     public double splitErrorValue;
     public double substemErrorValue;
-    public double leavesErrorValue;
 
     // random genrators
     public Random random; 
@@ -154,46 +153,48 @@ public class LevelParams {
 
     // help method for loading params
     private int int_param(String name) throws ErrorParam {
-	name = "" + level + name.substring(1);
-	IntParam par = (IntParam)paramDB.get(name);
-	if (par != null) {
-	    return par.intValue();
-	} else {
-	    throw new ErrorParam("bug: param "+name+" not found!");
-	}   
+    	name = "" + level + name.substring(1);
+    	IntParam par = (IntParam)paramDB.get(name);
+    	if (par != null) {
+    		return par.intValue();
+    	} else {
+    		throw new ErrorParam("bug: param "+name+" not found!");
+    	}   
     }
 
     private double dbl_param(String name) throws ErrorParam {
-	name = "" + level + name.substring(1);
-	FloatParam par = (FloatParam)paramDB.get(name);
-	if (par != null) {
-	    return par.doubleValue();
-	} else {
-	    throw new ErrorParam("bug: param "+name+" not found!");
-	}   
+    	name = "" + level + name.substring(1);
+    	FloatParam par = (FloatParam)paramDB.get(name);
+    	if (par != null) {
+    		return par.doubleValue();
+    	} else {
+    		throw new ErrorParam("bug: param "+name+" not found!");
+    	}   
     }
     
     void fromDB(boolean leafLevelOnly) throws ErrorParam {
-	if (! leafLevelOnly) {
-	    nTaper = dbl_param("nTaper");
-	    nCurveRes = int_param("nCurveRes");
-	    nCurve = dbl_param("nCurve");
-	    nCurveV = dbl_param("nCurveV");
-	    nCurveBack = dbl_param("nCurveBack");
-	    nLength = dbl_param("nLength");
-	    nLengthV = dbl_param("nLengthV");
-	    nSegSplits = dbl_param("nSegSplits");
-	    nSplitAngle = dbl_param("nSplitAngle");
-	    nSplitAngleV = dbl_param("nSplitAngleV");
-	    nBranches = int_param("nBranches");
-	}
-	nBranchDist = dbl_param("nBranchDist");
-	//	nBranchDistV = dbl_param("nBranchDistV");
-	nDownAngle = dbl_param("nDownAngle");
-	nDownAngleV = dbl_param("nDownAngleV");
-	nRotate = dbl_param("nRotate");
-	nRotateV = dbl_param("nRotateV");
+    	if (! leafLevelOnly) {
+    		nTaper = dbl_param("nTaper");
+    		nCurveRes = int_param("nCurveRes");
+    		nCurve = dbl_param("nCurve");
+    		nCurveV = dbl_param("nCurveV");
+    		nCurveBack = dbl_param("nCurveBack");
+    		nLength = dbl_param("nLength");
+    		nLengthV = dbl_param("nLengthV");
+    		nSegSplits = dbl_param("nSegSplits");
+    		nSplitAngle = dbl_param("nSplitAngle");
+    		nSplitAngleV = dbl_param("nSplitAngleV");
+    		nBranches = int_param("nBranches");
+    	}
+    	nBranchDist = dbl_param("nBranchDist");
+    	//	nBranchDistV = dbl_param("nBranchDistV");
+    	nDownAngle = dbl_param("nDownAngle");
+    	nDownAngleV = dbl_param("nDownAngleV");
+    	nRotate = dbl_param("nRotate");
+    	nRotateV = dbl_param("nRotateV");
     }
+    
+      
 };
 
 

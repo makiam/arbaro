@@ -39,7 +39,9 @@ import net.sourceforge.arbaro.transformation.*;
  */
 public class PovConeOutput extends Output {
 
-	private long progress;
+	private Progress progress;
+	private long stems=0;
+	private long leaves=0;
 	
 	/**
 	 * @param aTree
@@ -51,6 +53,7 @@ public class PovConeOutput extends Output {
 
 	public void write() throws ErrorOutput {
 		try {
+			progress = tree.getProgress();
 			povray();
 	    	w.flush();
 		} catch (Exception e) {
@@ -60,6 +63,14 @@ public class PovConeOutput extends Output {
 		}
 	}
 	
+	private void incStems() {
+		if (stems++%100 == 0) progress.incProgress(100);
+	}
+	
+	private void incLeaves() {
+		if (leaves++%100 == 0) progress.incProgress(100);
+	}
+
 	/**
      * Returns a prefix for the Povray objects names,
      * it consists of the species name and the random seed
@@ -95,6 +106,8 @@ public class PovConeOutput extends Output {
     	if (tree.params.Leaves!=0) povray_leaf();
     	
     	// stems
+    	progress.beginPhase("writing stem objects",tree.getStemCount());
+    	
     	for (int level=0; level < tree.params.Levels; level++) {
     		w.println("#declare " + pov_prefix() + "stems_"
     				+ level + " = union {");
@@ -102,24 +115,36 @@ public class PovConeOutput extends Output {
     		while (stems.hasMoreElements()) {
     			Stem s = (Stem)stems.nextElement();
     			povray_stems(s);
-    			progress++;
-    			if (progress%100==0) tree.incOutProgress(100);
+    			
+    			incStems();
     		}
     		w.println("}");
     	}
-    		
+    	
     	// leaves
     	if (tree.params.Leaves!=0) {
     		
-    			w.println("#declare " + pov_prefix() + "leaves = union {");
-    			for (int t=0; t<tree.trunks.size(); t++) {
-    				povray_leaves_objs((Stem)tree.trunks.elementAt(t));
-    			}
-    			w.println("}");
+        	progress.beginPhase("writing leaf objects",tree.getLeafCount());
+
+        	w.println("#declare " + pov_prefix() + "leaves = union {");
+
+        	Enumeration leaves = tree.allLeaves();
+        	while (leaves.hasMoreElements()) {
+        		Leaf l = (Leaf)leaves.nextElement();
+        		leaf_povray(l);
+    	
+        		// FIXME: pogress still based on stem count, not leaf count
+        		// so this gives wrong result
+        		incLeaves();
+        	}
+        	
+   			w.println("}");
 
     	} else { // empty declaration
     		w.println("#declare " + pov_prefix() + "leaves = sphere {<0,0,0>,0}"); 
     	}
+    	
+    	progress.endPhase();
     	
     	// all stems together
     	w.println("#declare " + pov_prefix() + "stems = union {"); 
@@ -241,19 +266,19 @@ public class PovConeOutput extends Output {
      * @param w the output stream
      * @throws Exception
      */
-    void povray_leaves_objs(Stem s) throws Exception {
-    	Enumeration leaves = tree.allLeaves();
-    	String indent = "    ";
-    	
-    	while (leaves.hasMoreElements()) {
-    		Leaf l = (Leaf)leaves.nextElement();
-    		leaf_povray(l);
-	
-    		// FIXME: pogress still based on stem count, not leaf count
-    		// so this gives wrong result
-    		progress++;
-			if (progress%100==0) tree.incOutProgress(100);
-    	}
+//    void povray_leaves_objs(Stem s) throws Exception {
+//    	Enumeration leaves = tree.allLeaves();
+//    	String indent = "    ";
+//    	
+//    	while (leaves.hasMoreElements()) {
+//    		Leaf l = (Leaf)leaves.nextElement();
+//    		leaf_povray(l);
+//	
+//    		// FIXME: pogress still based on stem count, not leaf count
+//    		// so this gives wrong result
+//    		progress++;
+//			if (progress%100==0) tree.incOutProgress(100);
+//    	}
     	
 //    	if (tree.params.verbose) {
 //    		if (s.stemlevel<=1 && s.clone_index.size()==0) System.err.print(".");
@@ -298,7 +323,7 @@ public class PovConeOutput extends Output {
 //    		}
 //    		
 //    	}
-    }
+//    }
     
     /**
      * Outputs leaves as Povray code when primitive output is used

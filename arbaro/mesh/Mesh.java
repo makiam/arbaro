@@ -64,7 +64,7 @@ public class Mesh extends java.util.Vector {
 	// calcs how much faces have to be created, povray wants to know this
 	// before the faces itself
 	int cnt = 0;
-	for (int i=0; i<size()-1; i++) {
+	for (int i=0; i<size(); i++) {
 	    cnt += ((MeshPart)elementAt(i)).face_cnt();
 	}
 	return cnt;

@@ -64,77 +64,8 @@ public class Tree {
     // the trunks (one for trees, many for bushes)
     public java.util.Vector trunks;
     double trunk_rotangle = 0;
-
-//    private class TreeEnumerator extends StemEnumerator {
-//    	
-//    	public TreeEnumerator(int level) {
-//    		super(level);
-//    		stems = trunks.elements();
-//    	}
-//    	
-////    	public boolean hasMoreElements() {
-////    		if (indepth != null) {
-////    			return indepth.hasMoreElements();
-////    		} else {
-////    			return stems.hasMoreElements();
-////    		}
-////    	}
-////    	
-////    	public Object nextElement() {
-////    		if (indepth != null && indepth.hasMoreElements()) {
-////    			return indepth.nextElement();
-////    		} else {
-////    			Stem s = (Stem)stems.nextElement();
-////    			indepth = s.allStems(level);
-////    			return s;
-////    		}
-////    	}
-//
-//    	// FIXME: put this code in a common basic class "TreeEnumerator"
-//    	// and use it for the two Enumerators in Stem and for this here
-//    	public boolean hasMoreElements() {
-//    		if (level<0) {
-//    			// all level, are ther more stems
-//    			// on this level or on higher level?
-//    			return stems.hasMoreElements() ||
-//				  (indepth != null && indepth.hasMoreElements());
-//    		} else if (level>0) {
-//    			find_stem_with_substems();
-//    			return indepth != null && indepth.hasMoreElements();
-//    		} else if (level==0) {
-//    			return stems.hasMoreElements();
-//    		} else {
-//    			// shouldn't go here?
-//    			return false;
-//    		}
-//    	}
-//
-//    	private void find_stem_with_substems() {
-//    		while ((indepth==null || !indepth.hasMoreElements()) &&
-//    				stems.hasMoreElements()) {
-//    			Stem s = (Stem)stems.nextElement();
-//    			indepth = s.allStems(level);
-//    		}
-//    	}
-//
-//    	public Object nextElement() {
-//    		if (indepth != null && indepth.hasMoreElements()) {
-//    			return indepth.nextElement();
-//    		} else {
-//    			if (level<0) { // consider all levels
-//    				Stem s = (Stem)stems.nextElement();
-//    				indepth = s.allStems(level);
-//    				return s;
-//    			} else {
-//    				find_stem_with_substems();
-//    				// FIXME: when indepth==null, wrong Exception type
-//    				// is raised
-//    				return indepth.nextElement();
-//    			}
-//    		}
-//    	}
-//
-//    }
+    
+    Progress progress;
 
     // FIXME: may be could use StemEnumerator as basis
     // and overload only find_next_stem and getNext a little???
@@ -184,8 +115,9 @@ public class Tree {
      * Creates a new tree object 
      */
     public Tree() {
-	params = new Params();
-	trunks = new java.util.Vector();
+    	params = new Params();
+    	trunks = new java.util.Vector();
+    	newProgress();
     }
 
     /**
@@ -195,8 +127,9 @@ public class Tree {
      * @param other the other tree, from wich parameters are taken
      */
     public Tree(Tree other) {
-	params = new Params(other.params);
-	trunks = new java.util.Vector();
+    	params = new Params(other.params);
+    	trunks = new java.util.Vector();
+    	newProgress();
     }
     
     /**
@@ -209,7 +142,7 @@ public class Tree {
      * @throws Exception
      */
     public void make() throws Exception {
-    	setupMaxGenProgress();
+    	setupGenProgress();
     	params.prepare();
     	
     	if (params.verbose) {
@@ -248,6 +181,7 @@ public class Tree {
     	
     	// making finished
     	if (params.verbose) System.err.println(".");
+    	progress.endPhase();
     }
     
     /**
@@ -279,8 +213,7 @@ public class Tree {
     }
 
     public void output(PrintWriter w) throws Exception {
-    	setupMaxOutProgress();
-    	incOutProgress(1); // for the trunk
+    	progress.beginPhase("output tree code",-1);
     	
     	// output povray code
     	if (params.verbose) System.err.print("writing tree code ");
@@ -295,15 +228,21 @@ public class Tree {
     	}
     	
     	if (params.verbose) System.err.println();
+    	progress.endPhase();
     }
 
 
     
     public Mesh createStemMesh() throws Exception {
+    	progress.beginPhase("Creating mesh",getStemCount());
+    	
     	Mesh mesh = new Mesh();
     	for (int t=0; t<trunks.size(); t++) {
     		((Stem)trunks.elementAt(t)).add_to_mesh(mesh);
     	}
+		getProgress().incProgress(trunks.size());
+		
+		progress.endPhase();
     	return mesh;
     }
 
@@ -445,112 +384,69 @@ void Tree::dump() const {
      * @param output
      */
     public void setOutput(int output) {
-	params.output = output;
+    	params.output = output;
+    }
+    
+    public Progress getProgress() {
+    	return progress;
+    }
+    
+    public void newProgress() {
+    	progress = new Progress();
     }
 
-    /*** calculation of progress */
-    long maxGenProgress;
-    long maxOutProgress;
-    final float genProgressRatio = 0.6F; // if no output will occur it should be set to 1.0F
-    long genProgress;
-    long outProgress;
-    boolean writingCode; 
-    String progressMsg = "";
+//    boolean writingCode; 
+//    String progressMsg = "";
 
     /**
      * Sets the maximum for the progress while generating the tree 
      */
-    public synchronized void setupMaxGenProgress() {
-    	// max progress = trunks * trunk segments * (first level branches + 1) 
-    	maxGenProgress = 
-    		((IntParam)params.getParam("0Branches")).intValue()
-			* ((IntParam)params.getParam("0CurveRes")).intValue()
-			* (((IntParam)params.getParam("1Branches")).intValue()+1);
-    	genProgress = 0;
-    	outProgress = 0;
-    	progressMsg = "creating tree structure";
-    }
+    public void setupGenProgress() {
+    	if (progress != null) {
+    		// max progress = trunks * trunk segments * (first level branches + 1) 
+    		long maxGenProgress = 
+    			((IntParam)params.getParam("0Branches")).intValue()
+				* ((IntParam)params.getParam("0CurveRes")).intValue()
+				* (((IntParam)params.getParam("1Branches")).intValue()+1);
 
-    /**
-     * Sets the maximum for the progress while writing Povray code
-     * 
-     */
-    public synchronized void setupMaxOutProgress() {
-    	maxOutProgress = 0;
-    	// max progress is the total number of substems of all trunks
-    	for (int t=0; t<trunks.size(); t++) {
-    		maxOutProgress += ((Stem)trunks.elementAt(t)).substemTotal();
-    	}
-    	// generation of leaves occurs in a second pass, so double the
-    	// progress maximum
-    	if (params.Leaves != 0) maxOutProgress += maxOutProgress;
-    	genProgress = maxGenProgress;
-    	outProgress = 0;
-    	progressMsg = "writing povray code";
-    }
-
-    /**
-     * Returns the progress of making the tree object and writing
-     * it's Povray code.
-     * 
-     * @return a progress ratio between 0.0 and 1.0
-     */
-    public synchronized float getProgress() {
-    	// System.err.println("mMax:"+makeProgressMax+" m:"+makeProgress
-    	//		   +" pMax:"+povrayProgressMax+" p:"+povrayProgress);
-    	if (maxGenProgress == 0) return 0;
-    	if (genProgressRatio > 0.999999 || maxOutProgress == 0) {
-    		// System.err.println("progr: "+makeProgress/(float)makeProgressMax * makeProgressRatio);
-    		return genProgress/(float)maxGenProgress * genProgressRatio;
-    	} else {
-    		return genProgress/(float)maxGenProgress * genProgressRatio
-			+ outProgress/(float)maxOutProgress * (1-genProgressRatio); 
+    		progress.beginPhase("Creating tree structure",maxGenProgress);
     	}
     }
     
-    /**
-     * Returns a progress message, that describes what is
-     * going on, e.g. "writing Povray code..."
-     * 
-     * @return the message string
-     */
-    public synchronized String getProgressMsg() {
-    	return progressMsg;
+    public long getStemCount() {
+    	long stemCount = 0;
+    	for (int t=0; t<trunks.size(); t++) {
+    		stemCount += ((Stem)trunks.elementAt(t)).substemTotal();
+    	}
+    	return stemCount;
     }
 
     /**
      * Sets (i.e. calcs) the progress for the process of making the tree
      * object.
      */
+    long genProgress;
+    
     public synchronized void updateGenProgress() {
-    	// how much of 0Branches*0CurveRes*(1Branches+1) are created yet
-    	long sum = 0;
-		for (int i=0; i<trunks.size(); i++) {
-		    Stem trunk = ((Stem)trunks.elementAt(i));
-		    if (trunk.substems != null) {
-		    	sum += trunk.segments.size() * (trunk.substems.size()+1);
-		    } else {
-		    		sum += trunk.segments.size();
-		    }
-		}
-		genProgress = sum;
-		
-		// System.err.println(""+genProgress+"/"+maxGenProgress);
-    }
-    
-    /*    public synchronized void updatePovProgress(int prog) {
-	  povProgress = prog;
-	}*/
-    
-    
-    /**
-     * Incerements the progress for the process of writing Povray code
-     * of the generated tree
-     * 
-     * @param inc the increment for the progress
-     */
-    public synchronized void incOutProgress(long inc) {
-    	outProgress +=inc;
+    	try {
+    		// how much of 0Branches*0CurveRes*(1Branches+1) are created yet
+    		long sum = 0;
+    		for (int i=0; i<trunks.size(); i++) {
+    			Stem trunk = ((Stem)trunks.elementAt(i));
+    			if (trunk.substems != null) {
+    				sum += trunk.segments.size() * (trunk.substems.size()+1);
+    			} else {
+    				sum += trunk.segments.size();
+    			}
+    		}
+
+    		if (sum-genProgress > progress.getMaxProgress()/100) {
+    			genProgress = sum;
+    			progress.setProgress(genProgress);
+    		}
+    	} catch (Exception e) {
+    		System.err.println(e);
+    	}
     }
 
 };

@@ -65,62 +65,62 @@ abstract class LeafShape {
 
 class DiscShape extends LeafShape {
 
-    public DiscShape(int facecount, double len, double wid, double stem_len) {
-	super(len,wid,stem_len);
-
-	vertices = new Vertex[facecount+2];
-	faces = new Face[facecount];
-
-	setCirclePoints();
-	setFaces();
-    }
-
-    void setCirclePoints() {
-	double angle;
-	double x;
-	double z;
-	int cnt = vertices.length;
-	// set vertices along a circular curve
-	for (int i=0; i<cnt; i++) {
-	    angle = i * 2.0 * Math.PI / cnt;
-	    x = Math.sin(angle);
-	    z = Math.cos(angle);
-	    
-	    // add a peak to the leaf
-	    if (angle < Math.PI) {
-		x -= leaffunc(angle);
-	    } else if (angle > Math.PI) {
-		x += leaffunc(2*Math.PI-angle);
-	    }
-	    setPoint(i, 0.5*x, 0, 0.5*z + 0.5);
+	public DiscShape(int facecount, double len, double wid, double stem_len) {
+		super(len,wid,stem_len);
+		
+		vertices = new Vertex[facecount+2];
+		faces = new Face[facecount];
+		
+		setCirclePoints();
+		setFaces();
 	}
-    }
 
-    double leaffunc(double angle) {
-	return leaffuncaux(angle)
-	    - angle*leaffuncaux(Math.PI)/Math.PI;
-    }
-
-    double leaffuncaux(double x) {
-	return 0.8 * Math.log(x+1)/Math.log(1.2) - 1.0*Math.sin(x);
-    }
-
-    void setFaces() {
-	int left = 0;
-	int right = vertices.length-1;
-	boolean alternate = false;
-	// add triangles with an edge on alternating sides
-	// of the leaf
-	for (int i=0; i<faces.length; i++) {
-	    if (i % 2 == 0) {
-		faces[i] = new Face(left,left+1,right);
-		left++;
-	    } else {
-		faces[i] = new Face(left,right,right-1);
-		right--;
-	    }
+	void setCirclePoints() {
+		double angle;
+		double x;
+		double z;
+		int cnt = vertices.length;
+		// set vertices along a circular curve
+		for (int i=0; i<cnt; i++) {
+			angle = i * 2.0 * Math.PI / cnt;
+			x = Math.sin(angle);
+			z = Math.cos(angle);
+			
+			// add a peak to the leaf
+			if (angle < Math.PI) {
+				x -= leaffunc(angle);
+			} else if (angle > Math.PI) {
+				x += leaffunc(2*Math.PI-angle);
+			}
+			setPoint(i, 0.5*x, 0, 0.5*z + 0.5);
+		}
 	}
-    }
+	
+	double leaffunc(double angle) {
+		return leaffuncaux(angle)
+		- angle*leaffuncaux(Math.PI)/Math.PI;
+	}
+	
+	double leaffuncaux(double x) {
+		return 0.8 * Math.log(x+1)/Math.log(1.2) - 1.0*Math.sin(x);
+	}
+	
+	void setFaces() {
+		int left = 0;
+		int right = vertices.length-1;
+		boolean alternate = false;
+		// add triangles with an edge on alternating sides
+		// of the leaf
+		for (int i=0; i<faces.length; i++) {
+			if (i % 2 == 0) {
+				faces[i] = new Face(left,left+1,right);
+				left++;
+			} else {
+				faces[i] = new Face(left,right,right-1);
+				right--;
+			}
+		}
+	}
 };
 
 class SphereShape extends LeafShape {
@@ -165,29 +165,29 @@ public class LeafMesh {
     long faceOffset;
 
     public LeafMesh(String leafShape, double length, double width, double stemLen) {
-	Pattern pattern = Pattern.compile("disc(\\d*)");
-	Matcher m = pattern.matcher(leafShape);
-	// disc shape
-	if (m.matches()) {
-	    // FIXME: given "disc" without a number, the face count could 
-	    // be dependent from the smooth value
-	    int facecnt = 6;
-	    if (! m.group(1).equals("")) {
-		facecnt = Integer.parseInt(m.group(1));
-	    }
-	    shape = new DiscShape(facecnt,length,width,stemLen);
-	} else if (leafShape.equals("sphere")) {
-	    shape = new SphereShape(length,width,stemLen);
-	} else
-// test other shapes like  palm here
-	    {
-		// any other leaf shape, like "0" a.s.o. - use normal disc
-
-		// FIXME: given "disc" without a number, the face count could 
-		// be dependent from the smooth value
-		int facecnt = 6;
-		shape = new DiscShape(facecnt,length,width,stemLen);
-	    }
+    	Pattern pattern = Pattern.compile("disc(\\d*)");
+    	Matcher m = pattern.matcher(leafShape);
+    	// disc shape
+    	if (m.matches()) {
+    		// FIXME: given "disc" without a number, the face count could 
+    		// be dependent from the smooth value
+    		int facecnt = 6;
+    		if (! m.group(1).equals("")) {
+    			facecnt = Integer.parseInt(m.group(1));
+    		}
+    		shape = new DiscShape(facecnt,length,width,stemLen);
+    	} else if (leafShape.equals("sphere")) {
+    		shape = new SphereShape(length,width,stemLen);
+    	} else
+    		// test other shapes like  palm here
+    	{
+    		// any other leaf shape, like "0" a.s.o. - use normal disc
+    		
+    		// FIXME: given "disc" without a number, the face count could 
+    		// be dependent from the smooth value
+    		int facecnt = 6;
+    		shape = new DiscShape(facecnt,length,width,stemLen);
+    	}
     }
 
     public Vertex shapeVertexAt(int i) {

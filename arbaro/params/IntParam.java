@@ -92,11 +92,11 @@ public class IntParam extends AbstractParam {
 
     public String getLongDesc() {
 	String desc = super.getLongDesc();
-	desc += "\n";
+	desc += "<br>";
 	if (min != Integer.MIN_VALUE) {
 	    desc += "Minimum: "+min+"\n";
 	}
-	if (max != Integer.MIN_VALUE) {
+	if (max != Integer.MAX_VALUE) {
 	    desc += "Maximum: "+max+"\n";
 	}
 	if (deflt != Integer.MIN_VALUE) {

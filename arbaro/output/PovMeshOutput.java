@@ -45,7 +45,10 @@ import net.sourceforge.arbaro.params.FloatFormat;
 public class PovMeshOutput extends Output {
 	Mesh mesh;
 	LeafMesh lmesh;
+	Progress progress;
 	long leafFaceOffset;
+	long stems=0;
+	long leaves=0;
 	
 	boolean output_normals;
 	
@@ -53,16 +56,17 @@ public class PovMeshOutput extends Output {
 		super(aTree,pw);
 	}
 	
-	
 	public void write() throws ErrorOutput {
 		try {
 	    	NumberFormat frm = FloatFormat.getInstance();
+	    	progress = tree.getProgress();
 	    	// tree scale
 	    	w.println("#declare " + pov_prefix() + "scale = " 
 	    			+ frm.format(tree.params.scale_tree) + ";");
 
 			mesh_stems();
 			mesh_leaves();
+
 			w.flush();
 		}
 		catch (Exception e) {
@@ -70,6 +74,14 @@ public class PovMeshOutput extends Output {
 			throw new ErrorOutput(e.getMessage());
 			//e.printStackTrace(System.err);
 	  	}
+	}
+	
+	private void incStems() {
+		if (stems++ % 100 == 0) progress.incProgress(100);
+	}
+	
+	private void incLeaves() {
+		if (leaves++ % 100 == 0) progress.incProgress(100);
 	}
 
     /**
@@ -87,7 +99,9 @@ public class PovMeshOutput extends Output {
 //    	double leafWidth = tree.params.LeafScale*tree.params.LeafScaleX/Math.sqrt(tree.params.LeafQuality);
 //    	LeafMesh mesh = new LeafMesh(tree.params.LeafShape,leafLength,leafWidth,tree.params.LeafStemLen);
 
-    	lmesh = tree.createLeafMesh(); 
+    	lmesh = tree.createLeafMesh();
+    	
+		progress.beginPhase("Writing leaf mesh",tree.getLeafCount()*2);
     	long leafCount = tree.getLeafCount();
     	
     	if (leafCount>0) {
@@ -110,6 +124,8 @@ public class PovMeshOutput extends Output {
     		// empty declaration
     	    w.println("#declare " + pov_prefix() + "leaves = sphere {<0,0,0>,0}");		
     	}
+    	
+    	progress.endPhase();
     }	
     
     /**
@@ -125,9 +141,9 @@ public class PovMeshOutput extends Output {
     	
     	while (leaves.hasMoreElements()) {
     		Leaf l = (Leaf)leaves.nextElement();
-
-    		//tree.incPovProgress(s.substems.size());
 			leafmesh_points(indent,l.transf);
+
+    		incLeaves();
     	}
     }
     	
@@ -144,9 +160,9 @@ public class PovMeshOutput extends Output {
     	
     	while (leaves.hasMoreElements()) {
     		Leaf l = (Leaf)leaves.nextElement();
-
-    		//tree.incPovProgress(s.substems.size());
 			leafmesh_faces(indent);
+
+    		incLeaves();
     	}
     }
 
@@ -164,9 +180,11 @@ public class PovMeshOutput extends Output {
     	
     	while (leaves.hasMoreElements()) {
     		Leaf l = (Leaf)leaves.nextElement();
-
-    		//tree.incPovProgress(s.substems.size());
 			leafmesh_normals(indent,l.transf);
+
+			incLeaves();
+			throw new Exception("Not implemented: if using normals for leaves use factor "+
+					"3 instead of 2 in progress.beginPhase");
     	}
     }
 
@@ -221,14 +239,17 @@ public class PovMeshOutput extends Output {
     	}
     }
 
-	private void mesh_stems() 
-	throws Exception {
+	private void mesh_stems() throws Exception {
 		String indent="  ";
+		
 	    // FIXME: instead of output_normals = true use separate bool for every
 	    // level
 	    output_normals = true;
+	    
+		//FIXME: show progress while creating mesh
 		mesh = tree.createStemMesh();
 
+    	progress.beginPhase("Writing stem mesh",tree.getStemCount()*3);
 		w.println("#declare " + pov_prefix() + "stems = "); 
 
 		
@@ -242,6 +263,8 @@ public class PovMeshOutput extends Output {
 		for (int i=0; i<mesh.size(); i++) {
 			meshpart_vertices((MeshPart)mesh.elementAt(i),indent);
 			w.println();
+			
+    		incStems();
 		}
 		w.println(indent + "  }");
 		
@@ -252,6 +275,9 @@ public class PovMeshOutput extends Output {
 			for (int i=0; i<mesh.size(); i++) try { 
 				meshpart_normals((MeshPart)mesh.elementAt(i),indent);
 				w.println();
+	    	
+				incStems();
+
 			} catch (Exception e) {
 				throw new ErrorMesh("Error in MeshPart "+i+": "+e); //.getMessage());
 			}	    
@@ -261,10 +287,13 @@ public class PovMeshOutput extends Output {
 		// output mesh triangles
 		w.println(indent + "  face_indices { " + face_cnt);
 		int offset = 0;
-		for (int i=0; i<mesh.size()-1; i++) { 
+		for (int i=0; i<mesh.size(); i++) { 
 			meshpart_faces((MeshPart)mesh.elementAt(i),offset,indent);
 			offset += ((MeshPart)mesh.elementAt(i)).vertex_cnt();
 			w.println();
+		
+    		incStems();
+		
 		}
 		w.println(indent + "  }");
 		
@@ -272,6 +301,7 @@ public class PovMeshOutput extends Output {
 		// w.println(indent+"  hierarchy off");
 		
 		w.println(indent + "}");
+		progress.endPhase();
 		
 		/*
 		 if (debugmesh) try {
@@ -290,6 +320,7 @@ public class PovMeshOutput extends Output {
 		  w.println("}");
 		  } catch (Exception e) {}
 		  */
+		
 	}
 	
 	

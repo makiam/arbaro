@@ -35,15 +35,18 @@ public abstract class AbstractParam {
     int level;
     String short_desc;
     String long_desc;
+    boolean enabled;
+    
     protected ChangeEvent changeEvent = null;
     protected EventListenerList listenerList = new EventListenerList();
 
     public AbstractParam(String nam, String grp, int lev, String sh, String lng) {
-	name = nam;
-	group = grp;
-	level = lev;
-	short_desc = sh;
-	long_desc = lng;
+    	name = nam;
+    	group = grp;
+    	level = lev;
+    	short_desc = sh;
+    	long_desc = lng;
+    	enabled=true;
     }
 
     public abstract void setValue(String val) throws ErrorParam;
@@ -53,7 +56,16 @@ public abstract class AbstractParam {
     public abstract boolean empty();
 
     protected void warn(String warning) {
-	System.err.println("WARNING: "+warning);
+    	System.err.println("WARNING: "+warning);
+    }
+    
+    public void setEnabled(boolean en) {
+    	enabled = en;
+    	fireStateChanged();
+    }
+    
+    public boolean getEnabled() {
+    	return enabled;
     }
 
     public String getName() {
@@ -73,27 +85,27 @@ public abstract class AbstractParam {
     }
 
     public String getLongDesc() {
-	return long_desc;
+    	return long_desc;
     }
 
     public void addChangeListener(ChangeListener l) {
-	listenerList.add(ChangeListener.class, l);
+    	listenerList.add(ChangeListener.class, l);
     }
 
     public void removeChangeListener(ChangeListener l) {
-	listenerList.remove(ChangeListener.class, l);
+    	listenerList.remove(ChangeListener.class, l);
     }
 
     protected void fireStateChanged() {
-	Object [] listeners = listenerList.getListenerList();
-	for (int i = listeners.length -2; i>=0; i-=2) {
-	    if (listeners[i] == ChangeListener.class) {
-		if (changeEvent == null) {
-		    changeEvent = new ChangeEvent(this);
-		}
-		((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
-	    }
-	}
+    	Object [] listeners = listenerList.getListenerList();
+    	for (int i = listeners.length -2; i>=0; i-=2) {
+    		if (listeners[i] == ChangeListener.class) {
+    			if (changeEvent == null) {
+    				changeEvent = new ChangeEvent(this);
+    			}
+    			((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+    		}
+    	}
     }
 }
 
