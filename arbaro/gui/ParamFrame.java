@@ -47,6 +47,7 @@ public class ParamFrame {
     SpeciesField species;
     Component lastFocused = null;
     boolean modified = false;
+    Config config;
 
     // images
     final static ImageIcon shapeIcon = createImageIcon("images/shape.png","Tree shape");
@@ -90,6 +91,7 @@ public class ParamFrame {
 	fileChooser = new JFileChooser();
 	fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")+"/trees"));
 	
+	config = new Config();
 
 	createGUI();
 	frame.setVisible(true);
@@ -266,6 +268,19 @@ public class ParamFrame {
 	menu.add(item);
 	
 	menubar.add(menu);
+
+	/**** setup menu ****/
+	menu = new JMenu("Setup");
+	menu.setMnemonic('S');
+
+	// setup Arbaro
+	item = new JMenuItem("Setup Arbaro");
+	item.setMnemonic('S');
+	item.addActionListener(new SetupArbaroListener());
+	menu.add(item);	
+
+	menubar.add(menu);
+
 
 	/**** help menu ****/
 	menu = new JMenu("Help");
@@ -450,7 +465,13 @@ public class ParamFrame {
 
     class CreateTreeListener implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
-	    new PovDialog(tree);
+	    new PovDialog(tree,config);
+	}
+    }
+
+    class SetupArbaroListener implements ActionListener {
+	public void actionPerformed(ActionEvent e) {
+	    new CfgDialog(config);
 	}
     }
 

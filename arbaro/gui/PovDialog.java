@@ -37,6 +37,7 @@ public class PovDialog {
     final static int INTERVAL = 1000; // 1 sec
     // static Tree tree;
     JFrame frame;
+    Config config;
     JPanel mainPanel;
     Tree tree;
     File treefile = null;
@@ -59,9 +60,10 @@ public class PovDialog {
     JButton startButton;
     JButton cancelButton;
 
-    public PovDialog(Tree tr) {
+    public PovDialog(Tree tr, Config cfg) {
 
 	tree = tr;
+	config = cfg;
 
 	frame = new JFrame("Create tree and write to POVRay file");
         //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -75,7 +77,7 @@ public class PovDialog {
 	renderFileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")+"/pov"));
 
 	timer = new Timer(INTERVAL, new TimerListener());
-	createTreeTask = new CreateTreeTask();
+	createTreeTask = new CreateTreeTask(config);
 
 	createGUI();
 	frame.setVisible(true);
@@ -340,6 +342,7 @@ class CreateTreeTask {
     PrintWriter scenewriter = null;
     String renderFilename = null;
     boolean isDone;
+    String povrayexe;
 
     final SwingWorker worker = new SwingWorker() {
 	    public Object construct() {
@@ -352,7 +355,14 @@ class CreateTreeTask {
 	    }
 	};
     
-    public CreateTreeTask() {};
+    public CreateTreeTask(Config config) {
+	povrayexe = config.getProperty("povray.executable");
+	if (povrayexe == null) {
+	    System.err.println("Warning: Povray executable not set up, trying "+
+			       "\"povray\" without a directory");
+	    povrayexe = "povray";
+	}
+    };
 
     public void start(Tree tree, File outFile, File sceneFile, String imgFilename) {
 	// create new Tree copying the parameters of tree
@@ -394,12 +404,13 @@ class CreateTreeTask {
     class DoTask {
 	void render() {
 	    try {
-		String [] povcmd = { "/usr/local/bin/povray",
+
+		String [] povcmd = { povrayexe,
 				     "+L"+scene_file.getParent(),
 				     "+w400","+h600",
 				     "+o"+renderFilename,
 				     scene_file.getPath()};
-		System.err.println("rendering with povray...");
+		System.err.println("rendering with \""+povrayexe+"\"...");
 		    Process povProc = Runtime.getRuntime().exec(povcmd);
 		    BufferedReader pov_in = new BufferedReader(
 			       new InputStreamReader(povProc.getErrorStream()));
