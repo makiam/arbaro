@@ -28,6 +28,7 @@ import transformation.Vector;
 import mesh.*;
 import params.Params;
 import params.LevelParams;
+//import StemInterface;
 
 class Subsegment { 
     // a Segment can have one or more Subsegments
@@ -50,24 +51,26 @@ class Segment {
     Transformation transf;
     double rad1;
     double rad2;
+    double length;
+
+    StemInterface stem;
 
     java.util.Vector subsegs;
 
-    public Segment(Params params, LevelParams lparams, int inx, 
-		   Transformation trf, double r1, double r2) {
+    public Segment(Params params, LevelParams lparams, StemInterface stm, int inx, 
+		   Transformation trf, double r1, double r2, double len) {
 	par = params;
 	lpar = lparams;
 	index = inx;
 	transf = trf; 
 	rad1 = r1;
 	rad2 = r2;
-	{
-	    // FIXME: rad1 and rad2 could be calculated only when output occurs (?)
-	    // or here in the constructor ?
-
-	    // FIXME: inialize subsegs with a better estimation of size
-	    subsegs = new java.util.Vector(10);
-	}
+	length = len;
+	stem = stm;
+	// FIXME: rad1 and rad2 could be calculated only when output occurs (?)
+	// or here in the constructor ?
+	// FIXME: inialize subsegs with a better estimation of size
+	subsegs = new java.util.Vector(10);
     }
 	
     public void make() {
@@ -99,52 +102,48 @@ class Segment {
 
     private void make_subsegs(int cnt) {
 	Vector dir = pos_to().sub(pos_from());
-	double len = stem.segment_len;
 	for (int i=0; i<cnt+1; i++) {
-	    double pos = i*len/cnt;
-	    double rad = stem.stem_radius(index*len + pos);
-	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/len)),rad));
+	    double pos = i*length/cnt;
+	    double rad = stem.stem_radius(index*length + pos);
+	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/length)),rad));
 	}
     }
 
     private void make_spherical_end(int cnt) {
 	Vector dir = pos_to().sub(pos_from());
-	double len = stem.segment_len;
 	for (int i=0; i<cnt; i++) {
-	    double pos = len-len/Math.pow(2,i);
-	    double rad = stem.stem_radius(index*len + pos);
+	    double pos = length-length/Math.pow(2,i);
+	    double rad = stem.stem_radius(index*length + pos);
       //stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/len)),rad));
+	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/length)),rad));
 	}
 	subsegs.addElement(new Subsegment(pos_to(),rad2));
     }
 
     private void make_flare(int cnt) {
 	Vector dir = pos_to().sub(pos_from());
-	double len = stem.segment_len;
 	subsegs.addElement(new Subsegment(pos_from(),rad1));
 	for (int i=cnt-1; i>=0; i--) {
-	    double pos = len/Math.pow(2,i);
-	    double rad = stem.stem_radius(index*len+pos);
+	    double pos = length/Math.pow(2,i);
+	    double rad = stem.stem_radius(index*length+pos);
 	    //self.stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/len)),rad));
+	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/length)),rad));
 	}
     }
 
     private void make_helix(int cnt) {
 	// helical curving
 	double angle = Math.abs(lpar.nCurveV);
-	double len = stem.segment_len;
 	// this is the radius of the helix
-	double rad = Math.sqrt(1.0/(Math.cos(angle)*Math.cos(angle)) - 1)*len/Math.PI/2;
+	double rad = Math.sqrt(1.0/(Math.cos(angle)*Math.cos(angle)) - 1)*length/Math.PI/2;
 	//self.stem.DBG("HELIX: rad: %f, len: %f\n" % (rad,len))
 	for (int i=0; i<cnt+1; i++) {
 	    Vector pos = new Vector(rad*Math.cos(2*Math.PI*i/cnt)-rad,
 				rad*Math.sin(2*Math.PI*i/cnt),
-				i*len/cnt);
+				i*length/cnt);
 	    //self.stem.DBG("HELIX: pos: %s\n" % (str(pos)))
 	    // this is the stem radius
-	    double srad = stem.stem_radius(index*len + i*len/cnt);
+	    double srad = stem.stem_radius(index*length + i*length/cnt);
 	    subsegs.addElement(new Subsegment(transf.apply(pos),srad));
 	}
     }
@@ -153,7 +152,7 @@ class Segment {
 	// calcs the position of a substem in the segment given 
 	// a relativ position where in 0..1 - needed esp. for helical stems
 	if (lpar.nCurveV>=0) { // normal segment 
-	    return transf.translate(transf.getZ().mul(where*stem.segment_len));
+	    return transf.translate(transf.getZ().mul(where*length));
 	} else { // helix
 	    // get index of the subsegment
 	    int i = (int)(where*subsegs.size()-1);
@@ -172,7 +171,7 @@ class Segment {
   
     Vector pos_to() {
 	//self.stem.DBG("segmenttr1: %s, t: %s\n"%(self.transf,self.transf.t()))
-	return transf.getT().add(transf.getZ().mul(stem.segment_len));
+	return transf.getT().add(transf.getZ().mul(length));
     }
 
     boolean is_first_stem_segment() {
@@ -182,9 +181,17 @@ class Segment {
     boolean is_last_stem_segment() {
 	return index == lpar.nCurveRes-1;
     }
+
+    private String whitespace(int len) {
+	char[] ws = new char[len];
+	for (int i=0; i<len; i++) {
+	    ws[i] = ' ';
+	}
+	return new String(ws);
+    }
   
     public void povray(PrintWriter w) {
-	String indent = " "*(lpar.level*2+4);
+	String indent = whitespace(lpar.level*2+4);
     
 	// FIXME: for cone output - if starting direction is not 1*y, there is a gap 
 	// between earth and tree base

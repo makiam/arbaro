@@ -34,6 +34,10 @@ class StringParam extends Param{
 	deflt = def;
 	value = "";
     }
+
+    public void setValue(String val) {
+	value = val;
+    }
 }
 
  

@@ -38,4 +38,9 @@ class FloatParam extends Param {
 	deflt = def;
 	value = Double.NaN;
     }
-}
+
+    public void setValue(String val) {
+	Double d = new Double(val);
+	value = d.doubleValue();
+    }
+};

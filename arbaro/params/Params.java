@@ -40,20 +40,20 @@ class ErrorParam extends Exception {
 public class Params {
     
     // Outputformats
-    public final int MESH = 0;
-    public final int CONES = 1;
-    public final int BLOBS = 2;
+    public final static int MESH = 0;
+    public final static int CONES = 1;
+    public final static int BLOBS = 2;
 
     // Tree Shapes 
-    public final int CONICAL = 0;
-    public final int SPHERICAL = 1;
-    public final int HEMISPHERICAL = 2;
-    public final int CYLINDRICAL = 3;
-    public final int TAPERED_CYLINDRICAL = 4;
-    public final int FLAME = 5;
-    public final int INVERSE_CONICAL = 6;
-    public final int TEND_FLAME = 7;
-    public final int ENVELOPE = 8;
+    public final static int CONICAL = 0;
+    public final static int SPHERICAL = 1;
+    public final static int HEMISPHERICAL = 2;
+    public final static int CYLINDRICAL = 3;
+    public final static int TAPERED_CYLINDRICAL = 4;
+    public final static int FLAME = 5;
+    public final static int INVERSE_CONICAL = 6;
+    public final static int TEND_FLAME = 7;
+    public final static int ENVELOPE = 8;
 
     public LevelParams [] levelParams;
     java.util.Hashtable paramDB;
@@ -121,9 +121,12 @@ public class Params {
     public double PrunePowerHigh;
     public double PruneWidth;
     public double PruneWidthPeak;
+    
+    // base splits
+    public int _0BaseSplits;
       
     // variables need for stem creation
-    //public double scale_tree;
+    public double scale_tree;
 
     public Params() {
 
@@ -138,7 +141,7 @@ public class Params {
 	Smooth = 0.5;
 	output = MESH; // mesh/cones/blobs
 
-	// the seed
+	// the default seed
 	Seed = 13;
 
 	paramDB = new java.util.Hashtable();
@@ -170,6 +173,8 @@ public class Params {
 	w.println("<arbaro>");
 	w.println("  <species name='" + species + ">");
 	w.println("    <!-- general params -->");
+	// FIXME: maybe use paramDB to print out params
+	// thus no one yould be forgotten
 	xml_param(w,"LeafQuality",LeafQuality);
 	xml_param(w,"Smooth",Smooth);
 	xml_param(w,"Levels",Levels);
@@ -196,6 +201,7 @@ public class Params {
 	xml_param(w,"PrunePowerHigh",PrunePowerHigh);
 	xml_param(w,"PruneWidth",PruneWidth);
 	xml_param(w,"PruneWidthPeak",PruneWidthPeak);
+	xml_param(w,"0BaseSplits",_0BaseSplits);
 
 	for (int i=0; i<Levels; i++) {
 	    levelParams[i].toXML(w);
@@ -206,22 +212,34 @@ public class Params {
 
 
     // help method for loading params
-    private int int_param(String name) {
+    private int int_param(String name) throws ErrorParam {
 	IntParam par = (IntParam)paramDB.get(name);
-	return par.value;
+	if (par != null) {
+	    return par.value;
+	} else {
+	    throw new ErrorParam("bug: param "+name+" not found!");
+	}
     }
 
-    private double dbl_param(String name) {
+    private double dbl_param(String name) throws ErrorParam {
 	FloatParam par = (FloatParam)paramDB.get(name);
-	return par.value;
+	if (par != null) {
+	    return par.value;
+	} else {
+	    throw new ErrorParam("bug: param "+name+" not found!");
+	}   
     }
 
-    private String str_param(String name) {
+    private String str_param(String name) throws ErrorParam {
 	StringParam par = (StringParam)paramDB.get(name);
-	return par.value;
+	if (par != null) {
+	    return par.value;
+	} else {
+	    throw new ErrorParam("bug: param "+name+" not found!");
+	}    
     }
  
-    void fromDB() {
+    void fromDB() throws ErrorParam {
 	LeafQuality = dbl_param("LeafQuality");
 	Smooth = dbl_param("Smooth");
 	Levels = int_param("Levels");
@@ -248,14 +266,18 @@ public class Params {
 	PrunePowerHigh = dbl_param("PrunePowerHigh");
 	PruneWidth = dbl_param("PruneWidth");
 	PruneWidthPeak = dbl_param("PruneWidthPeak");
+	_0BaseSplits = int_param("0BaseSplits");
 
 	for (int i=0; i<Levels; i++) {
 	    levelParams[i].fromDB();
 	}
     }
 
-    private void prepare() throws ErrorParam {
+    public void prepare() throws ErrorParam {
 	if (debug) { verbose=false; }
+
+	// read in parameter values from ParamDB
+	fromDB();
       
 	if (ignoreVParams) {
 	    ScaleV=0;
@@ -272,11 +294,11 @@ public class Params {
 	
 	// check params
 	if (Shape>ENVELOPE || Shape<CONICAL) {
-	    throw new ErrorParam("Shape must be in 0..8");
+	    throw new ErrorParam("Shape must be in 0..8. It's "+Shape+ " now.");
 	}
     
 	// FIXME: do this in LevleParams.prepare() ?
-	for (int l=0; l<4; l++) {
+	for (int l=0; l < Math.min(Levels,4); l++) {
 	    LevelParams lp = levelParams[l];
 	    if (lp.nSegSplits>0 && lp.nSplitAngle==0) {
 		throw new ErrorParam("nSplitAngle may not be 0.");
@@ -327,6 +349,8 @@ public class Params {
 	    levelParams[i].mesh_points = 
 		Math.max(3,(int)(levelParams[i].mesh_points*(1+1.5*mesh_quality)));
 	}
+
+	scale_tree = Scale + levelParams[0].random.uniform(-ScaleV,ScaleV);
     }
     
     public double shape_ratio(double ratio) {
@@ -361,6 +385,19 @@ public class Params {
 	    // tested in prepare() default: throw new ErrorParam("Shape must be between 0 and 8");
 	}
 	return 0; // shouldn't reach here
+    }
+
+    public void setParam(String name, String value) throws ErrorParam {
+	Param p = (Param)paramDB.get(name);
+	if (p!=null) {
+	    p.setValue(value);
+	    if (debug) {
+		System.err.println("Params.setParam(): set "+name+" to "+value);
+	    }
+
+	} else {
+	    throw new ErrorParam("Unknown parameter "+name+"!");
+	}
     }
 
     /*
@@ -447,7 +484,15 @@ void Tree::setParams(Paramset &paramset) {
 		"Scale = 10.0, ScaleV = 2.0 means, trees of this species\n"+
 		"reach from 8.0 to 12.0 meters.\n"+
 		"(See Scale)\n");
-	
+
+	flt_par("ZScale",0.000001,Double.NaN,1.0,"additional Z-scaling (not used)",
+		"ZScale and ZScaleV are not described in the Weber/Penn paper.\n"+
+		"so there meaning is unclear and they aren't used at the moment\n");
+
+	flt_par("ZScaleV",0.0,Double.NaN,0.0,"additional Z-scaling variation (not used)",
+		"ZScale and ZScaleV are not described in the Weber/Penn paper.\n"+
+		"so there meaning is unclear and they aren't used at the moment\n");
+
 	int_par("Levels",0,9,3,"levels of recursion",
 		"Levels are the levels of recursion when creating the\n"+
 		"stems of the tree.\n" +
@@ -485,8 +530,19 @@ void Tree::setParams(Paramset &paramset) {
 		"Flare = 1.0 means trunk base is twice as thick as it's base radius\n"+
 		"(See Ratio)\n"+
 		"Note, that using Lobes make the trunk base thicker too.\n"+
-		"(See Lobes, LobesDepth)\n");
+		"(See Lobes, LobeDepth)\n");
+
+	int_par("Lobes",0,Integer.MAX_VALUE,0,"sinusoidal cross-section variation",
+		"With Lobes you define how much lobes (this are variations in it's\n"+
+		"cross-section) the trunk will have. This isn't supported for \n"+
+		"cones output, but for mesh only.\n"+
+		"(See LobeDepth too)\n");
 	
+	flt_par("LobeDepth",0,Double.NaN,0,"amplitude of cross-section variation",
+		"LobeDepth defines, how deep the lobes of the trunk will be.\n"+
+		"This is the amplitude of the sinusoidal cross-section variations.\n"+
+		"(See Lobes)\n");
+		
 	int_par("Leaves",Integer.MIN_VALUE,Integer.MAX_VALUE,0,"number of leaves per stem",
 		"Leaves gives the maximal number of leaves per stem.\n"+
 		"Leaves grow only from stems of the last level. The\n"+
@@ -532,6 +588,35 @@ void Tree::setParams(Paramset &paramset) {
 		"leaf is transformed to a needle 5cm long and 1mm wide \n"+
 		"by LeafScale=0.05 and LeafScaleX=0.02.\n");
 
+	flt_par("LeafBend",0,1,0.3,"leaf orientation toward light",
+		"With LeafBend you can influence, how much leaves are oriented\n"+
+		"outside and up. Values near 0.5 are good. With low values the leaves\n"+
+		"are oriented to the stem with high value to the light.\n"+
+		"For trees with bi long leaves like palms you should use lower values.\n");
+	
+	flt_par("LeafStemLen",Double.NaN,Double.NaN,0.5,"fractional leaf stem length",
+		"The length of the leaf stem. For normal trees with many nearly circular\n"+
+		"leaves the default value of 0.5 (meaning the stem has half of the length\n"+
+		"of the leaf) is quite good. For other trees like palms with long leaves\n"+
+		"or some herbs you need a LeafStemLen near 0. Negative stem length is "+
+		"allowed for special cases.");
+		
+	flt_par("LeafQuality",0.000001,1.0,1.0,"leaf quality/leaf count reduction",
+		"With a LeafQuality less then 1.0 you can reduce the number of leaves\n"+
+		"to improve rendering speed and memory usage. The leaves are scaled\n"+
+		"with the same amount to get the same coverage.\n"+
+		"For trees in the background of the scene you will use a reduces\n"+
+		"LeafQuality around 0.9. Very small values would cause strange results.\n"+
+		"(See LeafScale)" );
+
+	flt_par("Smooth",0.0,1.0,0.5,"smooth value for mesh creation",
+		"Higher Smooth values creates meshes with more vertices and\n"+
+		"adds normal vectors to them for some or all branching levels.\n"+
+		"normally you would specify this value on the command line, but for\n"+
+		"some species a special default smooth value could be best\n"+
+		"E.g. for shave-grass a low smooth value is best, because this herb\n"+
+		"has angular stems.");
+		
 	flt_par("AttractionUp",Double.NaN,Double.NaN,0.0,"upward/downward growth tendency",
 		"AttractionUp gives the tendency of stems with level>=2 to grow\n"+
 		"upwards (downwards for negative values). A value of 1.0 means\n"+
@@ -539,6 +624,21 @@ void Tree::setParams(Paramset &paramset) {
 		"earlier reaching of upward direction. Values of 10 and greater\n"+
 		"could cause overcorrection resulting in a snaking oscillation.\n"+
 		"The weeping willow has an AttractionUp value of -3.\n");
+	
+	flt_par("PruneRatio",0.0,1.0,0.0,"fractional effect of pruning",
+		"...\n");
+
+	flt_par("PruneWidth",0.0,1.0,0.5,"width of envelope peak",
+		"...\n");
+
+	flt_par("PruneWidthPeak",0.0,1.0,0.5,"position of envelope peak",
+		"...\n");
+
+	flt_par("PrunePowerLow",0.0,Double.NaN,0.5,"curvature of envelope",
+		"...\n");
+	
+	flt_par("PrunePowerHigh",0.0,Double.NaN,0.5,"curvature of envelope",
+		"...\n");
 
 	flt_par("0Scale",0.000001,Double.NaN,1.0,"extra trunk scaling",
 		"0Scale and 0ScaleV makes the trunk thicker. This parameters\n"+
@@ -566,7 +666,7 @@ void Tree::setParams(Paramset &paramset) {
 		"use BaseSplits for the first splitting to get a circular\n"+
 		"stem distribution (seen from top).\n");
 	
-	flt4_par("Length",0.0000001,1.0,1.0,"fractional trunk scaling",
+	flt4_par("nLength",0.0000001,1.0,1.0,"fractional trunk scaling",
 		 "0Length and 0LengthV give the fractional length of the\n"+
 		 "trunk. So with Scale=10 and 0Length=0.8 the length of the\n"+
 		 "trunk will be 8m. Dont' confuse the height of the tree with\n"+
@@ -612,6 +712,15 @@ void Tree::setParams(Paramset &paramset) {
 	flt4_par("nRotateV",-360,360,0,"spiraling angle variation","");
 
 	int4_par("nBranches",0,Integer.MAX_VALUE,10,"number of branches","");
+
+	flt4_par("nBranchDist",0,1,1,"branch distribution over the segment","");
+
+	flt4_par("nBranchDistV",0,1,0.5,"branch distribution variation","");
+
+	//	if (debug) {
+	//	System.err.println("REGISTERPARAMS\n");
+	//  System.err.println("Branchdist? "+((Param)paramDB.get("0BranchDist")).name);
+	//}
     }
     /*
     public long trunc(double d) {

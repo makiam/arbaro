@@ -42,7 +42,6 @@ public class LevelParams {
     public double nLengthV;
 
     // splitting
-    public int nBaseSplits; // only 0BaseSplits used
     public double nSegSplits;
     public double nSplitAngle;
     public double nSplitAngleV;
@@ -80,6 +79,11 @@ public class LevelParams {
 	paramDB = parDB;
     }
 
+    public double var(double variation) {
+	// return a random variation value from (-variation,+variation)
+	return random.uniform(-variation,variation);
+    }
+
     // help methods for output of params
     private void xml_param(PrintWriter w, String name, int value) {
 	name = "" + level + name.substring(1);
@@ -100,8 +104,6 @@ public class LevelParams {
 	xml_param(w,"nCurveBack",nCurveBack);
 	xml_param(w,"nLength",nLength);
 	xml_param(w,"nLengthV",nLengthV);
-	// FIXME: may be move this to general params
-	xml_param(w,"nBaseSplits",nBaseSplits);
 	xml_param(w,"nSegSplits",nSegSplits);
 	xml_param(w,"nSplitAngle",nSplitAngle);
 	xml_param(w,"nSplitAngleV",nSplitAngleV);
@@ -115,19 +117,27 @@ public class LevelParams {
     }
 
     // help method for loading params
-    private int int_param(String name) {
+    private int int_param(String name) throws ErrorParam {
 	name = "" + level + name.substring(1);
 	IntParam par = (IntParam)paramDB.get(name);
-	return par.value;
+	if (par != null) {
+	    return par.value;
+	} else {
+	    throw new ErrorParam("bug: param "+name+" not found!");
+	}   
     }
 
-    private double dbl_param(String name) {
+    private double dbl_param(String name) throws ErrorParam {
 	name = "" + level + name.substring(1);
 	FloatParam par = (FloatParam)paramDB.get(name);
-	return par.value;
+	if (par != null) {
+	    return par.value;
+	} else {
+	    throw new ErrorParam("bug: param "+name+" not found!");
+	}   
     }
     
-    void fromDB() {
+    void fromDB() throws ErrorParam {
 	nTaper = dbl_param("nTaper");
 	nCurveRes = int_param("nCurveRes");
 	nCurve = dbl_param("nCurve");
@@ -135,8 +145,6 @@ public class LevelParams {
 	nCurveBack = dbl_param("nCurveBack");
 	nLength = dbl_param("nLength");
 	nLengthV = dbl_param("nLengthV");
-	// FIXME: may be move this to general params
-	nBaseSplits = int_param("nBaseSplits");
 	nSegSplits = dbl_param("nSegSplits");
 	nSplitAngle = dbl_param("nSplitAngle");
 	nSplitAngleV = dbl_param("nSplitAngleV");

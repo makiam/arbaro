@@ -1,6 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - random class, which can queried and reset to a certain state
+//  #    $Id$  - StemInterface class 
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
 //  #
@@ -22,36 +22,7 @@
 //  #
 //  #**************************************************************************/
 
-package params;
-//import java.util.Random;
-
-public class Random extends java.util.Random {
-
-    public Random(long seed) {
-	super(seed);
-    }
-
-    public double uniform(double low, double high) {
-	return low+nextDouble()*(high-low);
-    }
-
-    public long getstate() {
-	// the original random generator doesn't provide an interface
-	// to read, and reset it's state, so this is a hack here, to make
-	// this possible. The random generator is reseeded here with a seed
-	// got from the generator, this seed are returned as state.
-	long state = nextLong();
-	setSeed(state);
-	return state;
-    }
-
-    public void setstate(long state) {
-	setSeed(state);
-    }
-};
-
-
-
-
-
+public interface StemInterface {
+    public double stem_radius(double h);
+}
 

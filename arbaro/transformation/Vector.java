@@ -38,12 +38,12 @@ public class Vector {
     private double[] coord = {0,0,0};
     
     public Vector() {
-	coord = new double[Z];
+	coord = new double[Z+1];
 	//coord = {0,0,0};
     }
 
     public Vector(double x, double y, double z) {
-	coord = new double[Z];
+	coord = new double[Z+1];
 	coord[X] = x;
 	coord[Y] = y;
 	coord[Z] = z;

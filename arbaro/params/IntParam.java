@@ -39,4 +39,9 @@ class IntParam extends Param {
 	deflt = def;
 	value = Integer.MIN_VALUE;
     }
+
+    public void setValue(String val) {
+	Integer i = new Integer(val);
+	value = i.intValue();
+    }
 }

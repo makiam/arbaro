@@ -24,7 +24,7 @@
 
 package params;
 
-class Param {
+abstract class Param {
     String name;
     String short_desc;
     String long_desc;
@@ -34,4 +34,6 @@ class Param {
 	short_desc = sh;
 	long_desc = lng;
     }
+
+    public abstract void setValue(String val);
 }

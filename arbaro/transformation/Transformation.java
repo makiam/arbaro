@@ -28,6 +28,7 @@ package transformation;
 
 import java.lang.String;
 import java.lang.Math;
+import java.io.PrintWriter;
 import transformation.Vector;
 import transformation.Matrix;
 
@@ -107,7 +108,7 @@ string Transformation::str() const {
   */
     
 	
-    public String povray() {
+    public String povray(PrintWriter w) {
 	return "matrix <" + matrix.get(X,X) + "," + matrix.get(X,Z) + "," + matrix.get(X,Y) + ","
 	    + matrix.get(Z,X) + "," + matrix.get(Z,Z) + "," + matrix.get(Z,Y) + ","
 	    + matrix.get(Y,X) + "," + matrix.get(Y,Z) + "," + matrix.get(Y,Y) + ","
@@ -132,7 +133,7 @@ string Transformation::str() const {
 	return new Transformation(matrix.prod(rm),vector);
     }
 
-    Transformation rotx(double angle) {
+    public Transformation rotx(double angle) {
 	// local rotation about the x axis
 	angle = angle*Math.PI/180;
 	Matrix rm = new Matrix(1,0,0,

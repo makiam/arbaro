@@ -39,7 +39,7 @@ public class Matrix {
     private double[] data;
 	
     public Matrix() {
-	data = new double[Z*Z];
+	data = new double[(Z+1)*(Z+1)];
 	for (int r=X; r<=Z; r++) {
 	    for (int c=X; c<=Z; c++) {
 		data[r*Z+c] = c==r? 1:0;
@@ -50,7 +50,7 @@ public class Matrix {
     public Matrix(double xx, double xy, double xz,
 		  double yx, double yy, double yz,
 		  double zx, double zy, double zz) {
-	data = new double[Z*Z];
+	data = new double[(Z+1)*(Z+1)];
 	data[X*Z+X] = xx;
 	data[X*Z+Y] = xy;
 	data[X*Z+Z] = xz;

@@ -28,6 +28,12 @@ package mesh;
 import java.lang.Math;
 import mesh.MeshSection;
 
+class ErrorMesh extends Exception {
+    public ErrorMesh(String msg) {
+	super(msg);
+    }
+};
+
 class Face {
     int [] points;
     Face(int i, int j, int k) {
@@ -94,7 +100,7 @@ public class Mesh extends java.util.Vector {
 	return cnt;
     }
     
-    java.util.Vector faces(int inx, MeshSection section) throws Exception {
+    java.util.Vector faces(int inx, MeshSection section) throws ErrorMesh {
 	//returns the triangles between section sec and next
 	MeshSection next = section.next;
 	java.util.Vector faces = new java.util.Vector();
@@ -111,7 +117,7 @@ public class Mesh extends java.util.Vector {
 	} else { // section and next must have same point_cnt>1!!!
 	    int ninx = inx+section.size();
 	    if (section.size() != next.size()) {
-		throw new Exception("Error: vertice numbers of two sections "
+		throw new ErrorMesh("Error: vertice numbers of two sections "
 				+ "differ ("+inx+","+ninx+")");
 	    }
 	    for (int i=0; i<section.size(); i++) {
@@ -123,7 +129,7 @@ public class Mesh extends java.util.Vector {
       return faces;
     }
     
-    public void povray(boolean output_normals, String indent) throws Exception {
+    public void povray(boolean output_normals, String indent) throws ErrorMesh {
 	System.out.println(indent + "mesh2 {");
 	// output section points
 	System.out.println(indent+"  vertex_vectors { " + vertex_cnt());
