@@ -174,6 +174,11 @@ void Tree::dump() const {
     // trunk.dump();
 }
     */
+
+    public java.util.Hashtable getParamGroup(int level, String group) {
+	return params.getParamGroup(level,group);
+    }
+
 };
 
 

@@ -27,12 +27,17 @@
 package net.sourceforge.arbaro.params;
 
 public abstract class AbstractParam {
+    public static final int GENERAL = -999; // no level - general params
     String name;
+    String group;
+    int level;
     String short_desc;
     String long_desc;
 
-    public AbstractParam(String nam, String sh, String lng) {
+    public AbstractParam(String nam, String grp, int lev, String sh, String lng) {
 	name = nam;
+	group = grp;
+	level = lev;
 	short_desc = sh;
 	long_desc = lng;
     }
@@ -42,7 +47,23 @@ public abstract class AbstractParam {
     protected void warn(String warning) {
 	System.err.println("WARNING: "+warning);
     }
+
+    public String getName() {
+	return name;
+    }
+
+    public String getGroup() {
+	return group;
+    }
+
+    public int getLevel() {
+	return level;
+    }
 }
+
+
+
+
 
 
 

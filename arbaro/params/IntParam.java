@@ -32,12 +32,16 @@ public class IntParam extends AbstractParam {
     private int deflt;
     private int value;
 
-    IntParam(String nam,int mn, int mx, int def, String sh, String lng) {
-	super(nam,sh,lng);
+    IntParam(String nam,int mn, int mx, int def, String grp, int lev, String sh, String lng) {
+	super(nam,grp,lev,sh,lng);
 	min = mn;
 	max = mx;
 	deflt = def;
 	value = Integer.MIN_VALUE;
+    }
+
+    public int getDefaultValue() {
+	return deflt;
     }
 
     public void setValue(String val) throws ErrorParam {
@@ -63,4 +67,6 @@ public class IntParam extends AbstractParam {
 	return value;
     }
 }
+
+
 

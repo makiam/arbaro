@@ -32,12 +32,17 @@ public class FloatParam extends AbstractParam {
     private double deflt;
     private double value;
 
-    FloatParam(String nam, double mn, double mx, double def, String sh, String lng) {
-	super(nam,sh,lng);
+    FloatParam(String nam, double mn, double mx, double def, String grp, int lev,
+	       String sh, String lng) {
+	super(nam,grp,lev,sh,lng);
 	min = mn;
 	max = mx;
 	deflt = def;
 	value = Double.NaN;
+    }
+
+    public double getDefaultValue() {
+	return deflt;
     }
 
     public void setValue(String val) throws ErrorParam {
