@@ -52,7 +52,7 @@ public class Tree {
 	  
 	if (params.verbose) {
 	    // FIXME: move Seed back to Tree and give it to Params.prepare(Seed) only
-	    System.err.println("Tree species: " + params.species + ", Seed: " 
+	    System.err.println("Tree species: " + getSpecies() + ", Seed: " 
 			       + params.Seed);
 	    System.err.println("Output: " + (params.output == Params.MESH? "mesh":"cones"));
 	    if (params.output==Params.MESH) { 
@@ -63,7 +63,7 @@ public class Tree {
 		}
 	    }
 	  		
-	    System.err.println("making " + params.species + "(" + params.Seed + ") ");
+	    System.err.println("making " + getSpecies() + "(" + params.Seed + ") ");
 	}
 
 	// create the trunk and all its stems and leaves
@@ -77,7 +77,7 @@ public class Tree {
     }
   
     private String pov_prefix() {
-	return params.species + "_" + params.Seed + "_";
+	return getSpecies() + "_" + params.Seed + "_";
     }
 
     public void povray(PrintWriter w) throws Exception {
@@ -107,7 +107,7 @@ public class Tree {
 	    trunk.povray(w,params.Levels);
 	    w.println("}");
 	} else { // empty declaration
-	    w.println("#declare " + params.species + "_" + params.Seed 
+	    w.println("#declare " + getSpecies() + "_" + params.Seed 
 		      + "_leaves = sphere {<0,0,0>,0}"); 
 	}
 
@@ -136,7 +136,7 @@ public class Tree {
     public void povray_scene(PrintWriter w) {
 	w.println("// render as 600x400");
 
-	w.println("#include \"" + params.species + ".inc\"");
+	w.println("#include \"" + getSpecies() + ".inc\"");
 	w.println("background {rgb <0.95,0.95,0.9>}");
 
 	w.println("light_source { <5000,5000,-3000>, rgb 1.2 }");
@@ -188,6 +188,14 @@ void Tree::dump() const {
 
     public void toXML(PrintWriter out) throws ErrorParam {
 	params.toXML(out);
+    }
+
+    public void setSpecies(String sp) {
+	params.setSpecies(sp);
+    }
+
+    public String getSpecies() {
+	return params.getSpecies();
     }
 
 };

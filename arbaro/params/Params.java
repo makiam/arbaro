@@ -39,6 +39,8 @@ import java.io.FileReader;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
+import javax.swing.event.*;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -72,7 +74,7 @@ class CfgTreeParser {
 		param = line.substring(0,equ).trim();
 		value = line.substring(equ+1).trim();
 		if (param.equals("species")) {
-		    params.species = value;
+		    params.setSpecies(value);
 		} else {
 		    params.setParam(param,value);
 		}
@@ -94,7 +96,7 @@ class XMLTreeFileHandler extends DefaultHandler {
             String qName,Attributes atts) throws SAXException {
 	
 	if (qName.equals("species")) {
-	    params.species = atts.getValue("name");
+	    params.setSpecies(atts.getValue("name"));
 	} else if (qName.equals("param")) {
 
 	    try {
@@ -162,7 +164,7 @@ public class Params {
     public int stopLevel;
 
     // general params
-    public String species;
+    String species;
       
     public double LeafQuality;
       
@@ -226,6 +228,11 @@ public class Params {
     // variables need for stem creation
     public double scale_tree;
 
+    // change events
+    protected ChangeEvent changeEvent = null;
+    protected EventListenerList listenerList = new EventListenerList();
+
+
     public Params() {
 
 	debug = false;
@@ -253,6 +260,15 @@ public class Params {
 
 	register_params();
     };
+
+    public void setSpecies(String sp) {
+	species = sp;
+	fireStateChanged();
+    }
+
+    public String getSpecies() {
+	return species;
+    }
 
     // help methods for output of params
     private void xml_param(PrintWriter w, String name, int value) {
@@ -896,6 +912,26 @@ void Tree::setParams(Paramset &paramset) {
 	    parser.parse(new InputSource(is),this);
 	} catch (Exception e) {
 	    throw new ErrorParam(e.getMessage());
+	}
+    }
+
+    public void addChangeListener(ChangeListener l) {
+	listenerList.add(ChangeListener.class, l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+	listenerList.remove(ChangeListener.class, l);
+    }
+
+    protected void fireStateChanged() {
+	Object [] listeners = listenerList.getListenerList();
+	for (int i = listeners.length -2; i>=0; i-=2) {
+	    if (listeners[i] == ChangeListener.class) {
+		if (changeEvent == null) {
+		    changeEvent = new ChangeEvent(this);
+		}
+		((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+	    }
 	}
     }
 };

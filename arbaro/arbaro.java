@@ -1,6 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $file$  - the main program - handles command line a.s.o.
+//  #    $Id$  - the main program - handles command line a.s.o.
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
 //  #
