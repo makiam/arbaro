@@ -25,49 +25,28 @@
 
 package net.sourceforge.arbaro.tree;
 
-import java.io.PrintWriter;
-import java.text.NumberFormat;
-
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.mesh.*;
 import net.sourceforge.arbaro.params.*;
-
-/**
- * Segments with helical curving or nonlinearly changing radius
- * can be broken into subsegments. Normal segments consist of only
- * one subsegment.
- * 
- * @author Wolfram Diestel
- */
-class Subsegment { 
-    // a Segment can have one or more Subsegments
-    Vector pos; 
-    double rad; 
-
-    public Subsegment(Vector p, double r) {
-	pos = p;
-	rad = r; 
-    }
-};
 
 /**
  * A segment class, multiple segments form a stem.
  * 
  * @author Wolfram Diestel
  */
-class Segment {
+public class Segment {
   
     Params par;
-    LevelParams lpar;
+    public LevelParams lpar;
     int index;
     Transformation transf;
     double rad1;
-    double rad2;
+    public double rad2;
     double length;
 
     Stem stem;
 
-    java.util.Vector subsegs;
+    public java.util.Vector subsegs;
 
     public Segment(Params params, LevelParams lparams, Stem stm, int inx, 
 		   Transformation trf, double r1, double r2, double len) {
@@ -211,7 +190,7 @@ class Segment {
 	    return trf.translate(transf.getZ().mul(where*length));
 	} else { // helix
 	    // get index of the subsegment
-	    int i = (int)where*(subsegs.size()-1);
+	    int i = (int)(where*(subsegs.size()-1));
 	    // interpolate position
 	    Vector p1 = ((Subsegment)subsegs.elementAt(i)).pos;
 	    Vector p2 = ((Subsegment)subsegs.elementAt(i+1)).pos;
@@ -235,7 +214,7 @@ class Segment {
      * 
      * @return end point of the segment
      */
-    Vector pos_to() {
+    public Vector pos_to() {
 	//self.stem.DBG("segmenttr1: %s, t: %s\n"%(self.transf,self.transf.t()))
 	return transf.getT().add(transf.getZ().mul(length));
     }
@@ -245,7 +224,7 @@ class Segment {
      * 
      * @return true, if it's the first stem segment, false otherwise
      */
-    boolean is_first_stem_segment() {
+    public boolean is_first_stem_segment() {
 	return index == 0;
     }
   
@@ -254,61 +233,11 @@ class Segment {
      * 
      * @return true, if it's the last stem segment, false otherwise
      */
-    boolean is_last_stem_segment() {
+    public boolean is_last_stem_segment() {
 	return index == lpar.nCurveRes-1;
     }
 
-    /**
-     * Returns a number of spaces
-     * 
-     * @param len number of spaces
-     * @return string made from spaces
-     */
-    private String whitespace(int len) {
-	char[] ws = new char[len];
-	for (int i=0; i<len; i++) {
-	    ws[i] = ' ';
-	}
-	return new String(ws);
-    }
-  
-    /**
-     * Outputs Povray code for the segment, when output type is
-     * primitives
-     * 
-     * @param w the output stream
-     */
-    public void povray(PrintWriter w) {
-	String indent = whitespace(lpar.level*2+4);
-	NumberFormat fmt = FloatFormat.getInstance();
     
-	// FIXME: for cone output - if starting direction is not 1*y, there is a gap 
-	// between earth and tree base
-	// best would be to add roots to the trunk(?)	  
-    
-	for (int i=0; i<subsegs.size()-1; i++) {
-	    Subsegment ss1 = (Subsegment)subsegs.elementAt(i);
-	    Subsegment ss2 = (Subsegment)subsegs.elementAt(i+1);
-	    w.println(indent + "cone   { " + ss1.pos.povray() + ", "
-		      + fmt.format(ss1.rad) + ", " 
-		      + ss2.pos.povray() + ", " 
-		      + fmt.format(ss2.rad) + " }"); 
-	    // for helix subsegs put spheres between
-	    if (lpar.nCurveV<0 && i<subsegs.size()-2) {
-		w.println(indent + "sphere { " 
-			  + ss1.pos.povray() + ", "
-			  + fmt.format(ss1.rad-0.0001) + " }");
-	    }
-	}
-    
-	// put sphere at segment end
-	if ((rad2 > 0) && (! is_last_stem_segment() || 
-			   (lpar.nTaper>1 && lpar.nTaper<=2))) 
-	    {  
-		w.println(indent + "sphere { " + pos_to().povray() + ", "
-			  + fmt.format(rad2-0.0001) + " }");
-	    }
-    }
   
     /**
 	 * Creates the mesh points for a cross section somewhere in the segment

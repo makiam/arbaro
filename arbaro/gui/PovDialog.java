@@ -428,8 +428,8 @@ class CreateTreeTask {
 	DoTask() {
 	    try {
 		tmptree.make();
-		tmptree.povray(writer);
-		if (scenewriter != null) tmptree.povray_scene(scenewriter);
+		tmptree.output(writer);
+		if (scenewriter != null) tmptree.outputScene(scenewriter);
 		if (renderFilename != null && renderFilename.length()>0) 
 		    render();
 	    } catch (Exception err) {

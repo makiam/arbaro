@@ -28,11 +28,13 @@ package net.sourceforge.arbaro.tree;
 import java.io.PrintWriter;
 import java.io.InputStream;
 import java.lang.Math;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
-import java.text.NumberFormat;
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.mesh.*;
+import net.sourceforge.arbaro.output.*;
 
 /**
  * A class for creation of threedimensional tree objects.
@@ -56,9 +58,127 @@ public class Tree {
 
     public Params params;
       
+    // FIXME: instead of making trunks and stems public
+    // there should be stem (an) iterator(s)
+    
     // the trunks (one for trees, many for bushes)
-    java.util.Vector trunks;
+    public java.util.Vector trunks;
     double trunk_rotangle = 0;
+
+//    private class TreeEnumerator extends StemEnumerator {
+//    	
+//    	public TreeEnumerator(int level) {
+//    		super(level);
+//    		stems = trunks.elements();
+//    	}
+//    	
+////    	public boolean hasMoreElements() {
+////    		if (indepth != null) {
+////    			return indepth.hasMoreElements();
+////    		} else {
+////    			return stems.hasMoreElements();
+////    		}
+////    	}
+////    	
+////    	public Object nextElement() {
+////    		if (indepth != null && indepth.hasMoreElements()) {
+////    			return indepth.nextElement();
+////    		} else {
+////    			Stem s = (Stem)stems.nextElement();
+////    			indepth = s.allStems(level);
+////    			return s;
+////    		}
+////    	}
+//
+//    	// FIXME: put this code in a common basic class "TreeEnumerator"
+//    	// and use it for the two Enumerators in Stem and for this here
+//    	public boolean hasMoreElements() {
+//    		if (level<0) {
+//    			// all level, are ther more stems
+//    			// on this level or on higher level?
+//    			return stems.hasMoreElements() ||
+//				  (indepth != null && indepth.hasMoreElements());
+//    		} else if (level>0) {
+//    			find_stem_with_substems();
+//    			return indepth != null && indepth.hasMoreElements();
+//    		} else if (level==0) {
+//    			return stems.hasMoreElements();
+//    		} else {
+//    			// shouldn't go here?
+//    			return false;
+//    		}
+//    	}
+//
+//    	private void find_stem_with_substems() {
+//    		while ((indepth==null || !indepth.hasMoreElements()) &&
+//    				stems.hasMoreElements()) {
+//    			Stem s = (Stem)stems.nextElement();
+//    			indepth = s.allStems(level);
+//    		}
+//    	}
+//
+//    	public Object nextElement() {
+//    		if (indepth != null && indepth.hasMoreElements()) {
+//    			return indepth.nextElement();
+//    		} else {
+//    			if (level<0) { // consider all levels
+//    				Stem s = (Stem)stems.nextElement();
+//    				indepth = s.allStems(level);
+//    				return s;
+//    			} else {
+//    				find_stem_with_substems();
+//    				// FIXME: when indepth==null, wrong Exception type
+//    				// is raised
+//    				return indepth.nextElement();
+//    			}
+//    		}
+//    	}
+//
+//    }
+
+    // FIXME: may be could use StemEnumerator as basis
+    // and overload only find_next_stem and getNext a little???
+    private class LeafEnumerator implements Enumeration {
+    	private Enumeration stems;
+    	private Enumeration leaves;
+    	
+    	public LeafEnumerator() {
+    		stems = trunks.elements();
+    		leaves = ((Stem)stems.nextElement()).allLeaves();
+    	}
+    	
+    	public boolean hasMoreElements() {
+    		if (params.Leaves==0) return false;
+			else if (leaves.hasMoreElements()) return true;
+			else if (! stems.hasMoreElements()) return false;
+			else {
+				// goto next trunk with leaves
+				while (! leaves.hasMoreElements() && stems.hasMoreElements()) {
+					Stem s = (Stem)stems.nextElement();
+					leaves = s.allLeaves();
+				}
+				return leaves.hasMoreElements();
+			}
+    	}
+    	
+    	public Object nextElement() {
+    		// this will go to the next trunk with leaves,
+    		// if the current has no more of them
+    		if (hasMoreElements()) {
+    			return leaves.nextElement();
+    		} else {
+    			throw new NoSuchElementException("LeafEnumerator");
+    		}
+    	}
+    }
+    
+    public Enumeration allStems(int level) {
+    	return new StemEnumerator(level,trunks.elements(),0);
+    }
+    
+    public Enumeration allLeaves() {
+    	return new LeafEnumerator();
+    }
 
     /**
      * Creates a new tree object 
@@ -158,176 +278,51 @@ public class Tree {
 	return trf.rotxz(downangle,rotangle);
     }
 
-  
-    /**
-     * Returns a prefix for the Povray objects names,
-     * it consists of the species name and the random seed
-     * 
-     * @return the prefix string
-     */
-    private String pov_prefix() {
-    	return getSpecies() + "_" + params.Seed + "_";
+    public void output(PrintWriter w) throws Exception {
+    	setupMaxOutProgress();
+    	incOutProgress(1); // for the trunk
+    	
+    	// output povray code
+    	if (params.verbose) System.err.print("writing tree code ");
+    	
+    	Output output;
+    	if (params.output == Params.CONES) {
+    		output = new PovConeOutput(this,w);
+    		output.write();
+    	} else if (params.output == Params.MESH) {
+    		output = new PovMeshOutput(this,w);
+    		output.write();
+    	}
+    	
+    	if (params.verbose) System.err.println();
     }
 
-    /**
-     * Outputs the Povray code for the tree.
-     * The following diagrams show the process of mesh
-     * creation and output for the stems and leave output:
-     * <p>
-     * <img src="doc-files/Tree-3.png" />
-     * <p>
-     * <img src="doc-files/Tree-4.png" />
-     * <p>
-     * 
-     * @param w the output stream
-     * @throws Exception
-     */
-    public void povray(PrintWriter w) throws Exception {
-	setupMaxPovProgress();
-	incPovProgress(1); // for the trunk
 
-	NumberFormat frm = FloatFormat.getInstance();
-	
-	// output povray code
-	if (params.verbose) System.err.print("writing povray code ");
-	  
-	// tree scale
-	w.println("#declare " + pov_prefix() + "scale = " 
-		  + frm.format(params.scale_tree) + ";");
-
-	// leaf declaration
-	if (params.Leaves!=0 && params.output == Params.CONES) povray_leaf(w);
-	  	  
-	// stems
-	if (params.output == Params.CONES) {
-	    for (int level=0; level < params.Levels; level++) {
-		w.println("#declare " + pov_prefix() + "stems_"
-			  + level + " = union {"); 
-		for (int i=0; i<trunks.size(); i++) {
-		    ((Stem)trunks.elementAt(i)).povray_stems(w,level);
-		}
-		w.println("}");
-	    }
-
-	} else if (params.output == Params.MESH) {
-	    Mesh mesh = new Mesh();
-	    w.println("#declare " + pov_prefix() + "stems = "); 
-		for (int t=0; t<trunks.size(); t++) {
-		    ((Stem)trunks.elementAt(t)).add_to_mesh(mesh);
-		}
-	    // FIXME: instead of output_normals = true use separate bool for every
-	    // level
-	    mesh.povray(w,true,"    ");
-	}
-
-	// leaves
-	if (params.Leaves!=0) {
-
-	    if (params.output == Params.CONES) {
-		w.println("#declare " + pov_prefix() + "leaves = union {");
-		for (int t=0; t<trunks.size(); t++) {
-		    ((Stem)trunks.elementAt(t)).povray_leaves_objs(w);
-		}
-		w.println("}");
-	    } else if (params.output == Params.MESH) {
-		double leafLength = params.LeafScale/Math.sqrt(params.LeafQuality);
-		double leafWidth = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
-		LeafMesh mesh = new LeafMesh(params.LeafShape,leafLength,leafWidth,params.LeafStemLen);
-
-		long leafCount = 0;
-		for (int t=0; t<trunks.size(); t++) {
-		    leafCount += ((Stem)trunks.elementAt(t)).leafCount();
-		}
-		w.println("#declare " + pov_prefix() + "leaves = mesh2 {");
-		w.println("     vertex_vectors { "+mesh.getShapeVertexCount()*leafCount);
-		for (int t=0; t<trunks.size(); t++) {
-		    ((Stem)trunks.elementAt(t)).povray_leaves_points(w,mesh);
-		}
-		w.println("     }");
-		/* FIXME: add this if needed
-		w.println("     normal_vectors { "+mesh.getShapeVertexCount()*leafCount);
-		trunk.povray_leaves_normals(w,mesh);
-		w.println("     }");
-		*/
-		w.println("     face_indices { "+mesh.getShapeFaceCount()*leafCount);
-		for (int t=0; t<trunks.size(); t++) {
-		    ((Stem)trunks.elementAt(t)).povray_leaves_faces(w,mesh);
-		}
-		w.println("     }");
-		w.println("}");
-	    }
-	} else { // empty declaration
-	    w.println("#declare " + getSpecies() + "_" + params.Seed 
-		      + "_leaves = sphere {<0,0,0>,0}"); 
-	}
-
-	// all stems together
-	if (params.output == Params.CONES) {
-	    w.println("#declare " + pov_prefix() + "stems = union {"); 
-	    for (int level=0; level < params.Levels; level++) {
-		w.println("  object {" + pov_prefix() + "stems_" 
-			  + level + "}");
-	    }
-	    w.println("}");
-	}
-
-	w.flush();
-
-	if (params.verbose) System.err.println();
-    }
     
-    /**
-     * Outputs the Povray code for a leaf object
-     * (only for primitives output, not for mesh)
-     * 
-     * @param w The output stream
-     */
-    void povray_leaf(PrintWriter w) {
-	double length = params.LeafScale/Math.sqrt(params.LeafQuality);
-	double width = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
-	w.println("#include \"arbaro.inc\"");
-	w.println("#declare " + pov_prefix() + "leaf = " +
-		"object { Arb_leaf_" + (params.LeafShape.equals("0")? "disc" : params.LeafShape)
-		  + " translate " + (params.LeafStemLen+0.5) + "*y scale <" 
-		  + width + "," + length + "," + width + "> }");
-    }	  	
+    public Mesh createStemMesh() throws Exception {
+    	Mesh mesh = new Mesh();
+    	for (int t=0; t<trunks.size(); t++) {
+    		((Stem)trunks.elementAt(t)).add_to_mesh(mesh);
+    	}
+    	return mesh;
+    }
 
+    public LeafMesh createLeafMesh() {
+    	double leafLength = params.LeafScale/Math.sqrt(params.LeafQuality);
+    	double leafWidth = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
+    	return new LeafMesh(params.LeafShape,leafLength,leafWidth,params.LeafStemLen);
+    }
+
+    
+  
     /**
      * Outputs a simple Povray scene showing the generated tree
      * 
      * @param w
      */
-    public void povray_scene(PrintWriter w) {
-	w.println("// render as 600x400");
-
-	w.println("#include \"" + getSpecies() + ".inc\"");
-	w.println("background {rgb <0.95,0.95,0.9>}");
-
-	w.println("light_source { <5000,5000,-3000>, rgb 1.2 }");
-	w.println("light_source { <-5000,2000,3000>, rgb 0.5 shadowless }");
-
-	w.println("#declare HEIGHT = " + pov_prefix() + "scale * 1.3;");
-	w.println("#declare WIDTH = 2*HEIGHT/3;");
-
-	w.println("camera { orthographic location <0, HEIGHT*0.45, -100>");
-	w.println("         right <WIDTH, 0, 0> up <0, HEIGHT, 0>");
-	w.println("         look_at <0, HEIGHT*0.45, -80> }");
-
-	w.println("union { ");
-	w.println("         object { " + pov_prefix() + "stems");
-	w.println("                pigment {color rgb 0.9} }"); 
-	w.println("         object { " + pov_prefix() + "leaves");
-	w.println("                texture { pigment {color rgb 1} ");
-	w.println("                          finish { ambient 0.15 diffuse 0.8 }}}");
-	w.println("         rotate 90*y }");
-
-	if (params.Leaves > 0) {
-	    w.println("         object { " + pov_prefix() + "stems");
-	    w.println("                scale 0.7 rotate 45*y");  
-	    w.println("                translate <WIDTH*0.33,HEIGHT*0.33,WIDTH>");
-	    w.println("                pigment {color rgb 0.9} }"); 
-	}
-	w.flush();
+    public void outputScene(PrintWriter w) throws Exception {
+    	Output output = new PovSceneOutput(this,w);
+    	output.write();
     }
 
 
@@ -430,6 +425,18 @@ void Tree::dump() const {
 	params.Smooth = s;
     }
 
+    public long getLeafCount() {
+    	if (params.Leaves==0) return 0;
+    	
+    	long leafCount = 0;
+    	
+    	for (int t=0; t<trunks.size(); t++) {
+    		leafCount += ((Stem)trunks.elementAt(t)).leafCount();
+    	}
+    	return leafCount;
+    }
+
+
     /**
      * Sets the output type for the Povray code 
      * (primitives like cones, spheres and discs or
@@ -443,11 +450,11 @@ void Tree::dump() const {
 
     /*** calculation of progress */
     long maxGenProgress;
-    long maxPovProgress;
+    long maxOutProgress;
     final float genProgressRatio = 0.6F; // if no output will occur it should be set to 1.0F
     long genProgress;
-    long povProgress;
-    boolean writingPovray; 
+    long outProgress;
+    boolean writingCode; 
     String progressMsg = "";
 
     /**
@@ -460,7 +467,7 @@ void Tree::dump() const {
 			* ((IntParam)params.getParam("0CurveRes")).intValue()
 			* (((IntParam)params.getParam("1Branches")).intValue()+1);
     	genProgress = 0;
-    	povProgress = 0;
+    	outProgress = 0;
     	progressMsg = "creating tree structure";
     }
 
@@ -468,17 +475,17 @@ void Tree::dump() const {
      * Sets the maximum for the progress while writing Povray code
      * 
      */
-    public synchronized void setupMaxPovProgress() {
-    	maxPovProgress = 0;
+    public synchronized void setupMaxOutProgress() {
+    	maxOutProgress = 0;
     	// max progress is the total number of substems of all trunks
     	for (int t=0; t<trunks.size(); t++) {
-    		maxPovProgress += ((Stem)trunks.elementAt(t)).substemTotal();
+    		maxOutProgress += ((Stem)trunks.elementAt(t)).substemTotal();
     	}
     	// generation of leaves occurs in a second pass, so double the
     	// progress maximum
-    	if (params.Leaves != 0) maxPovProgress += maxPovProgress;
+    	if (params.Leaves != 0) maxOutProgress += maxOutProgress;
     	genProgress = maxGenProgress;
-    	povProgress = 0;
+    	outProgress = 0;
     	progressMsg = "writing povray code";
     }
 
@@ -492,12 +499,12 @@ void Tree::dump() const {
     	// System.err.println("mMax:"+makeProgressMax+" m:"+makeProgress
     	//		   +" pMax:"+povrayProgressMax+" p:"+povrayProgress);
     	if (maxGenProgress == 0) return 0;
-    	if (genProgressRatio > 0.999999 || maxPovProgress == 0) {
+    	if (genProgressRatio > 0.999999 || maxOutProgress == 0) {
     		// System.err.println("progr: "+makeProgress/(float)makeProgressMax * makeProgressRatio);
     		return genProgress/(float)maxGenProgress * genProgressRatio;
     	} else {
     		return genProgress/(float)maxGenProgress * genProgressRatio
-			+ povProgress/(float)maxPovProgress * (1-genProgressRatio); 
+			+ outProgress/(float)maxOutProgress * (1-genProgressRatio); 
     	}
     }
     
@@ -542,8 +549,8 @@ void Tree::dump() const {
      * 
      * @param inc the increment for the progress
      */
-    public synchronized void incPovProgress(long inc) {
-    	povProgress +=inc;
+    public synchronized void incOutProgress(long inc) {
+    	outProgress +=inc;
     }
 
 };

@@ -26,7 +26,8 @@
 
 package net.sourceforge.arbaro.tree;
 
-import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.params.*;
@@ -46,6 +47,93 @@ class ErrorNotYetImplemented extends ArbaroError{
 
 
 /**
+ * Enumeration class that returns a list of stems and all theire substems
+ * and clones recursively.
+ */
+class StemEnumerator implements Enumeration {
+	private Enumeration stems;
+	private Enumeration indepth;
+	private int level; // level<0 means enumeration of all stems of all levels
+	           // level>=0 means enumeration of stems of the given level only
+	private int stemlevel;
+	
+	/**
+	 * creates a new StemEnumerator instance
+	 * 
+	 * @param aLevel if given, than enumerate only stems of this level, if less than 0 enumerate stems of all levels
+	 * @param startEnum the initial list of stems to enumerate
+	 */
+	public StemEnumerator(int aLevel, Enumeration startEnum, int aStemLevel) {
+		stems = startEnum;
+		indepth = null;
+		level = aLevel; // the level of the requested stems
+		stemlevel = aStemLevel; // the level of "stems"
+	}
+	
+	public boolean hasMoreElements() {
+		if (level<0) {
+			// enumerate all levels
+			// So are there more stems
+			// on this level or on some higher level?
+			return stems.hasMoreElements() ||
+			  (indepth != null && indepth.hasMoreElements());
+		} else if (level>stemlevel) {
+			find_stem_with_substems();
+			return indepth != null && indepth.hasMoreElements();
+		} else if (level==stemlevel) {
+				// consider clones and siblings
+			return (indepth != null && indepth.hasMoreElements()) ||
+				stems.hasMoreElements();
+		} else {
+			// shouldn't go here?
+			return false;
+		}
+	}
+
+	/**
+	 * Go through the stems enumeration and find a stem which has substems
+	 */
+	private void find_stem_with_substems() {
+		while ((indepth==null || !indepth.hasMoreElements()) &&
+				stems.hasMoreElements()) {
+			Stem s = (Stem)stems.nextElement();
+			indepth = s.allStems(level);
+		}
+	}
+
+	public Object nextElement() {
+		if (indepth != null && indepth.hasMoreElements()) {
+			return indepth.nextElement();
+		} else {
+			// there are no more substems on this stem,
+			// so proceed to the next stem
+			if (level<0) { // consider all levels
+				Stem s = (Stem)stems.nextElement();
+				indepth = s.allStems(level);
+				return s;
+			} else if (level>stemlevel) {
+				find_stem_with_substems();
+				// FIXME: when indepth==null, wrong Exception type
+				// is raised
+				return indepth.nextElement();
+			} else if (level==stemlevel) {
+				// consider clones
+				if (indepth != null && indepth.hasMoreElements()) {
+					return indepth.nextElement();
+				} else { // next sibling
+					Stem s = (Stem)stems.nextElement();
+					indepth = s.allStems(level);
+					return s;
+				}
+			} else {
+				// shouldn't go here?
+				throw new NoSuchElementException("AllStemsEnumerator");
+			}
+		}
+	}
+}
+
+/**
  * A helper class for making 3d trees, this class makes a stem
  * (trunk or branch). Most of the generation algorithm is here.
  * 
@@ -60,13 +148,15 @@ public class Stem {
 
     Transformation transf;
     //FIXME: trees with Levels>4 not yet tested!!!
-    int stemlevel; // the branch level, could be > 4
+    public int stemlevel; // the branch level, could be > 4
     double offset; // how far from the parent's base
   
-    java.util.Vector segments; // the segments forming the stem
+    // FIXME: instead of making them public, there should
+    // be iterators
+    public java.util.Vector segments; // the segments forming the stem
     java.util.Vector clones;      // the stem clones (for splitting)
     java.util.Vector substems;    // the substems
-    java.util.Vector leaves;     // the leaves
+    public java.util.Vector leaves;     // the leaves
 
     double length;
     double segment_len;
@@ -83,8 +173,99 @@ public class Stem {
     boolean prunetest; // flag for pruning cycles
 
     int index; // substem number
-    java.util.Vector clone_index; // clone number (Integers)
+    public java.util.Vector clone_index; // clone number (Integers)
+    
+    
+    private class AllStemsEnumerator implements Enumeration {
+    	private Enumeration subst;
+		private Enumeration clon;
+		private int level;
 
+//	    private class SubstemEnumerator extends StemEnumerator {
+//	    	public SubstemEnumerator(int level) {
+//	    		super(level,substems.elements());
+//	    	}
+//	    }
+//
+//	    private class CloneEnumerator extends StemEnumerator {
+//	    	public CloneEnumerator(int level) {
+//	    		super(level,clones.elements());
+//	    	}
+//	    }
+
+    	public AllStemsEnumerator(int level) {
+    		if ((level<=0 || level>stemlevel) && substems != null) {
+    			subst = new StemEnumerator(level,substems.elements(),stemlevel+1);
+    		}
+    		if (clones != null) {
+    			clon = new StemEnumerator(level,clones.elements(),stemlevel);
+    		}
+    	}
+    	
+    	public boolean hasMoreElements() {
+    		return (subst != null && subst.hasMoreElements()) ||
+				(clon != null && clon.hasMoreElements());
+    	}
+    	
+    	public Object nextElement() {
+    		if (clon != null && clon.hasMoreElements()) {
+    			return clon.nextElement();
+    		} else if (subst != null && subst.hasMoreElements()) {
+    			return subst.nextElement();
+    		} else {
+    			throw new NoSuchElementException("AllStemsEnumerator");
+    		}
+    	}
+    	
+
+    }
+    
+    private class AllLeavesEnumerator implements Enumeration {
+    	Enumeration stems;
+    	Stem stem;
+    	Enumeration leaves;
+    	
+    	public AllLeavesEnumerator() {
+    		stems = allStems(-1);
+    		stem = null;
+    		leaves=null;
+    	}
+    	
+    	public boolean hasMoreElements() {
+			find_stem_with_leaves();
+    			
+    		return leaves!=null && leaves.hasMoreElements();
+    	}
+    	
+    	private void find_stem_with_leaves() {
+    		while ((leaves==null || !leaves.hasMoreElements()) &&
+    				stems.hasMoreElements()) {
+    			stem = (Stem)stems.nextElement();
+    			if (stem.leaves != null) leaves = stem.leaves.elements();
+    			else leaves = null;
+    		}
+    	}
+    	
+    	public Object nextElement() {
+    		// if necessary this will find the next stem with leaves...
+    		if (hasMoreElements()) {
+    				return leaves.nextElement();
+    		} else {
+    			throw new NoSuchElementException("LeafEnumerator");
+    		}
+    	}
+    }
+    
+    
+    public Enumeration allStems(int level) {
+    	return new AllStemsEnumerator(level);
+    }
+    
+    public Enumeration allLeaves() {
+    		return new AllLeavesEnumerator();
+    }
+
+    
     /**
      * Creates a new stem
      * 
@@ -162,7 +343,7 @@ public class Stem {
      * 
      * @return The stem position in the tree as a string
      */
-    String tree_position() {
+    public String tree_position() {
 	// returns the position of the stem in the tree as a string, e.g. 0c0.1
 	// for the second substem of the first clone of the trunk
 	Stem stem = this;
@@ -883,7 +1064,7 @@ public class Stem {
 	    }
 	    // create leaves left and right of the middle
 	    for (int s=0; s<cnt/2; s++) {
-		for (int rot=1; rot !=-1; rot=-rot) {
+		for (int rot=1; rot >=-1; rot-=2) {
 		    Transformation transf1 = trf.roty(rot*(offsetangle+s*distangle
 							   +lpar_1.var(varangle)));
 		    transf1 = transf1.rotx(downangle+lpar_1.var(vardown));
@@ -1062,7 +1243,7 @@ public class Stem {
     		// FIXME? more correct it would be inc by 1 in the for block,
     		// but this would need more calls to synchronized incProgress
     		// if this works ok, don't change this
-    		tree.incPovProgress(substems.size());
+    		tree.incOutProgress(substems.size());
     		
     		for (int i=0; i<substems.size(); i++) {
     			((Stem)substems.elementAt(i)).add_to_mesh(mesh);
@@ -1071,269 +1252,7 @@ public class Stem {
     }
 
     
-    /**
-     * Output stem as Povray code when output=CONES
-     * 
-     * @param w the output stream
-     * @param level the stem level
-     * @throws Exception
-     */
-    void povray_stems(PrintWriter w, int level) throws Exception {
-	// output povray code for one stem level
-	
-	if (par.verbose) {
-	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
-	}
-	
-	String indent = "    ";
-	  
-	// output self and clones of same level
-	if (level==stemlevel) {
-	    if (par.output==Params.CONES) {
 
-		boolean union=false;
-		if (segments.size()>1 || (substems != null && substems.size()>0)) union = true;
-		
-		if (union) w.print(indent + "union { ");
-		w.println("/* " + tree_position() + " */");
-
-		for (int i=0; i<segments.size(); i++) {
-		    ((Segment)segments.elementAt(i)).povray(w);
-		}
-
-		if (clones != null) {
-		    for (int i=0; i<clones.size(); i++) {
-			((Stem)clones.elementAt(i)).povray_stems(w,level);
-		    }
-		}
-
-		if (union) w.println(indent + "}");
-
-	    } else if (par.output==Params.MESH) {
-		// do nothing, whole mesh is output by the tree
-
-	    }	else {
-		throw new ErrorNotYetImplemented("output method "+par.output
-						 +" not (yet) implemented.");
-	    }
-	}
-
-	// recursive call to substems
-	else if (level > stemlevel) {
-	    // FIXME? more correct it would be inc by 1 in the for block,
-	    // but this would need more calls to synchronized incProgress
-	    // if this work ok, don't change this
-	    tree.incPovProgress(substems.size());
-	    for (int i=0; i<substems.size(); i++) {
-		((Stem)substems.elementAt(i)).povray_stems(w,level);
-	    }
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray_stems(w,level);
-		}	  	
-	    }
-	}
-    }
-
-
-    /**
-     * Outputs the Povray code for the leaves as primitives (e.g. discs)
-     * 
-     * @param w the output stream
-     * @throws Exception
-     */
-    void povray_leaves_objs(PrintWriter w) throws Exception {
-	
-	if (par.verbose) {
-	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
-	}
-	
-	String indent = "    ";
-	  
-	// output leaves
-	if (stemlevel==par.Levels-1) {
-	    boolean union=false;
-	    if (leaves.size()>0) union=true;
-
-	    if (union) w.print(indent + "union { ");
-	    w.println( "/* " + tree_position() + " */");
-
-	    for (int i=0; i<leaves.size(); i++) {
-		((Leaf)leaves.elementAt(i)).povray(w);
-	    }
-
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray_leaves_objs(w);
-		}
-	    }
-
-	    if (union) w.println(indent + "}");
-	}
-	  		  
-	// recursive call to substems
-	else {
-	    // FIXME? more correct it would be inc by 1 in the for block,
-	    // but this would need more calls to synchronized incProgress
-	    // if this work ok, don't change this
-	    tree.incPovProgress(substems.size());
-	    for (int i=0; i<substems.size(); i++) {
-		((Stem)substems.elementAt(i)).povray_leaves_objs(w);
-	    }
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray_leaves_objs(w);
-		}	  	
-	    }
-	}
-    }
-
-
-    /**
-     * 	Outputs Povray code points section of the mesh2 object for the leaves
-     *  
-     * @param w the output stream
-     * @param mesh the mesh object
-     * @throws Exception
-     */
-    void povray_leaves_points(PrintWriter w, LeafMesh mesh) throws Exception {
-	
-	if (par.verbose) {
-	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
-	}
-	
-	String indent = "    ";
-	  
-	// output leaves points
-	if (stemlevel==par.Levels-1) {
-	    w.println( "/* " + tree_position() + " */");
-
-	    for (int i=0; i<leaves.size(); i++) {
-		mesh.povray_points(w,indent,((Leaf)leaves.elementAt(i)).transf);
-	    }
-
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray_leaves_points(w,mesh);
-		}
-	    }
-
-	}
-	  		  
-	// recursive call to substems
-	else {
-	    // FIXME? more correct it would be inc by 1 in the for block,
-	    // but this would need more calls to synchronized incProgress
-	    // if this work ok, don't change this
-	    tree.incPovProgress(substems.size());
-	    for (int i=0; i<substems.size(); i++) {
-		((Stem)substems.elementAt(i)).povray_leaves_points(w,mesh);
-	    }
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray_leaves_points(w,mesh);
-		}	  	
-	    }
-	}
-    }
-
-
-    /**
-     * Outputs Povray code points section of the mesh2 object for the leaves
-     * 
-     * @param w the output stream
-     * @param mesh the mesh object
-     * @throws Exception
-     */
-    void povray_leaves_faces(PrintWriter w, LeafMesh mesh) throws Exception {
-	
-	if (par.verbose) {
-	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
-	}
-	
-	String indent = "    ";
-	  
-	// output leaves points
-	if (stemlevel==par.Levels-1) {
-	    w.println( "/* " + tree_position() + " */");
-
-	    for (int i=0; i<leaves.size(); i++) {
-		mesh.povray_faces(w,indent);
-	    }
-
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray_leaves_faces(w,mesh);
-		}
-	    }
-
-	}
-	  		  
-	// recursive call to substems
-	else {
-	    // FIXME? more correct it would be inc by 1 in the for block,
-	    // but this would need more calls to synchronized incProgress
-	    // if this work ok, don't change this
-	    tree.incPovProgress(substems.size());
-	    for (int i=0; i<substems.size(); i++) {
-		((Stem)substems.elementAt(i)).povray_leaves_faces(w,mesh);
-	    }
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray_leaves_faces(w,mesh);
-		}	  	
-	    }
-	}
-    }
-
-
-    /**
-     * Outputs Povray code normals section of the mesh2 object for the leaves
-     *  
-     * @param w the output stream
-     * @param mesh the mesh object
-     * @throws Exception
-     */
-    void povray_leaves_normals(PrintWriter w, LeafMesh mesh) throws Exception {
-	
-	if (par.verbose) {
-	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
-	}
-	
-	String indent = "    ";
-	  
-	// output leaves points
-	if (stemlevel==par.Levels-1) {
-	    w.println( "/* " + tree_position() + " */");
-
-	    for (int i=0; i<leaves.size(); i++) {
-		mesh.povray_normals(w,indent,((Leaf)leaves.elementAt(i)).transf);
-	    }
-
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray_leaves_normals(w,mesh);
-		}
-	    }
-
-	}
-	  		  
-	// recursive call to substems
-	else {
-	    // FIXME? more correct it would be inc by 1 in the for block,
-	    // but this would need more calls to synchronized incProgress
-	    // if this work ok, don't change this
-	    tree.incPovProgress(substems.size());
-	    for (int i=0; i<substems.size(); i++) {
-		((Stem)substems.elementAt(i)).povray_leaves_normals(w,mesh);
-	    }
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray_leaves_normals(w,mesh);
-		}	  	
-	    }
-	}
-    }
 
 
     /**

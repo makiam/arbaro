@@ -25,18 +25,7 @@
 
 package net.sourceforge.arbaro.mesh;
 
-import java.io.PrintWriter;
 import net.sourceforge.arbaro.transformation.Vector;
-
-final class Vertex {
-    Vector point;
-    Vector normal;
-
-    Vertex(Vector pt, Vector norm) {
-	point = pt;
-	normal = norm;
-    }
-}
 
 public class MeshSection extends java.util.Vector {
     //A class holding a section of a mesh - 
@@ -176,44 +165,7 @@ public class MeshSection extends java.util.Vector {
 		 normal(left(i),here(i),down(i)))).normalize();
 	}
     }
-		
-    public void povray_points(PrintWriter w, String indent) {
-	for (int i=0; i<size(); i++) {
-	    w.print(((Vertex)elementAt(i)).point.povray());
-	    if (next != null || i<size()-1) {
-		w.print(",");
-	    }
-	    if (i % 3 == 2) {
-		// new line
-		w.println();
-		w.print(indent+"          ");
-	    } 
-	}
-    }
 
-    public void povray_normals(PrintWriter w, String indent) {
-	for (int i=0; i<size(); i++) {
-	    w.print(((Vertex)elementAt(i)).normal.povray());
-
-	    //DBG
-	    /*
-	    Vector v = ((Vertex)elementAt(i)).normal;
-	    String s = v.povray();
-	    if (s.length() < 10) {
-		System.err.println("STRANGENORMAL: x:"+v.getX()+" y:"+v.getY()+" z:"+v.getZ());
-	    }
-	    */
-
-	    if (next != null|| i<size()-1) {
-		w.print(",");
-	    }
-	    if (i % 3 == 2) {
-		// new line
-		w.println();
-		w.print(indent+"          ");
-	    } 
-	}
-    }
 };
 	
 

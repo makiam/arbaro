@@ -875,7 +875,7 @@ void Tree::setParams(Paramset &paramset) {
 		"the top of the first trunk segment. So with BaseSplits=2\n"+
 		"you get a trunk splitting into three parts. Other then\n"+
 		"with 0SegSplits the clones are evenly distributed over\n"+
-		"the 360°. So, if you want to use splitting, you should\n"+
+		"the 360ï¿½. So, if you want to use splitting, you should\n"+
 		"use BaseSplits for the first splitting to get a circular\n"+
 		"stem distribution (seen from top).\n");
 	
@@ -933,12 +933,13 @@ void Tree::setParams(Paramset &paramset) {
 	
 	flt4_par("nCurveV",-90,Double.POSITIVE_INFINITY,0,0,0,0,
 		 "CURVATURE","curving angle variation",
-		 "This is the variation of the curving angle. See nCurve, nCurveBack.\n");
+		 "This is the variation of the curving angle. See nCurve, nCurveBack.\n"+
+		 "A negative value means helical curvature\n");
 	
 	flt4_par("nCurveBack",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,
 		 "CURVATURE","curving angle upper stem half",
 		 "Using nCurveBack you can give the stem an S-like shape.\n"+
-		 "The first half of the stem the nCurve value is apllied.\n"+
+		 "The first half of the stem the nCurve value is applied.\n"+
 		 "The second half the nCurveBack value.\n"+
 		 "It's also possible to give both parameter the same sign to\n"+
 		 "get different curving over the stem length, instead of a S-shape\n");

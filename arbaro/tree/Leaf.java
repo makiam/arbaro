@@ -24,7 +24,6 @@
 
 package net.sourceforge.arbaro.tree;
 
-import java.io.PrintWriter;
 import java.lang.Math;
 
 import net.sourceforge.arbaro.transformation.*;
@@ -35,9 +34,9 @@ import net.sourceforge.arbaro.params.*;
  * 
  * @author Wolfram Diestel
  */
-class Leaf {
+public class Leaf {
  
-    Transformation transf;
+    public Transformation transf;
     Params par;
     //LevelParams lpar;
     
@@ -153,25 +152,6 @@ class Leaf {
 	return new String(ws);
     }
 
-    /**
-     * Outputs leaves as Povray code when primitive output is used
-     * 
-     * @param w the output stream
-     */
-    public void povray(PrintWriter w) {
-	// prints povray code for the leaf
-	String indent = whitespace(4);
-	  
-	//mid = self.position+self.direction # what about connecting stem len?
-	// FIXME: move "scale..." to tree
-	/*
-	w.println(indent + "object { " + par.getSpecies() + "_" + par.Seed 
-		  + "_leaf " + "scale <" + width + "," + length + "," + width + "> "
-		  + transf.povray()+"}");
-	*/
-	w.println(indent + "object { " + par.getSpecies() + "_" + par.Seed 
-		  + "_leaf " + transf.povray()+"}");
-    }
 
     /**
      * Makes the leave. Does nothing at the moment, because
