@@ -489,7 +489,8 @@ public class Stem {
 	    // add flaring (thicker stem base)
 	    //DBG("Stem.stem_radius(): Flare: "+par.Flare);
 	    if (par.Flare != 0) {
-		double flare = par.Flare * (Math.pow(100,(1-8*Z)) - 1) / 100.0 + 1;
+		double y = Math.max(0,1-8*z);
+		double flare = 1 + par.Flare * (Math.pow(100,y) - 1) / 100.0;
 		DBG("Stem.stem_radius(): Flare: "+flare+" h: "+h+" Z: "+Z);
 		radius = radius*flare;
 	    }
