@@ -42,10 +42,12 @@ public class MeshSection extends java.util.Vector {
 	
 	public MeshSection previos;
 	public MeshSection next;
+	public double mapV; // v-coordinate of uv-map
 	/*Stem stem;*/
 	
-	public MeshSection(/*Stem st,*/ int ptcnt) {
+	public MeshSection(/*Stem st,*/ int ptcnt, double v) {
 		super(ptcnt);
+		mapV = v;
 		/*stem = st;*/
 	}
 	
@@ -54,8 +56,8 @@ public class MeshSection extends java.util.Vector {
 	 * 
 	 * @param pt
 	 */
-	public void addPoint(Vector pt) {
-		addElement(new Vertex(pt,null));
+	public void addPoint(Vector pt, double uMap) {
+		addElement(new Vertex(pt,null,new UVVector(uMap,mapV)));
 	} 
 	
 	/**
@@ -67,6 +69,20 @@ public class MeshSection extends java.util.Vector {
 	public Vector pointAt(int i) {
 		return ((Vertex)elementAt(i)).point;
 	}
+	
+	/**
+	 * Returns the texture's uv-coordinates of the point.
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public UVVector uvAt(int i) {
+		if (i<size())
+			return ((Vertex)elementAt(i)).uv;
+		else
+			return new UVVector(1.0,mapV);
+	}
+	
 	
 	/**
 	 * Returns the normal of the vertex i.

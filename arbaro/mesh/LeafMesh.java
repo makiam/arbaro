@@ -51,8 +51,10 @@ abstract class LeafShape {
 	
 	void setPoint(int i, double x, double y, double z) {
 		Vector point = new Vector(x*width,y*width,(stemLen+z)*length);
+		UVVector uv = new UVVector(x+0.5,z);
 		if (vertices[i] == null) {
-			vertices[i] = new Vertex(point,null);
+			// FIXME: add uv-mapping
+			vertices[i] = new Vertex(point,null,uv);
 		} else {
 			vertices[i].point = point;
 		}
@@ -227,6 +229,16 @@ public class LeafMesh {
 	 */
 	public Vertex shapeVertexAt(int i) {
 		return shape.vertices[i];
+	}
+	
+	/**
+	 * Returns the i-th uv-vector.
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public UVVector shapeUVAt(int i) {
+		return shape.vertices[i].uv;
 	}
 	
 	/**

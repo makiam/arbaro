@@ -43,6 +43,7 @@ public class Segment {
 	double rad1;
 	public double rad2;
 	double length;
+	public double getLength() { return length; }
 	
 	Stem stem;
 	
@@ -119,10 +120,10 @@ public class Segment {
 		for (int i=0; i<cnt+1; i++) {
 			double pos = i*length/cnt;
 			// System.err.println("SUBSEG:stem_radius");
-			double rad = stem.getStemRadius(index*length + pos);
+			double rad = stem.stemRadius(index*length + pos);
 			// System.err.println("SUBSEG: pos: "+ pos+" rad: "+rad+" inx: "+index+" len: "+length);
 			
-			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad));
+			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad, pos));
 		}
 	}
 	
@@ -137,11 +138,11 @@ public class Segment {
 		Vector dir = posTo().sub(posFrom());
 		for (int i=0; i<cnt; i++) {
 			double pos = length-length/Math.pow(2,i);
-			double rad = stem.getStemRadius(index*length + pos);
+			double rad = stem.stemRadius(index*length + pos);
 			//stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad));
+			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad, pos));
 		}
-		subsegments.addElement(new Subsegment(posTo(),rad2));
+		subsegments.addElement(new Subsegment(posTo(),rad2,length));
 	}
 	
 	/**
@@ -153,12 +154,12 @@ public class Segment {
 	 */
 	private void makeFlare(int cnt) {
 		Vector dir = posTo().sub(posFrom());
-		subsegments.addElement(new Subsegment(posFrom(),rad1));
+		subsegments.addElement(new Subsegment(posFrom(),rad1,0));
 		for (int i=cnt-1; i>=0; i--) {
 			double pos = length/Math.pow(2,i);
-			double rad = stem.getStemRadius(index*length+pos);
+			double rad = stem.stemRadius(index*length+pos);
 			//self.stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad));
+			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad, pos));
 		}
 	}
 	
@@ -183,8 +184,8 @@ public class Segment {
 					i*length/cnt);
 			//self.stem.DBG("HELIX: pos: %s\n" % (str(pos)))
 			// this is the stem radius
-			double srad = stem.getStemRadius(index*length + i*length/cnt);
-			subsegments.addElement(new Subsegment(transf.apply(pos),srad));
+			double srad = stem.stemRadius(index*length + i*length/cnt);
+			subsegments.addElement(new Subsegment(transf.apply(pos), srad, i*length/cnt));
 		}
 	}
 	
@@ -261,7 +262,7 @@ public class Segment {
 	 * @param donttrf if true, the transformation is not applied to the section points
 	 */
 	private void createSectionMeshpoints(Vector pos, double rad, MeshPart meshpart,
-			boolean donttrf) {
+			boolean donttrf, double vMap) {
 		//h = (self.index+where)*self.stem.segment_len
 		//rad = self.stem.stem_radius(h)
 		// self.stem.DBG("MESH: pos: %s, rad: %f\n"%(str(pos),rad))
@@ -274,20 +275,20 @@ public class Segment {
 		
 		// if radius = 0 create only one point
 		if (rad<0.000001) {
-			MeshSection section = new MeshSection(1);
-			section.addPoint(trf.apply(new Vector(0,0,0)));
+			MeshSection section = new MeshSection(1,vMap);
+			section.addPoint(trf.apply(new Vector(0,0,0)),0.5);
 			meshpart.addSection(section);
 		} else { //create pt_cnt points
 			int pt_cnt = lpar.mesh_points;
-			MeshSection section = new MeshSection(pt_cnt);
+			MeshSection section = new MeshSection(pt_cnt,vMap);
 			//stem.DBG("MESH+LOBES: lobes: %d, depth: %f\n"%(self.tree.Lobes, self.tree.LobeDepth))
 			
 			for (int i=0; i<pt_cnt; i++) {
-				double angle = i*360/pt_cnt;
+				double angle = i*360.0/pt_cnt;
 				// for Lobes ensure that points are near lobes extrema, but not exactly there
 				// otherwise there are to sharp corners at the extrema
 				if (lpar.level==0 && par.Lobes != 0) {
-					angle -= 10/par.Lobes;
+					angle -= 10.0/par.Lobes;
 				}
 				
 				// create some point on the unit circle
@@ -317,7 +318,7 @@ public class Segment {
 					// FIXME: should apply z-rotation and translation only here
 					pt = trf.apply(pt); //FIXME: trf.getT(); // tranlate only
 				}
-				section.addPoint(pt);
+				section.addPoint(pt,angle/360.0);
 			}
 			//add section to the mesh part
 			meshpart.addSection(section);
@@ -335,22 +336,27 @@ public class Segment {
 		//pt_cnt = self.tree.meshpoints[self.stem.level]
 		//smooth = self.stem.level<=self.tree.smooth_mesh_level
 		
+		double vLength = stem.getLength()+stem.stemRadius(0)+stem.stemRadius(stem.length);
+		double vBase = + stem.stemRadius(0);
+		
 		if (meshpart.size() == 0) { // first segment, create lower meshpoints
 			Subsegment ss = (Subsegment)subsegments.elementAt(0);
 			// one point at the stem origin, with normal in reverse z-direction
 			createSectionMeshpoints(ss.pos,0,meshpart,
-					isFirstStemSegment() && lpar.level==0);
+					isFirstStemSegment() && lpar.level==0,0);
 			((MeshSection)meshpart.firstElement()).setNormalsToVector(transf.getZ().mul(-1));
 			
 			// more points around the stem origin
 			createSectionMeshpoints(ss.pos,ss.rad,meshpart,
-					isFirstStemSegment() && lpar.level==0);
+					isFirstStemSegment() && lpar.level==0,
+					vBase/vLength);
 		}
 		
 		// create meshpoints on top of each subsegment
 		for (int i=1; i<subsegments.size(); i++) {
 			Subsegment ss = (Subsegment)subsegments.elementAt(i);
-			createSectionMeshpoints(ss.pos,ss.rad,meshpart,false);
+			createSectionMeshpoints(ss.pos,ss.rad,meshpart,false,
+					(vBase+index*length+ss.height)/vLength);
 		}
 		
 		// System.err.println("MESHCREATION, segmindex: "+index);
@@ -358,7 +364,8 @@ public class Segment {
 		// close mesh with normal in z-direction
 		if (isLastStemSegment()) {
 			if (rad2>0.000001) {
-				createSectionMeshpoints(posTo(),0,meshpart,false);
+				createSectionMeshpoints(posTo(),0,meshpart,false,
+						1);
 			}
 			//DBG System.err.println("LAST StemSegm, setting normals to Z-dir");
 			((MeshSection)meshpart.lastElement()).setNormalsToVector(transf.getZ());

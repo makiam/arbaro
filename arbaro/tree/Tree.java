@@ -65,6 +65,8 @@ public class Tree {
 		+System.getProperty("file.separator")+"pov";
 	int renderW = 400;
 	int renderH = 600;
+	boolean outputStemUVs = false;
+	boolean outputLeafUVs = false;
 	
 	// the trunks (one for trees, many for bushes)
 	java.util.Vector trunks;
@@ -149,8 +151,10 @@ public class Tree {
 		trunks = new java.util.Vector();
 		outputType = other.getOutputType();
 		outputPath = other.getOutputPath();
-		renderW=other.getRenderW();
-		renderH=other.getRenderH();
+		renderW = other.getRenderW();
+		renderH = other.getRenderH();
+		outputStemUVs = other.outputStemUVs;
+		outputLeafUVs = other.outputLeafUVs;
 		newProgress();
 	}
 	
@@ -254,8 +258,12 @@ public class Tree {
 			output = new DXFOutput(this,w,progress);
 		} else if (outputType == OBJ) {
 			output = new OBJOutput(this,w,progress);
+			((OBJOutput)output).outputStemUVs = outputStemUVs;
+			((OBJOutput)output).outputLeafUVs = outputLeafUVs;
 		} else {
 			output = new PovMeshOutput(this,w,progress);
+			((PovMeshOutput)output).outputStemUVs = outputStemUVs;
+			((PovMeshOutput)output).outputLeafUVs = outputLeafUVs;
 		}
 		output.write();
 		
@@ -266,7 +274,7 @@ public class Tree {
 	public Mesh createStemMesh() throws Exception {
 		progress.beginPhase("Creating mesh",getStemCount());
 		
-		Mesh mesh = new Mesh();
+		Mesh mesh = new Mesh(params.Levels);
 		for (int t=0; t<trunks.size(); t++) {
 			((Stem)trunks.elementAt(t)).addToMesh(mesh);
 		}
@@ -461,6 +469,22 @@ public class Tree {
 		return renderW;
 	}
 	
+	public void setOutputStemUVs(boolean oUV) {
+		outputStemUVs = oUV;
+	}
+	
+	public boolean getOutputStemUVs() {
+		return outputStemUVs;
+	}
+
+	public void setOutputLeafUVs(boolean oUV) {
+		outputLeafUVs = oUV;
+	}
+
+	public boolean getOutputLeafUVs() {
+		return outputLeafUVs;
+	}
+
 	public Progress getProgress() {
 		return progress;
 	}

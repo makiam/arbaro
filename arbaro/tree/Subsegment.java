@@ -38,10 +38,12 @@ import net.sourceforge.arbaro.transformation.*;
 public class Subsegment { 
 	// a Segment can have one or more Subsegments
 	public Vector pos; 
+	public double height; // height relative to segment's base 
 	public double rad; 
 	
-	public Subsegment(Vector p, double r) {
+	public Subsegment(Vector p, double r, double h) {
 		pos = p;
-		rad = r; 
+		rad = r;
+		height = h;
 	}
 }

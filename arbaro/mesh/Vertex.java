@@ -36,9 +36,11 @@ import net.sourceforge.arbaro.transformation.Vector;
 public final class Vertex {
     public Vector point;
     public Vector normal;
+    public UVVector uv; // uv-coordinate 
 
-    Vertex(Vector pt, Vector norm) {
-	point = pt;
-	normal = norm;
+    Vertex(Vector pt, Vector norm, UVVector uv_) {
+    	point = pt;
+    	normal = norm;
+    	uv = uv_;
     }
 }

@@ -38,11 +38,22 @@ package net.sourceforge.arbaro.mesh;
  * 
  * @author Wolfram Diestel
  */
+
+// FIXME: a vector can hold only MAX_INT elements,
+// this may exeeded for big trees like weeping willow:
+// 25*10*300 = 75.000 - really there are less stems,
+// because only the longest have the maximum number
+// of substems.
 public class Mesh extends java.util.Vector {
 	final boolean debugMesh = false;
-	
-	
-	public Mesh() { }
+	public int[] firstMeshPart; // first mesh part of each level 
+		
+	public Mesh(int levels) { 
+		firstMeshPart = new int[levels];
+		for (int i=0; i<levels; i++) {
+			firstMeshPart[i]=-1;
+		}
+	}
 	
 	/**
 	 * Adds a mesh part (i.e. a stem) to the mesh.
@@ -51,6 +62,8 @@ public class Mesh extends java.util.Vector {
 	 */
 	public void addMeshpart(MeshPart meshpart) {
 		addElement(meshpart);
+		if (firstMeshPart[meshpart.stem.stemlevel]<0) 
+			firstMeshPart[meshpart.stem.stemlevel] = size()-1;
 	}
 	
 	/**
@@ -82,7 +95,37 @@ public class Mesh extends java.util.Vector {
 		}
 		return cnt;
 	}
+
+	/**
+	 * Returns the total number of uv-vectors, that has to be
+	 * created for the mesh. Povray wants to know this
+	 * before the uv vectors itself.
+	 * 
+	 * @return
+	 */
+	public int uvCount()  {
+		int cnt = 0;
+		
+		for (int i=0; i<firstMeshPart.length; i++) {
+			cnt += ((MeshPart)elementAt(firstMeshPart[i])).uvCount();
+		}
+		return cnt;
+	}
 	
+	/**
+	 * Returns the index of the first uv-vector, of the given level
+	 * 
+	 * @return
+	 */
+	public int firstUVIndex(int level) {
+		int cnt = 0;
+		
+		for (int i=0; i<level ; i++) {
+			cnt += ((MeshPart)elementAt(firstMeshPart[i])).uvCount();
+		}
+		return cnt;
+	}
+
 };    
 
 

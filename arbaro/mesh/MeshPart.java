@@ -128,6 +128,22 @@ public class MeshPart extends java.util.Vector {
 	}
 	
 	/**
+	 * Returns the number of uv vectors for the mesh part
+	 * 
+	 * @return
+	 */
+	public int uvCount() {
+		int cnt=0;
+		
+		for (int i = 0; i<size(); i++) {
+			cnt += ((MeshSection)elementAt(i)).size()==1 ?
+					1 : ((MeshSection)elementAt(i)).size()+1;
+		}
+		return cnt;
+	}
+	
+	
+	/**
 	 * Returns the number of faces, that have to be created - povray wants 
 	 * to know this before the faces itself
 	 *
@@ -217,6 +233,8 @@ public class MeshPart extends java.util.Vector {
 				faces.addElement(new VFace(
 							section.pointAt(0),
 							next.pointAt(i),
+// FIXME: this %next.size should be handled in MeshSection.pointAt,
+// this would be easier to use							
 							next.pointAt((i+1)%next.size())));
 			}
 		} else if (next.size() == 1) {
@@ -246,7 +264,100 @@ public class MeshPart extends java.util.Vector {
 		}
 		return faces;
 	}
+
 	
+	/**
+	 * Returns the texture's uv-coordinates of the triangles between a section and the next
+	 * section.
+	 * 
+	 * @param inx
+	 * @param section
+	 * @return
+	 * @throws ErrorMesh
+	 */
+	public java.util.Vector uvFaces(long inx, MeshSection section) throws ErrorMesh {
+		MeshSection next = section.next;
+		java.util.Vector faces = new java.util.Vector();
+		
+		if (section.size() ==1 && next.size() == 1) {
+			// normaly this shouldn't occur, only for very small radius?
+			// I should warn about this
+			System.err.println("WARNING: two adjacent mesh sections with only one point.");
+			return faces;
+		}
+		
+		if (section.size() == 1) {
+			for (int i=0; i<next.size(); i++) {
+				faces.addElement(new Face(inx,inx+1+i,inx+1+(i+1)));
+			}
+		} else if (next.size() == 1) {
+			long ninx = inx+section.size()+1;
+			for (int i=0; i<section.size(); i++) {
+				faces.addElement(new Face(inx+i,ninx,inx+(i+1)));
+			}
+		} else { // section and next must have same point_cnt>1!!!
+			long ninx = inx+section.size()+1;
+			if (section.size() != next.size()) {
+				throw new ErrorMesh("Error: vertice numbers of two sections "
+						+ "differ ("+inx+","+ninx+")");
+			}
+			for (int i=0; i<section.size(); i++) {
+				faces.addElement(new Face(inx+i,ninx+i,inx+(i+1)));
+				faces.addElement(new Face(inx+(i+1),ninx+i,
+						ninx+(i+1)));
+			}
+		}
+		return faces;
+	}
+
+/*	
+	public java.util.Vector uvFaces(MeshSection section) throws ErrorMesh {
+		MeshSection next = section.next;
+		java.util.Vector faces = new java.util.Vector();
+		
+		if (section.size() ==1 && next.size() == 1) {
+			// normaly this shouldn't occur, only for very small radius?
+			// I should warn about this
+			System.err.println("WARNING: two adjacent mesh sections with only one point.");
+			return faces;
+		}
+		
+		if (section.size() == 1) {
+			for (int i=0; i<next.size(); i++) {
+				faces.addElement(new UVFace(
+							section.uvAt(0),
+							next.uvAt(i),
+							next.uvAt(i+1)
+							));
+			}
+		} else if (next.size() == 1) {
+			for (int i=0; i<section.size(); i++) {
+				faces.addElement(new UVFace(
+						section.uvAt(i),
+						next.uvAt(0),
+						section.uvAt(i+1)
+						));
+			}
+		} else { // section and next must have same point_cnt>1!!!
+			if (section.size() != next.size()) {
+				throw new ErrorMesh("Error: vertice numbers of two sections "
+						+ "differ ("+section.size()+","+next.size()+")");
+			}
+			for (int i=0; i<section.size(); i++) {
+				faces.addElement(new UVFace(
+						section.uvAt(i),
+						next.uvAt(i),
+						section.uvAt(i+1)
+						));
+				faces.addElement(new UVFace(
+						section.uvAt(i+1),
+						next.uvAt(i),
+						next.uvAt(i+1)));
+			}
+		}
+		return faces;
+	}
+*/
 	
 };
 

@@ -172,7 +172,8 @@ public class Stem {
 	java.util.Vector substems;    // the substems
 	java.util.Vector leaves;     // the leaves
 	
-	double length;
+	double length; 
+	public double getLength() { return length; }
 	double segmentLength;
 	int segmentCount;
 	double baseRadius;
@@ -473,11 +474,11 @@ public class Stem {
 		
 		// makes the stem with all its segments, substems, clones and leaves
 		segmentCount = lpar.nCurveRes;
-		length = getStemLength();
+		length = stemLength();
 		segmentLength = length/lpar.nCurveRes;
-		baseRadius = getStemBaseRadius();
+		baseRadius = stemBaseRadius();
 		if (stemlevel==0) {
-			double baseWidth = Math.max(baseRadius,getStemRadius(0));
+			double baseWidth = Math.max(baseRadius,stemRadius(0));
 			minMaxTest(new Vector(baseWidth,baseWidth,0));
 		}
 		
@@ -538,7 +539,7 @@ public class Stem {
 			
 			// calc new values dependent from length
 			segmentLength = length/lpar.nCurveRes;
-			baseRadius = getStemBaseRadius();
+			baseRadius = stemBaseRadius();
 			
 			if (length>MIN_STEM_LEN && baseRadius < MIN_STEM_RADIUS)
 				System.err.println("WARNING: stem radius ("+baseRadius+") too small for stem "+getTreePosition());
@@ -565,7 +566,7 @@ public class Stem {
 	 * 
 	 * @return the stem length
 	 */
-	double getStemLength() {
+	double stemLength() {
 		if (stemlevel == 0) { // trunk
 			return (lpar.nLength + lpar.var(lpar.nLengthV)) * par.scale_tree;
 		} else if (stemlevel == 1) {
@@ -602,12 +603,12 @@ public class Stem {
 			}
 			
 			// curving
-			trf=getNewDirection(trf,s);
+			trf=newDirection(trf,s);
 			TRF("Stem.make_segments(): after new_direction ",trf);
 			
 			// segment radius
-			double rad1 = getStemRadius(s*segmentLength);
-			double rad2 = getStemRadius((s+1)*segmentLength);
+			double rad1 = stemRadius(s*segmentLength);
+			double rad2 = stemRadius((s+1)*segmentLength);
 			
 			// create new segment
 			Segment segment = new Segment(this,s,trf,rad1,rad2);
@@ -672,7 +673,7 @@ public class Stem {
 	 *              first stem segment
 	 * @return The new transformation of the current segment
 	 */
-	Transformation getNewDirection(Transformation trf, int nsegm) {
+	Transformation newDirection(Transformation trf, int nsegm) {
 		// next segments direction
 		
 		// The first segment shouldn't get another direction 
@@ -750,7 +751,7 @@ public class Stem {
 	 * 
 	 * @return
 	 */
-	double getStemBaseRadius() {
+	double stemBaseRadius() {
 		if (stemlevel == 0) { // trunk
 			// radius at the base of the stem
 			// I think nScale+-nScaleV should applied to the stem radius but not to base radius(?)
@@ -758,7 +759,7 @@ public class Stem {
 			//+ var(par._0ScaleV))
 		} else {
 			// max radius is the radius of the parent at offset
-			double max_radius = parent.getStemRadius(offset);
+			double max_radius = parent.stemRadius(offset);
 			
 			// FIXME: RatioPower=0 seems not to work here
 			double radius = parent.baseRadius * Math.pow(length/parent.length,par.RatioPower);
@@ -772,7 +773,7 @@ public class Stem {
 	 * @param h the offset at which the radius is calculated
 	 * @return the stem radius at this position
 	 */
-	public double getStemRadius(double h) {
+	public double stemRadius(double h) {
 		DBG("Stem.stem_radius("+h+") base_rad:"+baseRadius);
 		
 		double angle = 0; //FIXME: add an argument "angle" for Lobes, 
@@ -916,7 +917,7 @@ public class Stem {
 			subst_per_segm = substemsPerSegment;
 			
 			if (segment.index==0) {
-				offs = parent.getStemRadius(offset)/segmentLength;
+				offs = parent.stemRadius(offset)/segmentLength;
 			} else { offs = 0; }
 			
 		} else if (segment.index*segmentLength > par.BaseSize*length) {
@@ -958,7 +959,7 @@ public class Stem {
 			DBG("Stem.make_substems(): offset: "+ offset+" segminx: "+segment.index
 					+" where: "+where+ " seglen: "+segmentLength);
 			
-			Transformation trf = getSubstemDirection(segment.transf,offset);
+			Transformation trf = substemDirection(segment.transf,offset);
 			trf = segment.substemPosition(trf,where);
 			
 			// create new substem
@@ -977,7 +978,7 @@ public class Stem {
 	 * @param offset The offset of the substem from the base of the currents stem
 	 * @return The direction of the substem
 	 */
-	Transformation getSubstemDirection(Transformation trf, double offset) {
+	Transformation substemDirection(Transformation trf, double offset) {
 		LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
 		//lev = min(level+1,3);
 		
@@ -1025,7 +1026,7 @@ public class Stem {
 			
 			double offs;
 			if (segment.index==0) {
-				offs = parent.getStemRadius(offset)/segmentLength;
+				offs = parent.stemRadius(offset)/segmentLength;
 			} else {
 				offs = 0;
 			}
@@ -1042,7 +1043,7 @@ public class Stem {
 				// offset from stembase
 				double loffs = (segment.index+where)*segmentLength;
 				// get a new direction for the leaf
-				Transformation trf = getSubstemDirection(segment.transf,loffs);
+				Transformation trf = substemDirection(segment.transf,loffs);
 				// translate it to its position on the stem
 				trf = trf.translate(segment.transf.getZ().mul(where*segmentLength));
 				
