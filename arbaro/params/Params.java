@@ -251,15 +251,46 @@ public class Params {
 	// the default seed
 	Seed = 13;
 
+	// create paramDB
 	paramDB = new Hashtable();
-
 	levelParams = new LevelParams[4];
 	for (int l=0; l<4; l++) {
 	    levelParams[l] = new LevelParams(l,paramDB);
 	}
-
 	register_params();
     };
+
+    public Params(Params other) {
+	
+
+	// copy values from other
+	debug = other.debug;
+	verbose = other.verbose;
+	ignoreVParams = other.ignoreVParams;
+	stopLevel = other.stopLevel;
+	species = other.species;
+	output = other.output;
+	Seed = other.Seed;
+	Smooth = other.Smooth;
+
+	// create paramDB
+	paramDB = new Hashtable();
+	levelParams = new LevelParams[4];
+	for (int l=0; l<4; l++) {
+	    levelParams[l] = new LevelParams(l,paramDB);
+	}
+	register_params();
+
+	// copy param values
+	for (Enumeration e = paramDB.elements(); e.hasMoreElements();) {
+	    AbstractParam p = ((AbstractParam)e.nextElement());
+	    try {
+		p.setValue(other.getParam(p.name).getValue());
+	    } catch (ErrorParam err) {
+		System.err.println("Error copying params: "+err.getMessage());
+	    }
+	}
+    }
 
     public void setSpecies(String sp) {
 	species = sp;
@@ -913,6 +944,10 @@ void Tree::setParams(Paramset &paramset) {
 	} catch (Exception e) {
 	    throw new ErrorParam(e.getMessage());
 	}
+    }
+
+    public AbstractParam getParam(String parname) {
+	return (AbstractParam)paramDB.get(parname);
     }
 
     public void addChangeListener(ChangeListener l) {

@@ -48,6 +48,7 @@ class ErrorNotYetImplemented extends ArbaroError{
 public class Stem {
     // A helper class for making 3d trees, this class makes a stem
     // (trunk or branch)
+    Tree tree;
     Params par;
     LevelParams lpar;
     Stem parent; // the parent stem
@@ -79,8 +80,9 @@ public class Stem {
     int index; // substem number
     java.util.Vector clone_index; // clone number (Integers)
 
-    public Stem(Params params, LevelParams lparams, Stem parnt, int stlev,
+    public Stem(Tree tr, Params params, LevelParams lparams, Stem parnt, int stlev,
 		Transformation trf, double offs) /* offs=0 */ {
+	tree = tr;
 	par = params;
 	lpar = lparams;
 	parent = parnt;
@@ -149,7 +151,7 @@ public class Stem {
 	 
     Stem clone(Transformation trf, int start_segm) {
 	// creates a clone stem with same atributes as this stem
-	Stem clone = new Stem(par,lpar,parent,stemlevel,trf,offset);
+	Stem clone = new Stem(tree,par,lpar,parent,stemlevel,trf,offset);
 	clone.segment_len = segment_len;
 	clone.segment_cnt = segment_cnt;
 	clone.length = length;
@@ -277,8 +279,10 @@ public class Stem {
 	}
     }
 
+    // makes the segments of the stem
     int make_segments(int start_seg,int end_seg) {
-	// makes the segments of the stem
+	if (stemlevel==1) tree.setProgress();
+	
 	if (par.verbose) {
 	    if (! prunetest) {
 		if (stemlevel==0) System.err.print("=");
@@ -290,6 +294,8 @@ public class Stem {
 	Transformation trf = transf;
 	  	
 	for (int s=start_seg; s<end_seg; s++) {
+	    if (stemlevel==0) tree.setProgress();
+	
 	    if (! prunetest && par.verbose) {
 		if (stemlevel==0) System.err.print("|");
 	    }
@@ -643,7 +649,7 @@ public class Stem {
 	    //self.TRF("make_substems subst trf",transf)
 	    
 	    // create new substem
-	    Stem substem = new Stem(par,lpar_1,this,stemlevel+1,trf,offset);
+	    Stem substem = new Stem(tree,par,lpar_1,this,stemlevel+1,trf,offset);
 	    substem.index=substems.size();
 	    DBG("Stem.make_substems(): make new substem");
 	    substem.make();

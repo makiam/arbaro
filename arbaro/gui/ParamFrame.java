@@ -171,7 +171,7 @@ public class ParamFrame {
 	menu.add(new JSeparator());
 
 	// Save POV file
-	item = new JMenuItem("Save POVray file...");
+	item = new JMenuItem("Create tree...");
 	item.setMnemonic('P');
 	item.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -277,6 +277,7 @@ public class ParamFrame {
 
 
     void FileSavePOV() {
+	/*
 	JFileChooser chooser = new JFileChooser();
 	chooser.setCurrentDirectory(new File(System.getProperty("user.dir")+"/pov"));
 
@@ -293,6 +294,8 @@ public class ParamFrame {
 					      JOptionPane.ERROR_MESSAGE);
 	    }
 	}
+	*/
+	new PovDialog(tree);
     }
 }
 

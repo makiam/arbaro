@@ -45,7 +45,12 @@ public class Tree {
 
     public Tree() {
 	params = new Params();
-   }
+    }
+
+    public Tree(Tree other) {
+	// copy params from another tree
+	params = new Params(other.params);
+    }
     
     public void make() throws Exception {
 	params.prepare();
@@ -68,11 +73,12 @@ public class Tree {
 
 	// create the trunk and all its stems and leaves
 	Transformation transf = new Transformation();
-	trunk = new Stem(params,params.levelParams[0],null,0,transf,0);
+	trunk = new Stem(this,params,params.levelParams[0],null,0,transf,0);
  	trunk.index=0;
 	trunk.make();
 
 	// making finished
+	setProgress(getProgressMax());
 	if (params.verbose) System.err.println(".");
     }
   
@@ -196,6 +202,42 @@ void Tree::dump() const {
 
     public String getSpecies() {
 	return params.getSpecies();
+    }
+
+    public int getSeed() {
+	return params.Seed;
+    }
+
+    public void setSeed(int s) {
+	params.Seed = s;
+    }
+
+    public double getSmooth() {
+	return params.Smooth;
+    }
+
+    public void setSmooth(double s) {
+	params.Smooth = s;
+    }
+
+    public long getProgressMax() {
+	return ((IntParam)params.getParam("0Branches")).intValue()
+	    * ((IntParam)params.getParam("0CurveRes")).intValue()
+	    * (((IntParam)params.getParam("1Branches")).intValue()); //+1);
+    }
+
+
+    private long progress;
+    public synchronized long getProgress() {
+	return progress;
+    }
+    public synchronized void setProgress() {
+	// how much of 0Branches*0CurveRes*(1Branches+1) are created yet
+	progress = 1 //FIXME: only one trunk at the moment, later use trunks.size()
+	    * trunk.segments.size() * (trunk.substems.size()+1);
+    }
+    public synchronized void setProgress(long prog) {
+	progress = prog;
     }
 
 };
