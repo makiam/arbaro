@@ -369,8 +369,8 @@ public class Params {
 	PruneWidthPeak = dbl_param("PruneWidthPeak");
 	_0BaseSplits = int_param("0BaseSplits");
 
-	for (int i=0; i<Levels; i++) {
-	    levelParams[i].fromDB();
+	for (int i=0; i<=Math.min(Levels,3); i++) {
+	    levelParams[i].fromDB(i==Levels); // i==Levels => leaf level only
 	}
     }
 

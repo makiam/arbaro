@@ -26,6 +26,8 @@ package net.sourceforge.arbaro;
 
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.File;
 
 import net.sourceforge.arbaro.params.Params;
 
@@ -81,6 +83,7 @@ public class arbaro {
 	p("                         the tree and writing it as povray code. Useful for converting a");
 	p("                         simple parameter list to a XML file: ");
 	p("                            arbaro.py --treecfg -x < mytree.cfg > mytree.xml");
+	p("    -p|--scene           output Povray scene file <species>.pov");
 	p();
 	p("example:");
 	p();
@@ -103,11 +106,9 @@ public class arbaro {
 	return "";
     }
 
-    public static void main (String [] args) throws Exception {
+    public static void main (String [] args) throws Exception{
 	//	try {
 	tree = new Tree();
-      
-	programname();
 
 	boolean quiet = false;
 	boolean debug = false;
@@ -116,6 +117,7 @@ public class arbaro {
 	int output=Params.MESH;
 	double smooth=-1;
 	int input = XMLinput;
+	String scene_file = null;
 
 	for (int i=0; i<args.length; i++) {
 
@@ -142,6 +144,8 @@ public class arbaro {
 		output = XMLoutput;
 	    } else if (args[i].equals("-r") || args[i].equals("--treecfg")) {
 		input = CFGinput;
+	    } else if (args[i].equals("-p") || args[i].equals("--scene")) {
+		scene_file = args[++i];
 	    }
 	}
 		       
@@ -155,13 +159,18 @@ public class arbaro {
 	
 	//########## read params from XML file ################
 	
-	
+	if (! quiet) {
+	    programname();
+	}
+
 	tree.params.debug=debug;
 	tree.params.output=output;
 	// put here or later?
 	if (smooth>=0) tree.params.Smooth = smooth;
 	
-	System.err.println("Reading parameters from STDIN...");
+	if (! quiet) {
+	    System.err.println("Reading parameters from STDIN...");
+	}
 	
 	if (input == CFGinput) tree.params.readFromCfg(System.in);
 	else tree.params.readFromXML(System.in);
@@ -173,23 +182,24 @@ public class arbaro {
 	tree.params.Seed=seed;
 	tree.params.stopLevel = levels;
 	
-	PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));   
-	
+	PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
+
 	if (output==XMLoutput) {
-	    
-	    System.err.println("Writing parameters to STDOUT...");
 	    // save parameters in XML file, don't create tree
 	    tree.params.toXML(out);
-	    
 	} else {
-	    
 	    tree.make();
 	    tree.povray(out);
-	    System.exit(0);
 	}
 
-    };
-}
+	if (scene_file != null) {
+	    if (! quiet) System.err.println("Writing Povray scene to "+scene_file+"...");
+	    PrintWriter scout = new PrintWriter(new FileWriter(new File(scene_file)));
+	    tree.povray_scene(scout);
+	}
+
+    }
+};
 
   
 

@@ -26,6 +26,10 @@
 package net.sourceforge.arbaro;
 
 import java.io.PrintWriter;
+
+import java.text.NumberFormat;
+import net.sourceforge.arbaro.params.FloatFormat;
+
 import net.sourceforge.arbaro.params.Params;
 import net.sourceforge.arbaro.transformation.Transformation;
 
@@ -73,16 +77,25 @@ class Tree {
 	if (params.verbose) System.err.println(".");
     }
   
+    private String pov_prefix() {
+	return params.species + "_" + params.Seed + "_";
+    }
+
     public void povray(PrintWriter w) throws Exception {
+	NumberFormat frm = FloatFormat.getInstance();
+
 	// output povray code
 	if (params.verbose) System.err.print("writing povray code ");
 	  
+	// tree scale
+	w.println("#declare " + pov_prefix() + "scale = " + frm.format(params.scale_tree) + ";");
+
 	// leaf declaration
 	if (params.Leaves!=0) povray_leaf(w);
 	  	  
 	// stems
 	for (int level=0; level < params.Levels; level++) {
-	    w.println("#declare " + params.species + "_" + params.Seed + "_stems_"
+	    w.println("#declare " + pov_prefix() + "stems_"
 		      + level + " = union {"); 
 	    trunk.povray(w,level);
 	    w.println("}");
@@ -90,7 +103,7 @@ class Tree {
 
 	// leaves
 	if (params.Leaves!=0) {
-	    w.println("#declare " + params.species + "_" + params.Seed + "_leaves = union {");
+	    w.println("#declare " + pov_prefix() + "leaves = union {");
 	    // FIXME split STem.povay into Stem.povray_stems and STem.povray_leaves
 	    trunk.povray(w,params.Levels);
 	    w.println("}");
@@ -100,9 +113,9 @@ class Tree {
 	}
 
 	// all stems together
-	w.println("#declare " + params.species + "_" + params.Seed + "_stems = union {"); 
+	w.println("#declare " + pov_prefix() + "stems = union {"); 
 	for (int level=0; level < params.Levels; level++) {
-	    w.println("  object {" + params.species + "_" + params.Seed + "_stems_" 
+	    w.println("  object {" + pov_prefix() + "stems_" 
 		      + level + "}");
 	}
 	w.println("}");
@@ -113,10 +126,36 @@ class Tree {
     
     void povray_leaf(PrintWriter w) {
 	w.println("#include \"arbaro.inc\"");
-	w.println("#declare " + params.species + "_" + params.Seed + "_leaf = " +
+	w.println("#declare " + pov_prefix() + "leaf = " +
 		"object { Arb_leaf_" + (params.LeafShape.equals("0")? "disc" : params.LeafShape)
 		+ " translate " + (params.LeafStemLen+0.5) + "*y }");
     }	  	
+
+    public void povray_scene(PrintWriter w) {
+	w.println("// render as 600x400");
+
+	w.println("#include \"" + params.species + ".inc\"");
+	w.println("background {rgb <0.95,0.95,0.9>}");
+
+	w.println("light_source { <5000,5000,-3000>, rgb 1.2 }");
+	w.println("light_source { <-5000,2000,3000>, rgb 0.5 shadowless }");
+
+	w.println("#declare HEIGHT = " + pov_prefix() + "scale * 1.3;");
+	w.println("#declare WIDTH = 2*HEIGHT/3;");
+
+	w.println("camera { orthographic location <0, HEIGHT*0.45, -100>");
+	w.println("         right <WIDTH, 0, 0> up <0, HEIGHT, 0>");
+	w.println("         look_at <0, HEIGHT*0.45, -80> }");
+
+	w.println("union { ");
+	w.println("         object { " + pov_prefix() + "stems");
+	w.println("                pigment {color rgb 0.9} }"); 
+	w.println("         object { " + pov_prefix() + "leaves");
+	w.println("                pigment {color rgb 1} }");
+	w.println("         finish { ambient 0.15 diffuse 0.8 } }");
+	w.flush();
+    }
+
 
     /*
 void Tree::dump() const {

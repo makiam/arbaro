@@ -660,7 +660,7 @@ public class Stem implements StemInterface {
 	// get rotation angle
 	double rotangle;
 	if (lpar_1.nRotate>=0) { // rotating substems
-	    substem_rotangle += lpar_1.nRotate+lpar_1.var(lpar_1.nRotateV) % 360;
+	    substem_rotangle = (substem_rotangle + lpar_1.nRotate+lpar_1.var(lpar_1.nRotateV)+360) % 360;
 	    rotangle = substem_rotangle;
 	} else { // alternating substems
 	    if (Math.abs(substem_rotangle) != 1) substem_rotangle = 1;
@@ -679,6 +679,7 @@ public class Stem implements StemInterface {
 	}  
 	//self.DBG("substem_direction %d: down %s, rot %s, ssrot: %s\n" % (level,str(downangle),str(rotangle),
 	//	  	str(self.substem_rotangle)))
+	DBG("Stem.substem_direction(): down: "+downangle+" rot: "+rotangle);
 	  
 	return trf.rotxz(downangle,rotangle);
     }

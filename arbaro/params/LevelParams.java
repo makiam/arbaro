@@ -199,18 +199,20 @@ public class LevelParams {
 	}   
     }
     
-    void fromDB() throws ErrorParam {
-	nTaper = dbl_param("nTaper");
-	nCurveRes = int_param("nCurveRes");
-	nCurve = dbl_param("nCurve");
-	nCurveV = dbl_param("nCurveV");
-	nCurveBack = dbl_param("nCurveBack");
-	nLength = dbl_param("nLength");
-	nLengthV = dbl_param("nLengthV");
-	nSegSplits = dbl_param("nSegSplits");
-	nSplitAngle = dbl_param("nSplitAngle");
-	nSplitAngleV = dbl_param("nSplitAngleV");
-	nBranches = int_param("nBranches");
+    void fromDB(boolean leafLevelOnly) throws ErrorParam {
+	if (! leafLevelOnly) {
+	    nTaper = dbl_param("nTaper");
+	    nCurveRes = int_param("nCurveRes");
+	    nCurve = dbl_param("nCurve");
+	    nCurveV = dbl_param("nCurveV");
+	    nCurveBack = dbl_param("nCurveBack");
+	    nLength = dbl_param("nLength");
+	    nLengthV = dbl_param("nLengthV");
+	    nSegSplits = dbl_param("nSegSplits");
+	    nSplitAngle = dbl_param("nSplitAngle");
+	    nSplitAngleV = dbl_param("nSplitAngleV");
+	    nBranches = int_param("nBranches");
+	}
 	nBranchDist = dbl_param("nBranchDist");
 	nBranchDistV = dbl_param("nBranchDistV");
 	nDownAngle = dbl_param("nDownAngle");
