@@ -26,63 +26,7 @@
 
 package net.sourceforge.arbaro.params;
 
-abstract class Param {
-    String name;
-    String short_desc;
-    String long_desc;
-
-    public Param(String nam, String sh, String lng) {
-	name = nam;
-	short_desc = sh;
-	long_desc = lng;
-    }
-
-    public abstract void setValue(String val) throws ErrorParam;
-
-    protected void warn(String warning) {
-	System.err.println("WARNING: "+warning);
-    }
-}
-
-class IntParam extends Param {
-    private int min;
-    private int max;
-    private int deflt;
-    private int value;
-
-    IntParam(String nam,int mn, int mx, int def, String sh, String lng) {
-	super(nam,sh,lng);
-	min = mn;
-	max = mx;
-	deflt = def;
-	value = Integer.MIN_VALUE;
-    }
-
-    public void setValue(String val) throws ErrorParam {
-	Integer i = new Integer(val);
-	
-	if (i.intValue()<min) {
-	    throw new ErrorParam("Value of "+name+" should be greater or equal to "+min);
-	}
-
-	if (i.intValue()>max) {
-	    throw new ErrorParam("Value of "+name+" should be greater or equal to "+max);
-	}
-	
-	value = i.intValue();
-    }
-
-    public int getValue() {
-	if (value==Integer.MIN_VALUE) {
-	    warn(name+" not given, using default value("+deflt+")");
-	    // set value to default, t.e. don't warn again
-	    value=deflt;
-	}
-	return value;
-    }
-}
-
-class FloatParam extends Param {
+public class FloatParam extends Param {
     private double min;
     private double max;
     private double deflt;
@@ -117,26 +61,4 @@ class FloatParam extends Param {
     }
 };
 
-class StringParam extends Param {
-    private String deflt;
-    private  String value;
 
-    StringParam(String nam, String def, String sh, String lng) {
-	super(nam,sh,lng);
-	deflt = def;
-	value = "";
-    }
-
-    public void setValue(String val) {
-	value = val;
-    }
-
-    public String getValue() {
-	if (value.equals("")) {
-	    warn(name+" not given, using default value("+deflt+")");
-	    // set value to default, t.e. don't warn again
-	    value=deflt;
-	}
-	return value;
-    }
-}
