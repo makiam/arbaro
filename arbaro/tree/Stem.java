@@ -559,7 +559,7 @@ public class Stem {
 	}
     }
    
-    int leaves_per_branch() {
+    double leaves_per_branch() {
 	// calcs the number of leaves for a stem
 	if (par.Leaves==0) return 0;
 	if (stemlevel == 0) {
@@ -567,7 +567,15 @@ public class Stem {
 	    System.err.println("WARNING: trunk cannot have leaves, no leaves are created");
 	    return 0;
 	}
-	return (int)(Math.abs(par.Leaves) 
+
+	DBG("leaves_per_branch: abs:"+Math.abs(par.Leaves) +
+	    "ratio:"+ par.shape_ratio(offset/parent.length,par.LeafDistrib)+ 
+	    "qual:"+ par.LeafQuality + "result: "+
+	    Math.abs(par.Leaves) 
+	    * par.shape_ratio(offset/parent.length,par.LeafDistrib) 
+	    * par.LeafQuality);
+
+	return (Math.abs(par.Leaves) 
 		     * par.shape_ratio(offset/parent.length,par.LeafDistrib) 
 		     * par.LeafQuality);
     }

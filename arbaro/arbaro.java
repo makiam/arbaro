@@ -44,8 +44,8 @@ public class arbaro {
     static void p() { System.err.println(); }
 
     public static final String progname = 
-	"Arbaro 0.7 - creates trees for rendering with povray from xml parameter files\n"+
-	"(c) 2003 by Wolfram Diestel (GPL see file COPYING)\n";
+	"Arbaro 0.8 - creates trees for rendering with povray from xml parameter files\n"+
+	"(c) 2003 by Wolfram Diestel <diestel@steloj.de> (GPL see file COPYING)\n";
 
     static void programname() {
 	p(progname);
@@ -91,7 +91,7 @@ public class arbaro {
 	p("                         the tree and writing it as povray code. Useful for converting a");
 	p("                         simple parameter list to a XML file: ");
 	p("                            arbaro.py --treecfg -x < mytree.cfg > mytree.xml");
-	p("    -p|--scene           output Povray scene file <species>.pov");
+	p("    -p|--scene [<file>]  output Povray scene file");
 	p();
 	p("example:");
 	p();
