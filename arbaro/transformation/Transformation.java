@@ -150,53 +150,6 @@ class Matrix {
 
 };  // class Matrix
 
-/*
-ostream& operator << (ostream& o, const Vector &v) {
-  o << "<" << v(X) << "," << v(Y) << "," << v(Z) << ">";
-  return o;
-}
-
-ostream& operator << (ostream& o, const Matrix &M) {
-  o << "<" << M.col(X) << M.col(Y) << M.col(Z) << ">";
-  return o;
-}
-*/
-		
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 public class Transformation {
     // A transformation class - a matrix for rotations and a vector for translations

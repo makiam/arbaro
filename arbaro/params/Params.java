@@ -87,6 +87,7 @@ class CfgTreeParser {
 class XMLTreeFileHandler extends DefaultHandler {
 
     Params params;
+    String errors = "";
 
     public XMLTreeFileHandler(Params par) {
 	params = par;
@@ -102,7 +103,8 @@ class XMLTreeFileHandler extends DefaultHandler {
 	    try {
 		params.setParam(atts.getValue("name"),atts.getValue("value"));
 	    } catch (ErrorParam e) {
-		throw new SAXException(e.getMessage());
+		errors += e.getMessage()+"\n";
+		// throw new SAXException(e.getMessage());
 	    }
 	}
     }
@@ -128,10 +130,14 @@ class XMLTreeParser {
 	parser = spf.newSAXParser();
     }
 
-    public void parse(InputSource is, Params params) throws SAXException, IOException {
+    public void parse(InputSource is, Params params) throws SAXException, IOException, ErrorParam {
         // parse an XML tree file
 	//InputSource is = new InputSource(sourceURI);
-	parser.parse(is,new XMLTreeFileHandler(params));
+	XMLTreeFileHandler xml_handler = new XMLTreeFileHandler(params);
+	parser.parse(is,xml_handler);
+	if (xml_handler.errors != "") {
+	    throw new ErrorParam(xml_handler.errors);
+	}
     }
 }
 
@@ -155,6 +161,7 @@ public class Params {
     public final static int ENVELOPE = 8;
 
     public LevelParams [] levelParams;
+    public Random random;
     Hashtable paramDB;
 
     // debugging etc.
@@ -466,6 +473,9 @@ public class Params {
 	for (int i=1; i<4; i++) {
 	    l = levelParams[i].initRandom(l);
 	}
+
+	// create a random generator for myself (used in stem_radius)
+	random = new Random(Seed);
     
 	// mesh settings
 	if (Smooth <= 0.2) {
@@ -843,18 +853,21 @@ void Tree::setParams(Paramset &paramset) {
 		"exists for the level 0 only. From the Weber/Penn paper it is\n"+
 		"not clear, why there are two trunk scaling parameters \n"+
 		"0Scale and Ratio. See Ratio, 0ScaleV, Scale, ScaleV.\n"+
-		"(Maybe 0Scale should not influence the trunk base radius\n"+
-		"but aplied finally to the stem_radius formular. Thus the\n"+
+		"In this implementation 0Scale does not influence the trunk base radius\n"+
+		"but is applied finally to the stem_radius formular. Thus the\n"+
 		"trunk radius could be influenced independently from the\n"+
 		"Ratio/RatioPower parameters and the periodic tapering\n"+
-		"could be scaled, that the sections are elongated spheres)\n");
+		"could be scaled, that the sections are elongated spheres.\n");
 	
 	flt_par("0ScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"TRUNK",
 		"variation for extra trunk scaling",
 		"0Scale and 0ScaleV makes the trunk thicker. This parameters\n"+
 		"exists for the level 0 only. From the Weber/Penn paper it is\n"+
 		"not clear, why there are two trunk scaling parameters\n"+
-		"0Scale and Ratio. See Ratio, 0ScaleV, Scale, ScaleV.\n");
+		"0Scale and Ratio. See Ratio, 0ScaleV, Scale, ScaleV.\n"+
+		"In this implementation 0ScaleV is used to perturb the\n"+
+		"mesh of the trunk. But use with care, because the mesh\n"+
+		"could get fissures for too big values.\n");
 	
 	int_par("0BaseSplits",0,Integer.MAX_VALUE,0,"MISC",
 		"stem splits at base of trunk",

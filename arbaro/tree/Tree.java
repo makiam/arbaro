@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.text.NumberFormat;
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.Transformation;
+import net.sourceforge.arbaro.mesh.*;
 
 public class Tree {
     //A class for creation of threedimensional tree objects
@@ -96,37 +97,74 @@ public class Tree {
 	if (params.verbose) System.err.print("writing povray code ");
 	  
 	// tree scale
-	w.println("#declare " + pov_prefix() + "scale = " + frm.format(params.scale_tree) + ";");
+	w.println("#declare " + pov_prefix() + "scale = " 
+		  + frm.format(params.scale_tree) + ";");
 
 	// leaf declaration
-	if (params.Leaves!=0) povray_leaf(w);
+	if (params.Leaves!=0 && params.output == Params.CONES) povray_leaf(w);
 	  	  
 	// stems
-	for (int level=0; level < params.Levels; level++) {
-	    w.println("#declare " + pov_prefix() + "stems_"
-		      + level + " = union {"); 
-	    trunk.povray(w,level);
-	    w.println("}");
+	if (params.output == Params.CONES) {
+	    for (int level=0; level < params.Levels; level++) {
+		w.println("#declare " + pov_prefix() + "stems_"
+			  + level + " = union {"); 
+		trunk.povray_stems(w,level);
+		w.println("}");
+	    }
+
+	} else if (params.output == Params.MESH) {
+	    Mesh mesh = new Mesh();
+	    w.println("#declare " + pov_prefix() + "stems = "); 
+	    for (int level=0; level < params.Levels; level++) {
+		trunk.add_to_mesh(mesh,level);
+	    }
+	    // FIXME: instead of output_normals = true use separate bool for every
+	    // level
+	    mesh.povray(w,true,"    ");
 	}
 
 	// leaves
 	if (params.Leaves!=0) {
-	    w.println("#declare " + pov_prefix() + "leaves = union {");
-	    // FIXME split Stem.povray into Stem.povray_stems and Stem.povray_leaves
-	    trunk.povray(w,params.Levels);
-	    w.println("}");
+
+	    if (params.output == Params.CONES) {
+		w.println("#declare " + pov_prefix() + "leaves = union {");
+		trunk.povray_leaves_objs(w);
+		w.println("}");
+	    } else if (params.output == Params.MESH) {
+		double leafLength = params.LeafScale/Math.sqrt(params.LeafQuality);
+		double leafWidth = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
+		LeafMesh mesh = new LeafMesh(params.LeafShape,leafLength,leafWidth,params.LeafStemLen);
+
+		long leafCount = trunk.leafCount();
+		w.println("#declare " + pov_prefix() + "leaves = mesh2 {");
+		w.println("     vertex_vectors { "+mesh.getShapeVertexCount()*leafCount);
+		trunk.povray_leaves_points(w,mesh);
+		w.println("     }");
+		/* FIXME: add this if needed
+		w.println("     normal_vectors { "+mesh.getShapeVertexCount()*leafCount);
+		trunk.povray_leaves_normals(w,mesh);
+		w.println("     }");
+		*/
+		w.println("     face_indices { "+mesh.getShapeFaceCount()*leafCount);
+		trunk.povray_leaves_faces(w,mesh);
+		w.println("     }");
+		w.println("}");
+	    }
 	} else { // empty declaration
 	    w.println("#declare " + getSpecies() + "_" + params.Seed 
 		      + "_leaves = sphere {<0,0,0>,0}"); 
 	}
 
 	// all stems together
-	w.println("#declare " + pov_prefix() + "stems = union {"); 
-	for (int level=0; level < params.Levels; level++) {
-	    w.println("  object {" + pov_prefix() + "stems_" 
-		      + level + "}");
+	if (params.output == Params.CONES) {
+	    w.println("#declare " + pov_prefix() + "stems = union {"); 
+	    for (int level=0; level < params.Levels; level++) {
+		w.println("  object {" + pov_prefix() + "stems_" 
+			  + level + "}");
+	    }
+	    w.println("}");
 	}
-	w.println("}");
+
 	w.flush();
 
 	if (params.verbose) System.err.println();

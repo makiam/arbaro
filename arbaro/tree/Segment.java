@@ -231,7 +231,7 @@ class Segment {
 	    }
     }
   
-    void create_section_meshpoints(Vector pos, double rad, Mesh mesh,
+    void create_section_meshpoints(Vector pos, double rad, MeshPart meshpart,
 				   boolean donttrf) {
 	// create the mesh points for a cross section somewhere in the segment
 	//h = (self.index+where)*self.stem.segment_len
@@ -248,7 +248,7 @@ class Segment {
 	if (rad<0.000001) {
 	    MeshSection section = new MeshSection(1);
 	    section.add_point(trf.apply(new Vector(0,0,0)));
-	    mesh.add_section(section);
+	    meshpart.add_section(section);
 	} else { //create pt_cnt points
 	    int pt_cnt = lpar.mesh_points;
 	    MeshSection section = new MeshSection(pt_cnt);
@@ -265,11 +265,14 @@ class Segment {
 		// create some point on the unit circle
 		Vector pt = new Vector(Math.cos(angle*Math.PI/180),Math.sin(angle*Math.PI/180),0);
 		// scale it to stem radius
-		if (lpar.level==0 && par.Lobes != 0) {
+		if (lpar.level==0 && (par.Lobes != 0 || par._0ScaleV !=0)) {
 		    // self.stem.DBG("MESH+LOBES: angle: %f, sinarg: %f, rad: %f\n"%(angle, \
 		    //self.tree.Lobes*angle*pi/180.0, \
 		    //	rad*(1.0+self.tree.LobeDepth*cos(self.tree.Lobes*angle*pi/180.0))))
-		    pt = pt.mul(rad*(1.0+par.LobeDepth*Math.cos(par.Lobes*angle*Math.PI/180.0))); 
+		    double rad1 = rad * (1 + 
+					 par.random.uniform(-par._0ScaleV,par._0ScaleV)/
+					 subsegs.size());
+		    pt = pt.mul(rad1*(1.0+par.LobeDepth*Math.cos(par.Lobes*angle*Math.PI/180.0))); 
 		} else {
 		    pt = pt.mul(rad); // faster - no radius calculations
 		}
@@ -286,32 +289,32 @@ class Segment {
 		//self.stem.DBG("MESHPT: %s\n"%(pt))
 		section.add_point(pt);
 	    }
-	    //add section to the mesh
-	    mesh.add_section(section);
+	    //add section to the mesh part
+	    meshpart.add_section(section);
 	}
     }
   
-    public void add_to_mesh(Mesh mesh) {
+    public void add_to_meshpart(MeshPart meshpart) {
 	// creates the part of the mesh for this segment
 	//pt_cnt = self.tree.meshpoints[self.stem.level]
 	//smooth = self.stem.level<=self.tree.smooth_mesh_level
 
-	if (mesh.size() == 0) { // first segment, create lower meshpoints
+	if (meshpart.size() == 0) { // first segment, create lower meshpoints
 	    Subsegment ss = (Subsegment)subsegs.elementAt(0);
 	    // one point at the stem origin, with normal in reverse z-direction
-	    create_section_meshpoints(ss.pos,0,mesh,
+	    create_section_meshpoints(ss.pos,0,meshpart,
 				      is_first_stem_segment() && lpar.level==0);
-	    ((MeshSection)mesh.firstElement()).set_normals_vector(transf.getZ().mul(-1));
+	    ((MeshSection)meshpart.firstElement()).set_normals_vector(transf.getZ().mul(-1));
       
 	    // more points around the stem origin
-	    create_section_meshpoints(ss.pos,ss.rad,mesh,
+	    create_section_meshpoints(ss.pos,ss.rad,meshpart,
 				      is_first_stem_segment() && lpar.level==0);
 	}
     
 	// create meshpoints on top of each subsegment
 	for (int i=1; i<subsegs.size(); i++) {
 	    Subsegment ss = (Subsegment)subsegs.elementAt(i);
-	    create_section_meshpoints(ss.pos,ss.rad,mesh,false);
+	    create_section_meshpoints(ss.pos,ss.rad,meshpart,false);
 	}
 
 	// System.err.println("MESHCREATION, segmindex: "+index);
@@ -319,10 +322,10 @@ class Segment {
 	// close mesh with normal in z-direction
 	if (is_last_stem_segment()) {
 	    if (rad2>0.000001) {
-		create_section_meshpoints(pos_to(),0,mesh,false);
+		create_section_meshpoints(pos_to(),0,meshpart,false);
 	    }
 	    //DBG System.err.println("LAST StemSegm, setting normals to Z-dir");
-	    ((MeshSection)mesh.lastElement()).set_normals_vector(transf.getZ());
+	    ((MeshSection)meshpart.lastElement()).set_normals_vector(transf.getZ());
 	}
     }
 };

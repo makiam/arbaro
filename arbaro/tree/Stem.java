@@ -434,9 +434,9 @@ public class Stem {
     double stem_base_radius() {
 	if (stemlevel == 0) { // trunk
 	    // radius at the base of the stem
-	    // FIXME: I think nScale+-nScaleV should applied to the stem radius but not to base radius(?)
-	    return length * par.Ratio * par._0Scale; 
-	    //+ self.var(self.tree.nScaleV[0]))
+	    // I think nScale+-nScaleV should applied to the stem radius but not to base radius(?)
+	    return length * par.Ratio; // * par._0Scale; 
+	    //+ var(par._0ScaleV))
 	} else {
 	    // max radius is the radius of the parent at offset
 	    double max_radius = parent.stem_radius(offset);
@@ -508,7 +508,11 @@ public class Stem {
 	    // and only applied here
 	    //	radius = radius*(self.tree.nScale[0]+self.var(self.tree.nScaleV[0]))
 	    
+	    // multiply with 0Scale;
+	    // 0ScaleV is applied only in mesh creation (Segment.create_section_meshpoints)
+	    radius = radius*par._0Scale;
 	}
+
 
 	DBG("Stem.stem_radius("+h+") = "+radius);
 	
@@ -873,15 +877,6 @@ public class Stem {
 
 	} else split_diverge = 0; // for debugging only
 	    	    
-	// FIXME: split_correction: calc the inverse transformation matrix from Tcorr = Trand*Tsplit
-	// and multiply this to split_correction: Tsplitcorr = (Tcorr/remaining_seg) * Tsplitcorr
-
-	/*	
-		self.DBG("split after: splitangle: %.1f, split_diverge: %.1f, z: %s, decl: %f\n"%\
-	    	(split_angle,split_diverge,str(transf.z()),declination))
-		self.TRF("split1: after split",transf)
-	*/    
-	
 	// adjust some parameters	
 	//split_cnt = split_cnt+1;
 
@@ -900,9 +895,54 @@ public class Stem {
       # an umbrella formed acacia (don't know the english name of that trees) isn't
     */
     
-    void povray(PrintWriter w, int level) throws Exception {
-	// output povray code for one stem level or leaves (last level+1)
+
+    void add_to_mesh(Mesh mesh, int level) throws Exception {
+	// create mesh parts for one stem level
 	  
+	if (par.verbose) {
+	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
+	}
+	
+	String indent = "    ";
+	  
+	// mesh parts for self and clones of same level
+	if (level==stemlevel) {
+
+	    // create mesh part
+	    MeshPart meshpart = new MeshPart(tree_position(),level<=par.smooth_mesh_level);
+	    for (int i=0; i<segments.size(); i++) {
+		((Segment)segments.elementAt(i)).add_to_meshpart(meshpart);
+	    }
+	    mesh.add_meshpart(meshpart);
+
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).add_to_mesh(mesh,level);
+		}
+	    }
+	}
+
+	else if (level > stemlevel) {
+	    // FIXME? more correct it would be inc by 1 in the for block,
+	    // but this would need more calls to synchronized incProgress
+	    // if this work ok, don't change this
+	    tree.incPovrayProgress(substems.size());
+
+	    for (int i=0; i<substems.size(); i++) {
+		((Stem)substems.elementAt(i)).add_to_mesh(mesh,level);
+	    }
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).add_to_mesh(mesh,level);
+		}	  	
+	    }
+	}
+    }
+
+
+    void povray_stems(PrintWriter w, int level) throws Exception {
+	// output povray code for one stem level
+	
 	if (par.verbose) {
 	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
 	}
@@ -915,7 +955,7 @@ public class Stem {
 
 		boolean union=false;
 		if (segments.size()>1 || (substems != null && substems.size()>0)) union = true;
-
+		
 		if (union) w.print(indent + "union { ");
 		w.println("/* " + tree_position() + " */");
 
@@ -925,37 +965,50 @@ public class Stem {
 
 		if (clones != null) {
 		    for (int i=0; i<clones.size(); i++) {
-			((Stem)clones.elementAt(i)).povray(w,level);
+			((Stem)clones.elementAt(i)).povray_stems(w,level);
 		    }
 		}
 
 		if (union) w.println(indent + "}");
 
 	    } else if (par.output==Params.MESH) {
-
-		// create mesh
-		Mesh mesh = new Mesh();
-		for (int i=0; i<segments.size(); i++) {
-		    ((Segment)segments.elementAt(i)).add_to_mesh(mesh);
-		}
-
-		// output mesh
-		w.println("/* " + tree_position() + " */");
-		mesh.povray(w,level<=par.smooth_mesh_level,indent);
-
-		if (clones != null) {
-		    for (int i=0; i<clones.size(); i++) {
-			((Stem)clones.elementAt(i)).povray(w,level);
-		    }
-		}
+		// do nothing, whole mesh is output by the tree
 
 	    }	else {
 		throw new ErrorNotYetImplemented("output method "+par.output
 						 +" not (yet) implemented.");
 	    }
+	}
+
+	// recursive call to substems
+	else if (level > stemlevel) {
+	    // FIXME? more correct it would be inc by 1 in the for block,
+	    // but this would need more calls to synchronized incProgress
+	    // if this work ok, don't change this
+	    tree.incPovrayProgress(substems.size());
+	    for (int i=0; i<substems.size(); i++) {
+		((Stem)substems.elementAt(i)).povray_stems(w,level);
+	    }
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).povray_stems(w,level);
+		}	  	
+	    }
+	}
+    }
+
+
+    void povray_leaves_objs(PrintWriter w) throws Exception {
+	// output povray code for leaves
 	
+	if (par.verbose) {
+	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
+	}
+	
+	String indent = "    ";
+	  
 	// output leaves
-	} else if (level==par.Levels && stemlevel==par.Levels-1) {
+	if (stemlevel==par.Levels-1) {
 	    boolean union=false;
 	    if (leaves.size()>0) union=true;
 
@@ -968,7 +1021,7 @@ public class Stem {
 
 	    if (clones != null) {
 		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray(w,level);
+		    ((Stem)clones.elementAt(i)).povray_leaves_objs(w);
 		}
 	    }
 
@@ -976,21 +1029,151 @@ public class Stem {
 	}
 	  		  
 	// recursive call to substems
-	else if (level > stemlevel) {
+	else {
 	    // FIXME? more correct it would be inc by 1 in the for block,
 	    // but this would need more calls to synchronized incProgress
 	    // if this work ok, don't change this
 	    tree.incPovrayProgress(substems.size());
 	    for (int i=0; i<substems.size(); i++) {
-		((Stem)substems.elementAt(i)).povray(w,level);
+		((Stem)substems.elementAt(i)).povray_leaves_objs(w);
 	    }
 	    if (clones != null) {
 		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray(w,level);
+		    ((Stem)clones.elementAt(i)).povray_leaves_objs(w);
 		}	  	
 	    }
 	}
     }
+
+
+    void povray_leaves_points(PrintWriter w, LeafMesh mesh) throws Exception {
+	// output povray code points section of mesh2 object for the leaves 
+	
+	if (par.verbose) {
+	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
+	}
+	
+	String indent = "    ";
+	  
+	// output leaves points
+	if (stemlevel==par.Levels-1) {
+	    w.println( "/* " + tree_position() + " */");
+
+	    for (int i=0; i<leaves.size(); i++) {
+		mesh.povray_points(w,indent,((Leaf)leaves.elementAt(i)).transf);
+	    }
+
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).povray_leaves_points(w,mesh);
+		}
+	    }
+
+	}
+	  		  
+	// recursive call to substems
+	else {
+	    // FIXME? more correct it would be inc by 1 in the for block,
+	    // but this would need more calls to synchronized incProgress
+	    // if this work ok, don't change this
+	    tree.incPovrayProgress(substems.size());
+	    for (int i=0; i<substems.size(); i++) {
+		((Stem)substems.elementAt(i)).povray_leaves_points(w,mesh);
+	    }
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).povray_leaves_points(w,mesh);
+		}	  	
+	    }
+	}
+    }
+
+
+    void povray_leaves_faces(PrintWriter w, LeafMesh mesh) throws Exception {
+	// output povray code points section of mesh2 object for the leaves 
+	
+	if (par.verbose) {
+	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
+	}
+	
+	String indent = "    ";
+	  
+	// output leaves points
+	if (stemlevel==par.Levels-1) {
+	    w.println( "/* " + tree_position() + " */");
+
+	    for (int i=0; i<leaves.size(); i++) {
+		mesh.povray_faces(w,indent);
+	    }
+
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).povray_leaves_faces(w,mesh);
+		}
+	    }
+
+	}
+	  		  
+	// recursive call to substems
+	else {
+	    // FIXME? more correct it would be inc by 1 in the for block,
+	    // but this would need more calls to synchronized incProgress
+	    // if this work ok, don't change this
+	    tree.incPovrayProgress(substems.size());
+	    for (int i=0; i<substems.size(); i++) {
+		((Stem)substems.elementAt(i)).povray_leaves_faces(w,mesh);
+	    }
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).povray_leaves_faces(w,mesh);
+		}	  	
+	    }
+	}
+    }
+
+
+    void povray_leaves_normals(PrintWriter w, LeafMesh mesh) throws Exception {
+	// output povray code points section of mesh2 object for the leaves 
+	
+	if (par.verbose) {
+	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
+	}
+	
+	String indent = "    ";
+	  
+	// output leaves points
+	if (stemlevel==par.Levels-1) {
+	    w.println( "/* " + tree_position() + " */");
+
+	    for (int i=0; i<leaves.size(); i++) {
+		mesh.povray_normals(w,indent,((Leaf)leaves.elementAt(i)).transf);
+	    }
+
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).povray_leaves_normals(w,mesh);
+		}
+	    }
+
+	}
+	  		  
+	// recursive call to substems
+	else {
+	    // FIXME? more correct it would be inc by 1 in the for block,
+	    // but this would need more calls to synchronized incProgress
+	    // if this work ok, don't change this
+	    tree.incPovrayProgress(substems.size());
+	    for (int i=0; i<substems.size(); i++) {
+		((Stem)substems.elementAt(i)).povray_leaves_normals(w,mesh);
+	    }
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).povray_leaves_normals(w,mesh);
+		}	  	
+	    }
+	}
+    }
+
 
     /* return the number of all substems and substems of substems a.s.o. */
     long substemTotal() {
@@ -998,43 +1181,42 @@ public class Stem {
 
 	long sum = substems.size();
 	for (int i=0; i<substems.size(); i++) {
+	    // FIXME: what about clones?
 	    sum += ((Stem)substems.elementAt(i)).substemTotal();
 	}
 	return sum;
     }
-	  
-  /*
-      def count_real_substems(self,follow_clones=0):
-          "returns number of real (with level+1) substems of th stem and all its clones"
-	  sum = 0
-	  for ss in self.substems:
-	  	if ss.level > self.level: sum = sum+1
-		elif follow_clones: sum = sum+ss.count_real_substems()
-	  return sum
-	  	  
-      def dump(self):
-	  indent = " "*(self.level*2+2)
-	  print indent+"STEM:"
-	  print indent+"debug:",self.debug
-	  print indent+"level:",self.level
-	  print indent+"position:",self.position
-	  print indent+"direction:",self.direction
-	  print indent+"offset:",self.offset
-	  print indent+"length:",self.length
-	  print indent+"base_radius:",self.base_radius
-	  if self.level>0:
-	  	print indent+"parent_radius:",self.parent.stem_radius(self.offset)
-	  #...
-	  print indent+"substems (own/clones/all): %d/%d/%d" %\
-	  	(self.count_real_substems(),len(self.substems)-self.count_real_substems(),\
-	  	self.count_real_substems(1))
-	  print indent+"leaves: ",len(self.leaves)
-	  for ss in self.substems:
-	  	ss.dump()
-	  for l in self.leaves:
-	  	l.dump()
-  */
-  
+
+    long leafCount() {
+	long sum = 0;
+
+	// last level add all leaves
+	if (stemlevel==par.Levels-1) {
+	    sum = leaves.size();
+
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    sum += ((Stem)clones.elementAt(i)).leafCount();
+		}
+	    }
+
+	}
+	  		  
+	// recursive call to substems
+	else {
+	    for (int i=0; i<substems.size(); i++) {
+		sum += ((Stem)substems.elementAt(i)).leafCount();
+	    }
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    sum += ((Stem)clones.elementAt(i)).leafCount();
+		}	  	
+	    }
+	}
+
+	return sum;
+    }
+
 };
 	      
 

@@ -381,6 +381,7 @@ public class ParamFrame {
 		    tree.readFromXML(new FileInputStream(treefile));
 		    modified = false;
 		} catch (ErrorParam err) {
+		    modified = false;
 		    JOptionPane.showMessageDialog(frame,err.getMessage(),
 						  "Parameter Error",
 						  JOptionPane.ERROR_MESSAGE);
