@@ -1,7 +1,10 @@
 //  #**************************************************************************
 //  #
 //  #    $Id$  
-//  #            - Params class - it holds the tree parameters and 
+//  #            - Params class - it holds the tree parameters and related methods
+//  #              (the params for the levels are in LevelParams, not here!)
+//  #            - classes CfgTreeParser, XMLTreeParser to read in the params
+//  #          
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
 //  #
@@ -26,11 +29,106 @@
 package net.sourceforge.arbaro.params;
 
 import java.io.PrintWriter;
-import params.LevelParams;
-import params.IntParam;
-import params.FloatParam;
-import params.StringParam;
-import params.Random;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileReader;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
+
+class CfgTreeParser {
+  
+    public void parse(String fileName, Params params) throws Exception {
+	File inputFile = new File(fileName);
+	LineNumberReader r = 
+	    new LineNumberReader(new FileReader(inputFile));
+	parse(r,params);
+    }
+
+    public void parse(InputStream is, Params params) throws Exception {
+	LineNumberReader r = new LineNumberReader(new InputStreamReader(is));
+	parse(r,params);
+    }
+    
+    public void parse(LineNumberReader r, Params params) throws Exception {
+	String line = r.readLine().trim();
+	String param;
+	String value;
+	while (line != null) {
+	    if (line != "" && line.charAt(0) != '#') {
+		int equ = line.indexOf('=');
+		param = line.substring(0,equ).trim();
+		value = line.substring(equ+1).trim();
+		if (param.equals("species")) {
+		    params.species = value;
+		} else {
+		    params.setParam(param,value);
+		}
+		line = r.readLine();
+	    }
+	}
+    }
+}
+
+class XMLTreeFileHandler extends DefaultHandler {
+
+    Params params;
+
+    public XMLTreeFileHandler(Params par) {
+	params = par;
+    }
+
+    public void startElement(String namespaceURI,String localName,
+            String qName,Attributes atts) throws SAXException {
+	
+	if (qName.equals("species")) {
+	    params.species = atts.getValue("name");
+	} else if (qName.equals("param")) {
+
+	    try {
+		params.setParam(atts.getValue("name"),atts.getValue("value"));
+	    } catch (ErrorParam e) {
+		throw new SAXException(e.getMessage());
+	    }
+	}
+    }
+
+    /*
+    public void endElement(String namespaceURI,String localName,
+            String qName) {
+        System.out.println("</" + qName + ">");
+    }
+    */
+}
+
+
+class XMLTreeParser {
+    SAXParser parser;
+
+    public XMLTreeParser() 
+	throws ParserConfigurationException, SAXException
+    {
+        // get a parser factory 
+        SAXParserFactory spf = SAXParserFactory.newInstance();
+        // get a XMLReader 
+	parser = spf.newSAXParser();
+    }
+
+    public void parse(InputSource is, Params params) throws SAXException, IOException {
+        // parse an XML tree file
+	//InputSource is = new InputSource(sourceURI);
+	parser.parse(is,new XMLTreeFileHandler(params));
+    }
+}
 
 
 public class Params {
@@ -306,9 +404,9 @@ public class Params {
 	// create one random generator for every level
 	// so you can develop a tree level by level without
 	// influences between the levels
-	levelParams[0].random = new params.Random(Seed);
+	long l = levelParams[0].initRandom(Seed);
 	for (int i=1; i<4; i++) {
-	    levelParams[i].random = new params.Random(levelParams[i-1].random.nextLong());
+	    l = levelParams[i].initRandom(l);
 	}
     
 	// mesh settings
@@ -727,11 +825,20 @@ void Tree::setParams(Paramset &paramset) {
 	//  System.err.println("Branchdist? "+((Param)paramDB.get("0BranchDist")).name);
 	//}
     }
-    /*
-    public long trunc(double d) {
-	return new Double(d).longValue();
+
+    public void readFromCfg(InputStream is) throws Exception {
+	CfgTreeParser parser = new CfgTreeParser();
+	parser.parse(is,this);
     }
-    */
+
+    public void readFromXML(InputStream is) throws ErrorParam {
+	try {
+	    XMLTreeParser parser = new XMLTreeParser();
+	    parser.parse(new InputSource(is),this);
+	} catch (Exception e) {
+	    throw new ErrorParam(e.getMessage());
+	}
+    }
 };
 
 

@@ -22,24 +22,12 @@
 //  #
 //  #**************************************************************************/
 
-/* TODO:
+package net.sourceforge.arbaro;
 
-  conical 0.1+... or 0.2+... - may be use special fir-mode
-  evenly leaf distribution for tree with needles like fir, lark,...
-  for needles use a leaf wich hase many needles with downangle 0
-  try using one big mesh for leaves instead of union of discs
-
-*/
-
-import java.io.PrintWriter;
-//import java.io.InputStreamReader;
-//import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import params.Params;
-import params.CfgTreeParser;
-import params.XMLTreeParser;
-import org.xml.sax.InputSource;
+
+import net.sourceforge.arbaro.params.Params;
 
 public class arbaro {
     static Tree tree;
@@ -86,7 +74,7 @@ public class arbaro {
 	p("                         Povray read Mesh2 objects faster. Cones are handy for use with");
 	p("                         KPovmodeler, which doesn't support mesh objects yet.");
 	p();
-	p("    --treecfg            Input file is a simple Param=Value list. Needs less typing for");
+	p("    -r|--treecfg         Input file is a simple Param=Value list. Needs less typing for");
 	p("                         a new tree than writing XML code");
 	p();
 	p("    -x|--xml             Output parameters as XML tree definition instead of creating");
@@ -128,43 +116,31 @@ public class arbaro {
 	int output=Params.MESH;
 	double smooth=-1;
 	int input = XMLinput;
-	/*
-  struct option long_options[] = {
-    {"help", no_argument, 0, 'h'},
-    {"quiet", no_argument, 0, 'q'},
-    {"debug", no_argument, 0, 'd'},
-    {"seed", required_argument, 0, 's'},
-    {"levels", required_argument, 0, 'l'},
-    {"mesh", optional_argument, 0, 'm'},
-    {"cones", no_argument, 0, 'c'},
-    {"xml", no_argument, 0, 'x'},
-    {"treecfg", no_argument, 0, 'r'},
-    {0, 0, 0, 0}
-    };*/
-
 
 	for (int i=0; i<args.length; i++) {
 
 
-	    if (args[i].equals("-d")) {
+	    if (args[i].equals("-d") || args[i].equals("--debug")) {
 		debug = true;
-	    } else if (args[i].equals("-h")) {
+	    } else if (args[i].equals("-h") || args[i].equals("--help")) {
 		usage();
 		System.exit(0);
-	    } else if (args[i].equals("-q")) {
+	    } else if (args[i].equals("-q") || args[i].equals("--quiet")) {
 		quiet = true;
-	    } else if (args[i].equals("-s")) {
+	    } else if (args[i].equals("-s") || args[i].equals("--seed")) {
 		seed = new Integer(args[++i]).intValue();
-	    } else if (args[i].equals("-l")) {
+	    } else if (args[i].equals("-l") || args[i].equals("--levels")) {
 		levels = new Integer(args[++i]).intValue();
-	    } else if (args[i].equals("-c")) {
+	    } else if (args[i].equals("-c") || args[i].equals("--cones")) {
 		output = Params.CONES;
-	    } else if (args[i].equals("-m")) {
+	    } else if (args[i].equals("-m") || args[i].equals("--mesh")) {
 		output = Params.MESH;
-		smooth = new Double(args[++i]).doubleValue();
-	    } else if (args[i].equals("-x")) {
+		if (args[i+1].charAt(0) == '0' || args[i+1].charAt(1) == '1') {
+		    smooth = new Double(args[++i]).doubleValue();
+		}
+	    } else if (args[i].equals("-x") || args[i].equals("--xml")) {
 		output = XMLoutput;
-	    } else if (args[i].equals("-r")) {
+	    } else if (args[i].equals("-r") || args[i].equals("--treecfg")) {
 		input = CFGinput;
 	    }
 	}
@@ -184,14 +160,11 @@ public class arbaro {
     tree.params.output=output;
     // put here or later?
     if (smooth>=0) tree.params.Smooth = smooth;
+
+    System.err.println("Reading parameters from STDIN...");
    
-    if (input == CFGinput) {
-	CfgTreeParser parser = new CfgTreeParser();
-	parser.parse(System.in,tree.params);
-    } else {
-	XMLTreeParser parser = new XMLTreeParser();
-	parser.parse(new InputSource(System.in),tree.params);
-    }
+    if (input == CFGinput) tree.params.readFromCfg(System.in);
+    else tree.params.readFromXML(System.in);
 
     // FIXME: put here or earlier?
     if (smooth>=0) tree.params.setParam("Smooth",new Double(smooth).toString());

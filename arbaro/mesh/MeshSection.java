@@ -23,10 +23,10 @@
 //  #
 //  #**************************************************************************
 
-package mesh;
+package net.sourceforge.arbaro.mesh;
 
 import java.io.PrintWriter;
-import transformation.Vector;
+import net.sourceforge.arbaro.transformation.Vector;
 
 final class Vertex {
     Vector point;

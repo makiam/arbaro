@@ -1,6 +1,8 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - LevelParams class - it holds the tree parameters for the levels
+//  #    $Id$  
+//  #         LevelParams class - it holds the tree parameters for the levels
+//  #         Random class - has methods getstate, setstate
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
 //  #
@@ -22,10 +24,34 @@
 //  #
 //  #**************************************************************************/
 
-package params;
+package net.sourceforge.arbaro.params;
 
 import java.io.PrintWriter;
-import params.Random;
+
+class Random extends java.util.Random {
+
+    public Random(long seed) {
+	super(seed);
+    }
+
+    public double uniform(double low, double high) {
+	return low+nextDouble()*(high-low);
+    }
+
+    public long getstate() {
+	// the original random generator doesn't provide an interface
+	// to read, and reset it's state, so this is a hack here, to make
+	// this possible. The random generator is reseeded here with a seed
+	// got from the generator, this seed are returned as state.
+	long state = nextLong();
+	setSeed(state);
+	return state;
+    }
+
+    public void setstate(long state) {
+	setSeed(state);
+    }
+};
 
 public class LevelParams {
     // parameters for the 4 levels
@@ -77,6 +103,11 @@ public class LevelParams {
     public LevelParams(int l, java.util.Hashtable parDB) {
 	level = l;
 	paramDB = parDB;
+    }
+
+    public long initRandom(long seed) {
+	random = new Random(seed);
+	return random.nextLong();
     }
 
     public double var(double variation) {

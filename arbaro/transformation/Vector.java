@@ -23,13 +23,13 @@
 // #
 // #**************************************************************************/
 
-
-package transformation;
+package net.sourceforge.arbaro.transformation;
 
 import java.lang.String;
 import java.lang.Math;
-import params.FloatFormat;
+
 import java.text.NumberFormat;
+import net.sourceforge.arbaro.params.FloatFormat;
 
 public class Vector {
     final int X=0;

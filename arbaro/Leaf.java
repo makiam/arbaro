@@ -22,12 +22,13 @@
 //  #
 //  #**************************************************************************/
 
+package net.sourceforge.arbaro;
+
 import java.io.PrintWriter;
 import java.lang.Math;
-import transformation.Vector;
-import transformation.Transformation;
-import params.Params;
-//import params.LevelParams;
+
+import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.params.*;
 
 class Leaf {
     // A class for the leaves of the tree

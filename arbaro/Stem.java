@@ -23,12 +23,13 @@
 //  #
 //  #**************************************************************************/
 
+package net.sourceforge.arbaro;
+
 import java.io.PrintWriter;
-import transformation.Vector;
-import transformation.Transformation;
-import params.Params;
-import params.LevelParams;
-import mesh.Mesh;
+
+import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.mesh.*;
 
 class ArbaroError extends Exception {
     public ArbaroError(String errmsg) {

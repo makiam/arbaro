@@ -22,6 +22,8 @@
 //  #
 //  #**************************************************************************/
 
+package net.sourceforge.arbaro;
+
 public interface StemInterface {
     double stem_radius(double h);
     void DBG(String dbgstr);

@@ -1,6 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    {$file}  - a Mesh to hold the mesh points, triangles and normals
+//  #    $Id$  - a Mesh to hold the mesh points, triangles and normals
 //  #               and output them to a povray mesh2 object
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
@@ -23,11 +23,10 @@
 //  #
 //  #**************************************************************************
 
-package mesh;
+package net.sourceforge.arbaro.mesh;
 
 import java.io.PrintWriter;
 import java.lang.Math;
-import mesh.MeshSection;
 
 class ErrorMesh extends Exception {
     public ErrorMesh(String msg) {

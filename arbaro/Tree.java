@@ -23,9 +23,11 @@
 //  #
 //  #**************************************************************************/
 
+package net.sourceforge.arbaro;
+
 import java.io.PrintWriter;
-import params.Params;
-import transformation.Transformation;
+import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.transformation.Transformation;
 
 class Tree {
     //A class for creation of threedimensional tree objects

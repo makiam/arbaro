@@ -23,14 +23,14 @@
 //  #
 //  #**************************************************************************/
 
+package net.sourceforge.arbaro;
+
 import java.io.PrintWriter;
-import transformation.Transformation;
-import transformation.Vector;
-import mesh.*;
-import params.Params;
-import params.LevelParams;
-import params.FloatFormat;
 import java.text.NumberFormat;
+
+import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.mesh.*;
+import net.sourceforge.arbaro.params.*;
 
 class Subsegment { 
     // a Segment can have one or more Subsegments
