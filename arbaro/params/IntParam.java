@@ -89,7 +89,28 @@ public class IntParam extends AbstractParam {
 	}
 	return value;
     }
+
+    public String getLongDesc() {
+	String desc = super.getLongDesc();
+	desc += "\n";
+	if (min != Integer.MIN_VALUE) {
+	    desc += "Minimum: "+min+"\n";
+	}
+	if (max != Integer.MIN_VALUE) {
+	    desc += "Maximum: "+max+"\n";
+	}
+	if (deflt != Integer.MIN_VALUE) {
+	    desc += "Default: "+deflt+"\n";
+	}
+	return desc;
+    }
 }
+
+
+
+
+
+
 
 
 

@@ -635,7 +635,7 @@ void Tree::setParams(Paramset &paramset) {
 		 "6 - inverse conical\n"+
 		 "7 - tend flame\n"+
 		 "8 - envelope - use pruning envelope\n"+
-		 "(see PruneWidth, PruneWidtPeak, PRunePowerLow, PrunePowerHigh)\n");
+		 "(see PruneWidth, PruneWidtPeak, PrunePowerLow, PrunePowerHigh)\n");
 
 	flt_par ("BaseSize",0.0,1.0,0.25,"TRUNK","fractional branchless area at tree base",
 		 "BaseSize is the fractional branchless part of the trunk. E.g.\n"+
@@ -816,21 +816,28 @@ void Tree::setParams(Paramset &paramset) {
 	
 	flt_par("PruneRatio",0.0,1.0,0.0,"PRUNING",
 		"fractional effect of pruning",
-		"...\n");
+		"Pruning ratio. A Ratio of 1.0 means all branches are inside\n"+
+		"the envelope. 0.0 means no pruning.\n");
 
 	flt_par("PruneWidth",0.0,1.0,0.5,"PRUNING","width of envelope peak",
-		"...\n");
+		"This is the fractional width of the pruning envelope at the\n"+
+		"peak. 0.5 means the tree is half as wide as high.\n");
 
 	flt_par("PruneWidthPeak",0.0,1.0,0.5,"PRUNING","position of envelope peak",
-		"...\n");
+		"Fractional height of the envelope peak. 0.5 means upper part\n"+
+		"en lower part of the envelope have the same height.\n");
 
 	flt_par("PrunePowerLow",0.0,Double.POSITIVE_INFINITY,0.5,"PRUNING",
 		"curvature of envelope",
-		"...\n");
+		"Describes the envelope curve below the peak. A value\n"+
+		"of 1 means linear decreasing Higher values means concave,\n"+
+		"lower values convex curve.\n");
 	
 	flt_par("PrunePowerHigh",0.0,Double.POSITIVE_INFINITY,0.5,"PRUNING",
 		"curvature of envelope",
-		"...\n");
+		"Describes the envelope curve above the peak. A value\n"+
+		"of 1 means linear decreasing Higher values means concave,\n"+
+		"lower values convex curve.\n");
 
 	flt_par("0Scale",0.000001,Double.POSITIVE_INFINITY,1.0,
 		"TRUNK","extra trunk scaling",
@@ -881,58 +888,91 @@ void Tree::setParams(Paramset &paramset) {
 		 "1 - taper to a point (cone)\n"+
 		 "2 - taper to a spherical end\n"+
 		 "3 - periodic tapering (concatenated spheres)\n"+
-		 "You can use fractional values, to get intermediate results\n");
+		 "You can use fractional values, to get intermediate results.\n");
 	
 	flt4_par("nSegSplits",0,Double.POSITIVE_INFINITY,0,0,0,0,
 		 "SPLITTING","stem splits per segment",
-		 "");
+		 "nSegSplits determines how much splits per segment occures.\n"+
+		 "Normally you would use a value between 0.0 and 1.0. A value of\n"+
+		 "0.5 means a split at every second segment. If you use splitting\n"+
+		 "for the trunk you should use 0BaseSplits for the first split, \n"+
+		 "otherwise the tree will tend to one side.");
 	
 	flt4_par("nSplitAngle",0,180,0,0,0,0,"SPLITTING",
 		 "splitting angle",
-		 "");
+		 "nSplitAngle is the vertical splitting angle. A horizontal diverging\n"+
+		 "angle will be added too, but this one you cannot influence with parameters.\n"+
+		 "The declination of the splitting branches won't exceed the splitting angle.\n");
 
 	flt4_par("nSplitAngleV",0,180,0,0,0,0,"SPLITTING",
 		 "splitting angle variation",
-		 "");
+		 "This is the variation of the splitting angle. See nSplitAngle.\n");
 	
 	int4_par("nCurveRes",1,Integer.MAX_VALUE,3,3,1,1,
 		 "CURVATURE","curvature resolution",
-		 "");
+		 "nCurveRes determines how many segments the branches consist of.\n"+
+		 "Normally you will use higher values for the first levels, and low\n"+
+		 "values for the higher levels.\n");
 	
 	flt4_par("nCurve",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,
-		 "CURVATURE","curving angle","");
+		 "CURVATURE","curving angle",
+		 "This is the angle the branches are declined over theire whole length.\n"+
+		 "If nCurveBack is used, the curving angle is distributed only over the\n"+
+		 "first half of the stem.\n");
 	
 	flt4_par("nCurveV",-90,Double.POSITIVE_INFINITY,0,0,0,0,
-		 "CURVATURE","curving angle variation","");
+		 "CURVATURE","curving angle variation",
+		 "This is the variation of the curving angle. See nCurve, nCurveBack.\n");
 	
 	flt4_par("nCurveBack",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,
-		 "CURVATURE","curving angle upper stem half","");
+		 "CURVATURE","curving angle upper stem half",
+		 "Using nCurveBack you can give the stem an S-like shape.\n"+
+		 "The first half of the stem the nCurve value is apllied.\n"+
+		 "The second half the nCurveBack value.\n"+
+		 "It's also possible to give both parameter the same sign to\n"+
+		 "get different curving over the stem length, instead of a S-shape\n");
 
 	flt4_par("nDownAngle",-179.9999999,179.999999,0,30,30,30,
-		 "BRANCHING","angle from parent","");
+		 "BRANCHING","angle from parent",
+		 "nDownAngle is the angle between a stem and it's parent.\n");
 	
 	flt4_par("nDownAngleV",-179.9999999,179.9999999,0,0,0,0,
-		 "BRANCHING","down angle variation","");
+		 "BRANCHING","down angle variation",
+		 "This is the variation of the downangle. See nDownAngle.\n"+
+		 "Using a negative value, the nDownAngleV is variated over the\n"+
+		 "length of the stem, so that the lower branches have a bigger\n"+
+		 "downangle then the higher branches.\n");
 
 	flt4_par("nRotate",-360,360,0,120,120,120,
-		 "BRANCHING","spirangling angle","");
+		 "BRANCHING","spirangling angle",
+		 "This is the angle, the branches are rotating around the parent\n"+
+		 "If nRotate is negative the branches are located on alternating\n"+
+		 "sides of the parent.\n");
 
 	flt4_par("nRotateV",-360,360,0,0,0,0,
-		 "BRANCHING","spiraling angle variation","");
+		 "BRANCHING","spiraling angle variation",
+		 "This is the variation of nRotate.\n");
 
 	int4_par("nBranches",0,Integer.MAX_VALUE,1,10,5,5,
-		 "BRANCHING","number of branches","");
+		 "BRANCHING","number of branches",
+		 "Maximal number of branches on a parent stem.\n"+
+		 "The number of branches are reduced proportional to the\n"+
+		 "length of theire parent.\n");
 
 	flt4_par("nBranchDist",0,1,0,1,1,1,
-		 "ADDBRANCH","branch distribution along the segment","");
+		 "ADDBRANCH","branch distribution along the segment",
+		 "This is an additional parameter of Arbaro, it influences the\n"+
+		 "distribution of branches over a segment of the parent stem.\n"+
+		 "With 1.0 you get evenly distribution of branches like in the\n"+
+		 "original model. With 0.0 all branches grow from the segments\n"+
+		 "base like for conifers.\n");
 
 	flt4_par("nBranchDistV",0,1,0,0.5,0.5,0.5,
-		 "ADDBRANCH","branch distribution variation","");
-
-	//	if (debug) {
-	//	System.err.println("REGISTERPARAMS\n");
-	//  System.err.println("Branchdist? "+((AbstractParam)paramDB.get("0BranchDist")).name);
-	//}
+		 "ADDBRANCH","branch distribution variation",
+		 "This is the variation of branch distribution.\n"+
+		 "A value of 0.0 means evenly distribution of branches over\n"+
+		 "the parent segment. With a value of 1.0 a branch can grow\n"+
+		 "from any point between the preceeding and the following branch.\n");
     }
 
     public void readFromCfg(InputStream is) throws Exception {

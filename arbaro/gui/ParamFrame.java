@@ -52,11 +52,13 @@ public class ParamFrame {
 	tree = new Tree();
 
 	frame = new JFrame("Arbaro");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	frame.addWindowListener(new WindowAdapter() {
 		public void windowClosing(WindowEvent e) {
 		     if (! shouldSave()) return;
-		     frame.dispose();
+		     //System.err.println("closing the frame...");
+		     //frame.dispose();
+		     System.exit(0);
 		}
 	    });
 
@@ -285,7 +287,7 @@ public class ParamFrame {
 	    }
 	    return (result != JOptionPane.CANCEL_OPTION);
 	} else
-	    return true;
+	    return true; // not modified, can proceed
     }
 
 
@@ -438,9 +440,13 @@ class ParamField extends JTextField {
 
     void setParamValue() {
 	try {
-	    param.setValue(getText());
-	    setText(param.getValue());
-	    parent.setModified(true);
+	    if (! param.getValue().equals(getText())) {
+		System.err.println("change "+param.getName()+" from "+param.getValue()+
+				   " to "+getText());
+		param.setValue(getText());
+		setText(param.getValue());
+		parent.setModified(true);
+	    }
 	} catch (ErrorParam err) {
 	    JOptionPane.showMessageDialog(getParent(),err.getMessage(),"Parameter Error",
 					  JOptionPane.ERROR_MESSAGE);

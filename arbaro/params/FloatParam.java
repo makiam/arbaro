@@ -87,6 +87,21 @@ public class FloatParam extends AbstractParam {
 	}
 	return value;
     }
+
+    public String getLongDesc() {
+	String desc = super.getLongDesc();
+	desc += "\n";
+	if (! Double.isNaN(min)) {
+	    desc += "Minimum: "+min+"\n";
+	}
+	if (! Double.isNaN(max)) {
+	    desc += "Maximum: "+max+"\n";
+	}
+	if (! Double.isNaN(deflt)) {
+	    desc += "Default: "+deflt+"\n";
+	}
+	return desc;
+    }
 };
 
 
