@@ -49,7 +49,7 @@ class ErrorParam extends ArbaroError{
     }
 };
 
-public class Stem implements StemInterface {
+public class Stem {
     // A helper class for making 3d trees, this class makes a stem
     // (trunk or branch)
     Params par;

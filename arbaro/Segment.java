@@ -55,11 +55,11 @@ class Segment {
     double rad2;
     double length;
 
-    StemInterface stem;
+    Stem stem;
 
     java.util.Vector subsegs;
 
-    public Segment(Params params, LevelParams lparams, StemInterface stm, int inx, 
+    public Segment(Params params, LevelParams lparams, Stem stm, int inx, 
 		   Transformation trf, double r1, double r2, double len) {
 	par = params;
 	lpar = lparams;
