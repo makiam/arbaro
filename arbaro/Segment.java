@@ -28,7 +28,8 @@ import transformation.Vector;
 import mesh.*;
 import params.Params;
 import params.LevelParams;
-//import StemInterface;
+import params.FloatFormat;
+import java.text.NumberFormat;
 
 class Subsegment { 
     // a Segment can have one or more Subsegments
@@ -104,7 +105,10 @@ class Segment {
 	Vector dir = pos_to().sub(pos_from());
 	for (int i=0; i<cnt+1; i++) {
 	    double pos = i*length/cnt;
+	    // System.err.println("SUBSEG:stem_radius");
 	    double rad = stem.stem_radius(index*length + pos);
+	    // System.err.println("SUBSEG: pos: "+ pos+" rad: "+rad+" inx: "+index+" len: "+length);
+
 	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/length)),rad));
 	}
     }
@@ -148,11 +152,11 @@ class Segment {
 	}
     }
 	
-    public Transformation substem_position(Transformation transf,double where) {
+    public Transformation substem_position(Transformation trf,double where) {
 	// calcs the position of a substem in the segment given 
 	// a relativ position where in 0..1 - needed esp. for helical stems
 	if (lpar.nCurveV>=0) { // normal segment 
-	    return transf.translate(transf.getZ().mul(where*length));
+	    return trf.translate(transf.getZ().mul(where*length));
 	} else { // helix
 	    // get index of the subsegment
 	    int i = (int)(where*subsegs.size()-1);
@@ -160,7 +164,7 @@ class Segment {
 	    Vector p1 = ((Subsegment)subsegs.elementAt(i)).pos;
 	    Vector p2 = ((Subsegment)subsegs.elementAt(i+1)).pos;
 	    Vector pos = p1.add(p2.sub(p1)).mul(where - i/(subsegs.size()-1));
-	    return transf.translate(pos.sub(pos_from()));
+	    return trf.translate(pos.sub(pos_from()));
 	}
     }
   
@@ -192,6 +196,7 @@ class Segment {
   
     public void povray(PrintWriter w) {
 	String indent = whitespace(lpar.level*2+4);
+	NumberFormat fmt = FloatFormat.getInstance();
     
 	// FIXME: for cone output - if starting direction is not 1*y, there is a gap 
 	// between earth and tree base
@@ -201,11 +206,14 @@ class Segment {
 	    Subsegment ss1 = (Subsegment)subsegs.elementAt(i);
 	    Subsegment ss2 = (Subsegment)subsegs.elementAt(i+1);
 	    w.println(indent + "cone   { " + ss1.pos.povray() + ", "
-		      + ss1.rad + "," + ss2.pos.povray() + ", " + ss2.rad + " }"); 
+		      + fmt.format(ss1.rad) + ", " 
+		      + ss2.pos.povray() + ", " 
+		      + fmt.format(ss2.rad) + " }"); 
 	    // for helix subsegs put spheres between
 	    if (lpar.nCurveV<0 && i<subsegs.size()-2) {
-		w.println(indent + "sphere { " + ss1.pos.povray() + ", "
-			  + (ss1.rad-0.0001) + " }");
+		w.println(indent + "sphere { " 
+			  + ss1.pos.povray() + ", "
+			  + fmt.format(ss1.rad-0.0001) + " }");
 	    }
 	}
     
@@ -214,7 +222,7 @@ class Segment {
 			   (lpar.nTaper>1 && lpar.nTaper<=2))) 
 	    {  
 		w.println(indent + "sphere { " + pos_to().povray() + ", "
-			  + (rad2-0.0001) + " }");
+			  + fmt.format(rad2-0.0001) + " }");
 	    }
     }
   
@@ -224,6 +232,9 @@ class Segment {
 	//h = (self.index+where)*self.stem.segment_len
 	//rad = self.stem.stem_radius(h)
 	// self.stem.DBG("MESH: pos: %s, rad: %f\n"%(str(pos),rad))
+
+	// System.err.println("Segment-create meshpts, pos: "+pos+" rad: "+rad);
+
     
 	Transformation trf = transf.translate(pos.sub(pos_from()));
 	//self.stem.TRF("MESH:",trf)
@@ -293,17 +304,20 @@ class Segment {
 	}
     
 	// create meshpoints on top of each subsegment
-	for (int i=0; i<subsegs.size(); i++) {
+	for (int i=1; i<subsegs.size(); i++) {
 	    Subsegment ss = (Subsegment)subsegs.elementAt(i);
 	    create_section_meshpoints(ss.pos,ss.rad,mesh,false);
 	}
+
+	// System.err.println("MESHCREATION, segmindex: "+index);
     
 	// close mesh with normal in z-direction
 	if (is_last_stem_segment()) {
 	    if (rad2>0.000001) {
 		create_section_meshpoints(pos_to(),0,mesh,false);
-		((MeshSection)mesh.lastElement()).set_normals_vector(transf.getZ());
 	    }
+	    //DBG System.err.println("LAST StemSegm, setting normals to Z-dir");
+	    ((MeshSection)mesh.lastElement()).set_normals_vector(transf.getZ());
 	}
     }
 };

@@ -28,6 +28,8 @@ package transformation;
 
 import java.lang.String;
 import java.lang.Math;
+import params.FloatFormat;
+import java.text.NumberFormat;
 
 public class Vector {
     final int X=0;
@@ -55,7 +57,10 @@ public class Vector {
     }
     
     public String povray() {
-	return "<"+coord[X]+","+coord[Y]+","+coord[Z]+">";
+	NumberFormat fmt = FloatFormat.getInstance();
+	return "<"+fmt.format(coord[X])+","
+	    +fmt.format(coord[Z])+","
+	    +fmt.format(coord[Y])+">";
     }
 
     public Vector normalize() {
@@ -99,3 +104,10 @@ public class Vector {
 
 };
 		
+
+
+
+
+
+
+

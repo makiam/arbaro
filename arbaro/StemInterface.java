@@ -23,6 +23,6 @@
 //  #**************************************************************************/
 
 public interface StemInterface {
-    public double stem_radius(double h);
+    double stem_radius(double h);
 }
 

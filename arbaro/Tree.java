@@ -1,6 +1,7 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - tree class - it generates the tree beginning from the trunk
+//  #    $Id$  
+//  #          - tree class - it generates the tree beginning from the trunk
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
 //  #
@@ -103,13 +104,16 @@ class Tree {
 		      + level + "}");
 	}
 	w.println("}");
+	w.flush();
+
+	if (params.verbose) System.err.println();
     }
     
     void povray_leaf(PrintWriter w) {
 	w.println("#include \"arbaro.inc\"");
-	w.print("#declare " + params.species + "_" + params.Seed + "_leaf = " +
-		"object { Arb_leaf_" + (params.LeafShape == "0"? "disc" : params.LeafShape)
-		+ " translate " + (params.LeafStemLen+0.5) + "*y");
+	w.println("#declare " + params.species + "_" + params.Seed + "_leaf = " +
+		"object { Arb_leaf_" + (params.LeafShape.equals("0")? "disc" : params.LeafShape)
+		+ " translate " + (params.LeafStemLen+0.5) + "*y }");
     }	  	
 
     /*

@@ -1,6 +1,7 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - Params class - it holds the tree parameters and 
+//  #    $Id$  
+//  #         - StringParams class - it holds a string parameter
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
 //  #
@@ -25,9 +26,9 @@
 package params;
 import params.Param;
 
-class StringParam extends Param{
-    String deflt;
-    String value;
+class StringParam extends Param {
+    private String deflt;
+    private  String value;
 
     StringParam(String nam, String def, String sh, String lng) {
 	super(nam,sh,lng);
@@ -37,6 +38,15 @@ class StringParam extends Param{
 
     public void setValue(String val) {
 	value = val;
+    }
+
+    public String getValue() {
+	if (value.equals("")) {
+	    warn(name+" not given, using default value("+deflt+")");
+	    // set value to default, t.e. don't warn again
+	    value=deflt;
+	}
+	return value;
     }
 }
 

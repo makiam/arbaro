@@ -25,6 +25,7 @@
 
 package mesh;
 
+import java.io.PrintWriter;
 import java.lang.Math;
 import mesh.MeshSection;
 
@@ -66,10 +67,25 @@ public class Mesh extends java.util.Vector {
     void set_normals() {
 	// normals for begin and end point (first and last section)
 	// are set to a z-Vector by Segment.mesh()
+	//System.err.println("MESHSECT 1: "+((MeshSection)elementAt(1)).size());
+
 	((MeshSection)elementAt(1)).set_normals_up();
 	for (int i=2; i<size()-1; i++) {
 	    ((MeshSection)elementAt(i)).set_normals_updown();
+	    
+	    //DBG
+	    //MeshSection m = (MeshSection)elementAt(i);
+	    //System.err.println("MeshSection "+i+" vert: "+m.size());
+
 	}
+
+	//DBG
+	/*
+	try {
+	MeshSection m = (MeshSection)lastElement();
+	System.err.println("MeshSection last vert: "+m.size()+" normal[0] "+m.normal_at(0).povray());
+	} catch (Exception e) {}
+	*/
 	// sections.last().set_normals_down();
     }
     
@@ -129,70 +145,72 @@ public class Mesh extends java.util.Vector {
       return faces;
     }
     
-    public void povray(boolean output_normals, String indent) throws ErrorMesh {
-	System.out.println(indent + "mesh2 {");
+    public void povray(PrintWriter w, boolean output_normals, String indent) throws ErrorMesh {
+	w.println(indent + "mesh2 {");
 	// output section points
-	System.out.println(indent+"  vertex_vectors { " + vertex_cnt());
+	w.println(indent+"  vertex_vectors { " + vertex_cnt());
 	for (int i=0; i<size(); i++) {
-	    System.out.print(indent + "  /*" + i + "*/ ");
-	    ((MeshSection)elementAt(i)).povray_points(indent);
-	    System.out.println();
+	    w.print(indent + "  /*" + i + "*/ ");
+	    ((MeshSection)elementAt(i)).povray_points(w,indent);
+	    w.println();
 	}
-	System.out.println(indent + "  }");
+	w.println(indent + "  }");
 	
 	// output normals
 	if (output_normals) {
 	    set_normals();
-	    System.out.println(indent + "  normal_vectors { " + vertex_cnt()); 
+	    w.println(indent + "  normal_vectors { " + vertex_cnt()); 
 	    
-	    for (int i=0; i<size(); i++) { 
-		System.out.print(indent + "  /*" + i + "*/");
-		((MeshSection)elementAt(i)).povray_normals(indent);
-		System.out.println();
-	    }
+	    for (int i=0; i<size(); i++) try { 
+		w.print(indent + "  /*" + i + "*/");
+		((MeshSection)elementAt(i)).povray_normals(w,indent);
+		w.println();
+	    } catch (Exception e) {
+		throw new ErrorMesh("Error in MeshSection "+i+": "+e.getMessage());
+	    }	    
+	    w.println(indent+"  }");
 	}
-	System.out.println(indent+"  }");
         
 	// output mesh triangles
-	System.out.println(indent + "  face_indices { " + face_cnt());
+	w.println(indent + "  face_indices { " + face_cnt());
 	int inx = 0;
 	for (int i=0; i<size()-1; i++) { 
 	    java.util.Vector faces = faces(inx,(MeshSection)elementAt(i));
 	    inx += ((MeshSection)elementAt(i)).size();
-	    System.out.print(indent + "  /*" + i + "*/ ");
+	    w.print(indent + "  /*" + i + "*/ ");
 	    for (int j=0; j<faces.size(); j++) {
-		System.out.print("<" + ((Face)faces.elementAt(j)).points[0] + "," 
+		w.print("<" + ((Face)faces.elementAt(j)).points[0] + "," 
 				 + ((Face)faces.elementAt(j)).points[1] + "," 
 				 + ((Face)faces.elementAt(j)).points[2] + ">");
 		if ((i<size()-2) || (j<faces.size()-1)) {
-		    System.out.print(",");
+		    w.print(",");
 		}
 		if (j % 6 == 4) {
 		    // new line
-		    System.out.println();
-		    System.out.print(indent + "          ");
+		    w.println();
+		    w.print(indent + "          ");
 		}
 	    }
-	    System.out.println();
+	    w.println();
 	}
-	System.out.println(indent + "  }");
-	System.out.println(indent + "}");
+	w.println(indent + "  }");
+	w.println(indent + "}");
 	
-	if (debugmesh) {
+	if (debugmesh) try {
 	    // draw normals as cones
-	    System.out.println("union {");
+	    w.println("union {");
 	    for (int i=0; i<size(); i++) { 
 		MeshSection section = ((MeshSection)elementAt(i));
 		for (int j=0; i<section.size(); j++) {
-		    System.out.println("  cone {" 
-				       + section.point_at(j).povray()
-				       + ",0.01," + (section.point_at(j).add( 
-									     section.normal_at(j)).mul(0.2).povray()) 
-				       + ",0}");
+		    w.println("  cone {" 
+			      + section.point_at(j).povray()
+			      + ",0.01," + (section.point_at(j).add( 
+								    section.normal_at(j)).mul(0.2).povray()) 
+			      + ",0}");
 		}
 	    }
-	    System.out.println("}");
-	}
+	    w.println("}");
+	} catch (Exception e) {}
     }
 }
 

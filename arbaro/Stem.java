@@ -186,6 +186,9 @@ public class Stem implements StemInterface {
 	length = stem_length();
 	segment_len = length/lpar.nCurveRes;
 	base_radius = stem_base_radius();
+
+	DBG("Stem.make(): len: "+length+" sgm_cnt: "+ segment_cnt+" base_rad: "+base_radius);
+
 	// FIXME: should pruning occur for the trunk too?
 	if (stemlevel>0 && par.PruneRatio>0) {
 	    pruning();
@@ -272,6 +275,7 @@ public class Stem implements StemInterface {
 	    double parlen = parent.length;
 	    double baselen = par.BaseSize*par.scale_tree;
 	    double ratio  = (parlen-offset)/(parlen-baselen);
+	    DBG("Stem.stem_length(): parlen: "+parlen+" offset: "+offset+" baselen: "+baselen+" ratio: "+ratio);
 	    return parlen * parent.length_child_max * par.shape_ratio(ratio);
 	} else { // higher levels
 	    return parent.length_child_max*(parent.length-0.6*offset);
@@ -439,6 +443,8 @@ public class Stem implements StemInterface {
     }
 
     public double stem_radius(double h) {
+	DBG("Stem.stem_radius("+h+") base_rad:"+base_radius);
+
 	double angle = 0; //FIXME: add some arg angle for Lobes, but in the moment
 	// Lobes are calculated later in mesh creation
 
@@ -454,7 +460,7 @@ public class Stem implements StemInterface {
 	}
 	
 	double radius = base_radius * (1 - unit_taper * Z);
-	  
+
 	// spherical end or periodic tapering
 	double depth;
 	if (taper>1) {
@@ -496,6 +502,9 @@ public class Stem implements StemInterface {
 		//	radius = radius*(self.tree.nScale[0]+self.var(self.tree.nScaleV[0]))
 	    }
 	}
+
+	DBG("Stem.stem_radius("+h+") = "+radius);
+	
 	return radius;
     }
 	
@@ -534,7 +543,8 @@ public class Stem implements StemInterface {
 	}
 	substem_rotangle = 0;
 	  
-	if (lpar_1.level == par.Levels-1) {
+	// how much leaves for this stem - not really a substem parameter
+	if (lpar.level == par.Levels-1) {
 	    leaves_per_segment = leaves_per_branch() / segment_cnt;
 	}
     }
@@ -542,8 +552,13 @@ public class Stem implements StemInterface {
     int leaves_per_branch() {
 	// calcs the number of leaves for a stem
 	if (par.Leaves==0) return 0;
-	else return (int)(Math.abs(par.Leaves) * par.shape_ratio(offset/parent.length,4) 
-			  * par.LeafQuality);
+	if (stemlevel == 0) {
+	    // FIXME: maybe set Leaves=0 when Levels=1 in Params.prepare()
+	    System.err.println("WARNING: trunk cannot have leaves, no leaves are created");
+	    return 0;
+	}
+	return (int)(Math.abs(par.Leaves) * par.shape_ratio(offset/parent.length,4) 
+		     * par.LeafQuality);
     }
 
     void make_substems(Segment segment) {
@@ -591,13 +606,15 @@ public class Stem implements StemInterface {
 	//	  self.DBG("level: %d, segm: %d, substems: %d\n" % 
 	//	  	(self.level,segment.index,substems_eff))
 
-	DBG("Stem.make_substems(): substems_eff: "+substems_eff);
-	
 	if (substems_eff <= 0) return;
 	  
+	DBG("Stem.make_substems(): substems_eff: "+substems_eff);
+
 	// what distance between the segements substems
 	double dist = (1.0-offs)/substems_eff*lpar_1.nBranchDist;
 	double distv = dist*lpar_1.nBranchDistV/2;
+
+	DBG("Stem.make_substems(): offs: "+offs+" dist: "+dist+" distv: "+distv);
 
 	for (int s=0; s<substems_eff; s++) {
 	    // where on the segment add the substem
@@ -608,6 +625,9 @@ public class Stem implements StemInterface {
 	      
 	    //offset from stembase
 	    double offset = (segment.index + where) * segment_len;
+
+	    DBG("Stem.make_substems(): offset: "+ offset+" segminx: "+segment.index
+		+" where: "+where+ " seglen: "+segment_len);
 	      
 	    //self.TRF("make_substems segment trf",segment.transf)
 	    //      # get the direction for the substem
@@ -625,6 +645,7 @@ public class Stem implements StemInterface {
 	    // create new substem
 	    Stem substem = new Stem(par,lpar_1,this,stemlevel+1,trf,offset);
 	    substem.index=substems.size();
+	    DBG("Stem.make_substems(): make new substem");
 	    substem.make();
 	    substems.addElement(substem);
 	}
@@ -888,14 +909,16 @@ public class Stem implements StemInterface {
 		if (segments.size()>1 || substems.size()>0) union = true;
 
 		if (union) w.print(indent + "union { ");
-		w.print("/* " + tree_position() + " */");
+		w.println("/* " + tree_position() + " */");
 
 		for (int i=0; i<segments.size(); i++) {
 		    ((Segment)segments.elementAt(i)).povray(w);
 		}
 
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray(w,level);
+		if (clones != null) {
+		    for (int i=0; i<clones.size(); i++) {
+			((Stem)clones.elementAt(i)).povray(w,level);
+		    }
 		}
 
 		if (union) w.println(indent + "}");
@@ -904,16 +927,18 @@ public class Stem implements StemInterface {
 
 		// create mesh
 		Mesh mesh = new Mesh();
-
 		for (int i=0; i<segments.size(); i++) {
 		    ((Segment)segments.elementAt(i)).add_to_mesh(mesh);
-		    // output mesh
-		    w.print("/* " + tree_position() + " */");
-		    mesh.povray(level<=par.smooth_mesh_level,indent);
 		}
 
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).povray(w,level);
+		// output mesh
+		w.println("/* " + tree_position() + " */");
+		mesh.povray(w,level<=par.smooth_mesh_level,indent);
+
+		if (clones != null) {
+		    for (int i=0; i<clones.size(); i++) {
+			((Stem)clones.elementAt(i)).povray(w,level);
+		    }
 		}
 
 	    }	else {
@@ -933,8 +958,10 @@ public class Stem implements StemInterface {
 		((Leaf)leaves.elementAt(i)).povray(w);
 	    }
 
-	    for (int i=0; i<clones.size(); i++) {
-		((Stem)clones.elementAt(i)).povray(w,level);
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).povray(w,level);
+		}
 	    }
 
 	    if (union) w.println(indent + "}");
@@ -945,9 +972,11 @@ public class Stem implements StemInterface {
 	    for (int i=0; i<substems.size(); i++) {
 		((Stem)substems.elementAt(i)).povray(w,level);
 	    }
-	    for (int i=0; i<clones.size(); i++) {
-		((Stem)clones.elementAt(i)).povray(w,level);
-	    }	  	
+	    if (clones != null) {
+		for (int i=0; i<clones.size(); i++) {
+		    ((Stem)clones.elementAt(i)).povray(w,level);
+		}	  	
+	    }
 	}
     }
 	  

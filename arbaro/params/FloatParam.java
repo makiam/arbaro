@@ -26,10 +26,10 @@ package params;
 import params.Param;
 
 class FloatParam extends Param {
-    double min;
-    double max;
-    double deflt;
-    double value;
+    private double min;
+    private double max;
+    private double deflt;
+    private double value;
 
     FloatParam(String nam, double mn, double mx, double def, String sh, String lng) {
 	super(nam,sh,lng);
@@ -39,8 +39,23 @@ class FloatParam extends Param {
 	value = Double.NaN;
     }
 
-    public void setValue(String val) {
+    public void setValue(String val) throws ErrorParam {
 	Double d = new Double(val);
+	if (d.doubleValue()<min) {
+	    throw new ErrorParam("Value of "+name+" should be greater then or equal to "+min);
+	}
+	if (d.doubleValue()>max) {
+	    throw new ErrorParam("Value of "+name+" should be less then or equal to "+max);
+	}
 	value = d.doubleValue();
+    }
+
+    public double getValue() {
+	if (Double.isNaN(value)) {
+	    warn(name+" not given, using default value("+deflt+")");
+	    // set value to default, t.e. don't warn again
+	    value=deflt;
+	}
+	return value;
     }
 };

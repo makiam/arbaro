@@ -31,6 +31,8 @@ import java.lang.Math;
 import java.io.PrintWriter;
 import transformation.Vector;
 import transformation.Matrix;
+import params.FloatFormat;
+import java.text.NumberFormat;
 
 public class Transformation {
     // A transformation class - a matrix for rotations and a vector for translations
@@ -108,11 +110,20 @@ string Transformation::str() const {
   */
     
 	
-    public String povray(PrintWriter w) {
-	return "matrix <" + matrix.get(X,X) + "," + matrix.get(X,Z) + "," + matrix.get(X,Y) + ","
-	    + matrix.get(Z,X) + "," + matrix.get(Z,Z) + "," + matrix.get(Z,Y) + ","
-	    + matrix.get(Y,X) + "," + matrix.get(Y,Z) + "," + matrix.get(Y,Y) + ","
-	    + vector.getX()   + "," + vector.getZ()   + "," + vector.getY() + ">";
+    public String povray() {
+	NumberFormat fmt = FloatFormat.getInstance();
+	return "matrix <" + fmt.format(matrix.get(X,X)) + "," 
+	    + fmt.format(matrix.get(X,Z)) + "," 
+	    + fmt.format(matrix.get(X,Y)) + ","
+	    + fmt.format(matrix.get(Z,X)) + "," 
+	    + fmt.format(matrix.get(Z,Z)) + "," 
+	    + fmt.format(matrix.get(Z,Y)) + ","
+	    + fmt.format(matrix.get(Y,X)) + "," 
+	    + fmt.format(matrix.get(Y,Z)) + "," 
+	    + fmt.format(matrix.get(Y,Y)) + ","
+	    + fmt.format(vector.getX())   + "," 
+	    + fmt.format(vector.getZ())   + "," 
+	    + fmt.format(vector.getY()) + ">";
     }
 
     public Transformation rotz(double angle) {

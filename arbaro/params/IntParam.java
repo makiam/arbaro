@@ -1,6 +1,7 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - Params class - it holds the tree parameters and 
+//  #    $Id$  
+//  #            - IntParams class - it holds integer  parameters 
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
 //  #
@@ -27,10 +28,10 @@ package params;
 import params.Param;
 
 class IntParam extends Param {
-    int min;
-    int max;
-    int deflt;
-    int value;
+    private int min;
+    private int max;
+    private int deflt;
+    private int value;
 
     IntParam(String nam,int mn, int mx, int def, String sh, String lng) {
 	super(nam,sh,lng);
@@ -40,8 +41,33 @@ class IntParam extends Param {
 	value = Integer.MIN_VALUE;
     }
 
-    public void setValue(String val) {
+    public void setValue(String val) throws ErrorParam {
 	Integer i = new Integer(val);
+	
+	if (i.intValue()<min) {
+	    throw new ErrorParam("Value of "+name+" should be greater or equal to "+min);
+	}
+
+	if (i.intValue()>max) {
+	    throw new ErrorParam("Value of "+name+" should be greater or equal to "+max);
+	}
+	
 	value = i.intValue();
     }
+
+    public int getValue() {
+	if (value==Integer.MIN_VALUE) {
+	    warn(name+" not given, using default value("+deflt+")");
+	    // set value to default, t.e. don't warn again
+	    value=deflt;
+	}
+	return value;
+    }
 }
+
+
+
+
+
+
+

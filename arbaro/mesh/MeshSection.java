@@ -25,7 +25,7 @@
 
 package mesh;
 
-//import java.util.Vector;
+import java.io.PrintWriter;
 import transformation.Vector;
 
 final class Vertex {
@@ -59,8 +59,11 @@ public class MeshSection extends java.util.Vector {
 	return ((Vertex)elementAt(i)).point;
     }
 
-    public Vector normal_at(int i) {
-	return ((Vertex)elementAt(i)).normal;
+    // FIXME: Exception -> ArbaroError?
+    public Vector normal_at(int i) throws Exception {
+	Vertex v = (Vertex)elementAt(i);
+	if (v.normal == null) throw new Exception("Error: Normal not set for point "+v.point.povray());
+	return v.normal;
     }
    
     public Vector here(int i) {
@@ -70,7 +73,7 @@ public class MeshSection extends java.util.Vector {
 	
     public Vector left(int i) {
 	// returns point to the left from point n-o i
-	return ((Vertex)elementAt((i-1)%size())).point;
+	return ((Vertex)elementAt((i-1+size())%size())).point;
     }
 
     public Vector right(int i) {
@@ -105,6 +108,9 @@ public class MeshSection extends java.util.Vector {
 	for (int i=0; i<size(); i++) {
 	    ((Vertex)elementAt(i)).normal=vec;
 	}
+
+	// System.err.println("set_normals_vector for "+size()+" points, vec: "+vec.povray());
+
     }
 
     public void set_normals_up() {
@@ -114,8 +120,34 @@ public class MeshSection extends java.util.Vector {
 	    ((Vertex)elementAt(i)).normal = 
 		(normal(up(i),here(i),left(i)).add(
 		 normal(right(i),here(i),up(i)))).normalize();
+
+	    //DBG
+	    /*
+	    Vector n =  ((Vertex)elementAt(i)).normal;
+	    if (Double.isNaN(n.getX())) {
+		System.err.println("STRANGENORMAL: here"+here(i).povray()
+				 +" up"+up(i).povray()+" left"+left(i).povray()
+				 +" right"+right(i).povray());
+		System.err.println("STRANGEN1: "+DBGnormal(up(i),here(i),left(i)).povray());
+		System.err.println("STRANGEN2: "+DBGnormal(right(i),here(i),up(i)).povray());
+
+	    }
+	    */
+
 	}
     }
+    /*
+    Vector DBGnormal(Vector a, Vector b, Vector c) {
+	// returns the normal of the plane buildt by the vectors a-b and c-b
+	// n= (a1*b2 - a2*b1, a2*b0 - a0*b2, a0*b1 - a1*b0)
+	Vector u = (a.sub(b)).normalize();
+	Vector v = (c.sub(b)).normalize();
+	System.err.println("STRANGENN: u:"+u.povray()+" v:"+v.povray());
+	return new Vector(u.getY()*v.getZ() - u.getZ()*v.getY(),
+		      u.getZ()*v.getX() - u.getX()*v.getZ(),
+		      u.getX()*v.getY() - u.getY()*v.getX()).normalize();
+    }
+    */
 
     public void set_normals_down() {
 	// set all normals to the average 
@@ -139,35 +171,48 @@ public class MeshSection extends java.util.Vector {
 	}
     }
 		
-    public void povray_points(String indent) {
+    public void povray_points(PrintWriter w, String indent) {
 	for (int i=0; i<size(); i++) {
-	    System.out.print(((Vertex)elementAt(i)).point.povray());
+	    w.print(((Vertex)elementAt(i)).point.povray());
 	    if (next != null || i<size()-1) {
-		System.out.print(",");
+		w.print(",");
 	    }
 	    if (i % 3 == 2) {
 		// new line
-		System.out.println();
-		System.out.print(indent+"          ");
+		w.println();
+		w.print(indent+"          ");
 	    } 
 	}
     }
 
-    public void povray_normals(String indent) {
+    public void povray_normals(PrintWriter w, String indent) {
 	for (int i=0; i<size(); i++) {
-	    System.out.print(((Vertex)elementAt(i)).normal.povray());
+	    w.print(((Vertex)elementAt(i)).normal.povray());
+
+	    //DBG
+	    /*
+	    Vector v = ((Vertex)elementAt(i)).normal;
+	    String s = v.povray();
+	    if (s.length() < 10) {
+		System.err.println("STRANGENORMAL: x:"+v.getX()+" y:"+v.getY()+" z:"+v.getZ());
+	    }
+	    */
+
 	    if (next != null|| i<size()-1) {
-		System.out.print(",");
+		w.print(",");
 	    }
 	    if (i % 3 == 2) {
 		// new line
-		System.out.println();
-		System.out.print(indent+"          ");
+		w.println();
+		w.print(indent+"          ");
 	    } 
 	}
     }
 };
 	
+
+
+
 
 
 

@@ -35,5 +35,9 @@ abstract class Param {
 	long_desc = lng;
     }
 
-    public abstract void setValue(String val);
+    public abstract void setValue(String val) throws ErrorParam;
+
+    protected void warn(String warning) {
+	System.err.println("WARNING: "+warning);
+    }
 }

@@ -1,6 +1,7 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - Params class - it holds the tree parameters and 
+//  #    $Id$  
+//  #            - Params class - it holds the tree parameters and 
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
 //  #
@@ -31,11 +32,6 @@ import params.FloatParam;
 import params.StringParam;
 import params.Random;
 
-class ErrorParam extends Exception {
-    public ErrorParam(String msg) {
-	super(msg);
-    }
-};
 
 public class Params {
     
@@ -215,7 +211,7 @@ public class Params {
     private int int_param(String name) throws ErrorParam {
 	IntParam par = (IntParam)paramDB.get(name);
 	if (par != null) {
-	    return par.value;
+	    return par.getValue();
 	} else {
 	    throw new ErrorParam("bug: param "+name+" not found!");
 	}
@@ -224,7 +220,7 @@ public class Params {
     private double dbl_param(String name) throws ErrorParam {
 	FloatParam par = (FloatParam)paramDB.get(name);
 	if (par != null) {
-	    return par.value;
+	    return par.getValue();
 	} else {
 	    throw new ErrorParam("bug: param "+name+" not found!");
 	}   
@@ -233,7 +229,7 @@ public class Params {
     private String str_param(String name) throws ErrorParam {
 	StringParam par = (StringParam)paramDB.get(name);
 	if (par != null) {
-	    return par.value;
+	    return par.getValue();
 	} else {
 	    throw new ErrorParam("bug: param "+name+" not found!");
 	}    
@@ -425,11 +421,13 @@ void Tree::setParams(Paramset &paramset) {
 	paramDB.put(name,new IntParam(name,min,max,deflt,short_desc,long_desc));
     }
 
-    private void int4_par(String name, int min, int max, int deflt,
-			 String short_desc, String long_desc) {
+    private void int4_par(String name, int min, int max, 
+			  int deflt0,int deflt1, int deflt2, int deflt3,
+			  String short_desc, String long_desc) {
+	int [] deflt = {deflt0,deflt1,deflt2,deflt3};
 	for (int i=0; i<4; i++) {
 	    name = "" + i + name.substring(1);
-	    paramDB.put(name,new IntParam(name,min,max,deflt,short_desc,long_desc));
+	    paramDB.put(name,new IntParam(name,min,max,deflt[i],short_desc,long_desc));
 	}
     }
 
@@ -438,11 +436,13 @@ void Tree::setParams(Paramset &paramset) {
 	paramDB.put(name,new FloatParam(name,min,max,deflt,short_desc,long_desc));
     }
 
-    private void flt4_par(String name, double min, double max, double deflt,
-			 String short_desc, String long_desc) {
+    private void flt4_par(String name, double min, double max, 
+			  double deflt0, double deflt1, double deflt2, double deflt3,
+			  String short_desc, String long_desc) {
+	double [] deflt = {deflt0,deflt1,deflt2,deflt3};
 	for (int i=0; i<4; i++) {
 	    name = "" + i + name.substring(1);
-	    paramDB.put(name,new FloatParam(name,min,max,deflt,short_desc,long_desc));
+	    paramDB.put(name,new FloatParam(name,min,max,deflt[i],short_desc,long_desc));
 	}
     }
 
@@ -472,24 +472,24 @@ void Tree::setParams(Paramset &paramset) {
 		 "BaseSize=0.5 means half of the trunk is branchless,\n"+
 		 "BaseSize=1.0 branches grow only from the peak of the trunk.\n");
 
-	flt_par("Scale",0.000001,Double.NaN,10.0,"average tree size in meters",
+	flt_par("Scale",0.000001,Double.POSITIVE_INFINITY,10.0,"average tree size in meters",
 		"Scale gives the average tree size in meters.\n"+
 		"Scale = 10.0, ScaleV = 2.0 means, trees of this species\n"+
 		"reach from 8.0 to 12.0 meters.\n"+
 		"Note, that the trunk length can be different from the tree size.\n"+
 		"(See 0Length and 0LengthV)\n");
 
-	flt_par("ScaleV",0.0,Double.NaN,0.0,"variation of tree size in meters",
+	flt_par("ScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"variation of tree size in meters",
 		"ScaleV gives the variation range of the tree size in meters.\n"+
 		"Scale = 10.0, ScaleV = 2.0 means, trees of this species\n"+
 		"reach from 8.0 to 12.0 meters.\n"+
 		"(See Scale)\n");
 
-	flt_par("ZScale",0.000001,Double.NaN,1.0,"additional Z-scaling (not used)",
+	flt_par("ZScale",0.000001,Double.POSITIVE_INFINITY,1.0,"additional Z-scaling (not used)",
 		"ZScale and ZScaleV are not described in the Weber/Penn paper.\n"+
 		"so there meaning is unclear and they aren't used at the moment\n");
 
-	flt_par("ZScaleV",0.0,Double.NaN,0.0,"additional Z-scaling variation (not used)",
+	flt_par("ZScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"additional Z-scaling variation (not used)",
 		"ZScale and ZScaleV are not described in the Weber/Penn paper.\n"+
 		"so there meaning is unclear and they aren't used at the moment\n");
 
@@ -501,14 +501,14 @@ void Tree::setParams(Paramset &paramset) {
 		"Levels>4 seldom necesarry, the parameters of the forth level are used\n"+
 		"Leaves are considered to be one level over the last stem level.\n");
 
-	flt_par("Ratio",0.000001,Double.NaN,0.05,"trunk radius/length ratio",
+	flt_par("Ratio",0.000001,Double.POSITIVE_INFINITY,0.05,"trunk radius/length ratio",
 		"Ratio gives the radius/length ratio of the trunk.\n"+
 		"Ratio=0.05 means the trunk is 1/20 as thick as it is long,\n"+
 		"t.e. a 10m long trunk has a base radius of 50cm.\n"+
 		"Note, that the real base radius could be greater, when Flare\n"+
 		"and/or Lobes are used. (See Flare, Lobes, LobesDepth, RatioPower)\n");
 
-	flt_par("RatioPower",Double.NaN,Double.NaN,1.0,"radius reduction",
+	flt_par("RatioPower",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,1.0,"radius reduction",
 		"RatioPower gives a reduction value for the radius of the\n"+
 		"substems.\n"+
 		"RatioPower=1.0  means the radius decreases linearly with\n"+
@@ -524,7 +524,7 @@ void Tree::setParams(Paramset &paramset) {
 		"can use it to make stems thinner, which are longer than it's parent.\n"+
 		"(See Ratio)\n");
 	
-	flt_par("Flare",Double.NaN,Double.NaN,0.5,"exponential expansion at base of tree",
+	flt_par("Flare",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.5,"exponential expansion at base of tree",
 		"Flare makes the trunk base thicker.\n"+
 		"Flare = 0.0 means base radius is used at trunk base\n"+
 		"Flare = 1.0 means trunk base is twice as thick as it's base radius\n"+
@@ -538,7 +538,7 @@ void Tree::setParams(Paramset &paramset) {
 		"cones output, but for mesh only.\n"+
 		"(See LobeDepth too)\n");
 	
-	flt_par("LobeDepth",0,Double.NaN,0,"amplitude of cross-section variation",
+	flt_par("LobeDepth",0,Double.POSITIVE_INFINITY,0,"amplitude of cross-section variation",
 		"LobeDepth defines, how deep the lobes of the trunk will be.\n"+
 		"This is the amplitude of the sinusoidal cross-section variations.\n"+
 		"(See Lobes)\n");
@@ -573,12 +573,12 @@ void Tree::setParams(Paramset &paramset) {
 		"more typically, especialy for fan palms seen\n"+
 		"from small distances.\n");
 	
-	flt_par("LeafScale",0.000001,Double.NaN,0.2,"leaf length",
+	flt_par("LeafScale",0.000001,Double.POSITIVE_INFINITY,0.2,"leaf length",
 		"LeafScale gives the length of the leaf in meters. \n"+
 		"The unit leaf is scaled in z-direction (y-direction in Povray)\n"+
 		"by this factor. (See LeafShape, LeafScaleX)\n");
 	
-	flt_par("LeafScaleX",0.000001,Double.NaN,0.5,"fractional leaf width",
+	flt_par("LeafScaleX",0.000001,Double.POSITIVE_INFINITY,0.5,"fractional leaf width",
 		"LeafScaleX gives the fractional width of the leaf\n"+
 		"relativly to it's length. So \n"+
 		"LeafScaleX=0.5 means the leaf is half as wide as long\n"+
@@ -594,7 +594,7 @@ void Tree::setParams(Paramset &paramset) {
 		"are oriented to the stem with high value to the light.\n"+
 		"For trees with bi long leaves like palms you should use lower values.\n");
 	
-	flt_par("LeafStemLen",Double.NaN,Double.NaN,0.5,"fractional leaf stem length",
+	flt_par("LeafStemLen",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.5,"fractional leaf stem length",
 		"The length of the leaf stem. For normal trees with many nearly circular\n"+
 		"leaves the default value of 0.5 (meaning the stem has half of the length\n"+
 		"of the leaf) is quite good. For other trees like palms with long leaves\n"+
@@ -617,7 +617,7 @@ void Tree::setParams(Paramset &paramset) {
 		"E.g. for shave-grass a low smooth value is best, because this herb\n"+
 		"has angular stems.");
 		
-	flt_par("AttractionUp",Double.NaN,Double.NaN,0.0,"upward/downward growth tendency",
+	flt_par("AttractionUp",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.0,"upward/downward growth tendency",
 		"AttractionUp gives the tendency of stems with level>=2 to grow\n"+
 		"upwards (downwards for negative values). A value of 1.0 means\n"+
 		"the last segment should point upward. Greater values means \n"+
@@ -634,13 +634,13 @@ void Tree::setParams(Paramset &paramset) {
 	flt_par("PruneWidthPeak",0.0,1.0,0.5,"position of envelope peak",
 		"...\n");
 
-	flt_par("PrunePowerLow",0.0,Double.NaN,0.5,"curvature of envelope",
+	flt_par("PrunePowerLow",0.0,Double.POSITIVE_INFINITY,0.5,"curvature of envelope",
 		"...\n");
 	
-	flt_par("PrunePowerHigh",0.0,Double.NaN,0.5,"curvature of envelope",
+	flt_par("PrunePowerHigh",0.0,Double.POSITIVE_INFINITY,0.5,"curvature of envelope",
 		"...\n");
 
-	flt_par("0Scale",0.000001,Double.NaN,1.0,"extra trunk scaling",
+	flt_par("0Scale",0.000001,Double.POSITIVE_INFINITY,1.0,"extra trunk scaling",
 		"0Scale and 0ScaleV makes the trunk thicker. This parameters\n"+
 		"exists for the level 0 only. From the Weber/Penn paper it is\n"+
 		"not clear, why there are two trunk scaling parameters \n"+
@@ -651,7 +651,7 @@ void Tree::setParams(Paramset &paramset) {
 		"Ratio/RatioPower parameters and the periodic tapering\n"+
 		"could be scaled, that the sections are elongated spheres)\n");
 	
-	flt_par("0ScaleV",0.0,Double.NaN,0.0,"variation for extra trunk scaling",
+	flt_par("0ScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"variation for extra trunk scaling",
 		"0Scale and 0ScaleV makes the trunk thicker. This parameters\n"+
 		"exists for the level 0 only. From the Weber/Penn paper it is\n"+
 		"not clear, why there are two trunk scaling parameters\n"+
@@ -666,7 +666,7 @@ void Tree::setParams(Paramset &paramset) {
 		"use BaseSplits for the first splitting to get a circular\n"+
 		"stem distribution (seen from top).\n");
 	
-	flt4_par("nLength",0.0000001,1.0,1.0,"fractional trunk scaling",
+	flt4_par("nLength",0.0000001,1.0,1.0,0.5,0.5,0.5,"fractional trunk scaling",
 		 "0Length and 0LengthV give the fractional length of the\n"+
 		 "trunk. So with Scale=10 and 0Length=0.8 the length of the\n"+
 		 "trunk will be 8m. Dont' confuse the height of the tree with\n"+
@@ -674,10 +674,10 @@ void Tree::setParams(Paramset &paramset) {
 		 "nLength and nLengthV give the fractional length of a stem\n"+
 		 "relating to the length of it's parent length\n");
 	
-	flt4_par("nLengthV",0.0,Double.NaN,0.0,"variation of fractional trunk scaling",
+	flt4_par("nLengthV",0.0,Double.POSITIVE_INFINITY,0.0,0.0,0.0,0.0,"variation of fractional trunk scaling",
 		 "nLengthV gives the variation for nLength.\n");
 	
-	flt4_par("nTaper",0.0,2.99999999,1.0,"cross-section scaling",
+	flt4_par("nTaper",0.0,2.99999999,1.0,1.0,1.0,1.0,"cross-section scaling",
 		 "nTaper gives the tapering of the stem along its length.\n"+
 		 "0 non-tapering cylinder\n"+
 		 "1 taper to a point (cone)\n"+
@@ -685,37 +685,37 @@ void Tree::setParams(Paramset &paramset) {
 		 "3 periodic tapering (concatenated spheres)\n"+
 		 "You can use also fractional values\n");
 	
-	flt4_par("nSegSplits",0,Double.NaN,0,"stem splits per segment",
+	flt4_par("nSegSplits",0,Double.POSITIVE_INFINITY,0,0,0,0,"stem splits per segment",
 		 "comes later");
 	
-	flt4_par("nSplitAngle",0,180,0,"splitting angle",
+	flt4_par("nSplitAngle",0,180,0,0,0,0,"splitting angle",
 		 "comes later");
 
-	flt4_par("nSplitAngleV",0,180,0,"splitting angle variation",
+	flt4_par("nSplitAngleV",0,180,0,0,0,0,"splitting angle variation",
 		 "comes later");
 	
-	int4_par("nCurveRes",1,Integer.MAX_VALUE,3,"curvature resolution",
+	int4_par("nCurveRes",1,Integer.MAX_VALUE,3,3,1,1,"curvature resolution",
 		 "comes later");
 	
-	flt4_par("nCurve",0,Double.NaN,0,"curving angle","");
+	flt4_par("nCurve",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle","");
 	
-	flt4_par("nCurveV",0,Double.NaN,0,"curving angle variation","");
+	flt4_par("nCurveV",0,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle variation","");
 	
-	flt4_par("nCurveBack",0,Double.NaN,0,"curving angle upper stem half","");
+	flt4_par("nCurveBack",0,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle upper stem half","");
 
-	flt4_par("nDownAngle",0.000001,179.999999,30,"angle from parent","");
+	flt4_par("nDownAngle",0.000001,179.999999,30,30,30,30,"angle from parent","");
 	
-	flt4_par("nDownAngleV",0.0,179.9999999,0,"down angle variation","");
+	flt4_par("nDownAngleV",-179.9999999,179.9999999,0,0,0,0,"down angle variation","");
 
-	flt4_par("nRotate",-360,360,120,"spirangling angle","");
+	flt4_par("nRotate",-360,360,120,120,120,120,"spirangling angle","");
 
-	flt4_par("nRotateV",-360,360,0,"spiraling angle variation","");
+	flt4_par("nRotateV",-360,360,0,0,0,0,"spiraling angle variation","");
 
-	int4_par("nBranches",0,Integer.MAX_VALUE,10,"number of branches","");
+	int4_par("nBranches",0,Integer.MAX_VALUE,1,10,5,5,"number of branches","");
 
-	flt4_par("nBranchDist",0,1,1,"branch distribution over the segment","");
+	flt4_par("nBranchDist",0,1,1,1,1,1,"branch distribution over the segment","");
 
-	flt4_par("nBranchDistV",0,1,0.5,"branch distribution variation","");
+	flt4_par("nBranchDistV",0,1,0.5,0.5,0.5,0.5,"branch distribution variation","");
 
 	//	if (debug) {
 	//	System.err.println("REGISTERPARAMS\n");

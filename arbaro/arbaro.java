@@ -23,84 +23,68 @@
 //  #**************************************************************************/
 
 import java.io.PrintWriter;
-import java.io.LineNumberReader;
-import java.io.InputStreamReader;
-import java.io.InputStream;
+//import java.io.InputStreamReader;
+//import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import params.Params;
+import params.CfgTreeParser;
+import params.XMLTreeParser;
 
 public class arbaro {
     static Tree tree;
 
+    static void p(String s) { System.err.println(s); }
+    static void p() { System.err.println(); }
+
     static void programname() {
-	System.err.println("arbaro - creates trees for rendering with povray from xml parameter files");
-	System.err.println("(c) 2003 by Wolfram Diestel (GPL see file COPYING)");
+	p("arbaro - creates trees for rendering with povray from xml parameter files");
+	p("(c) 2003 by Wolfram Diestel (GPL see file COPYING)");
+	p();
     }
 
     static void usage () {
-	System.err.println ("syntax:"); 
-	/*
-       << "arbaro [OPTIONS]  < <paramfile.xml> > <tree.inc>\n"
-       << "\n"
-       << "options\n"
-       << "     -h|--help            Show this helpscreen\n"
-       << "\n"
-       << "     -q|--quiet           Only error messages are output to stderr no progress\n"
-       << "\n"
-       << "     -d|--debug           Much debugging ouput should be interesting for developer only\n"
-       << "\n"
-       << "     -s|--seed <seed>     Random seed for the tree, default is 13, but you won't all\n"
-       << "                          trees look the same as mine, so giv something like -s 17 here\n"
-       << "                          the seed is part of the  declaration string in the povray file\n"
-       << "\n"
-       << "    -l|--levels <level>  1..Levels+1 -- calc and ouput only so much levels, usefull for\n"
-       << "                         fast testing of parameter changes or to get a draft tree for\n"
-       << "                         a first impression of a scene without all that small stems and\n"
-       << "                         leaves. Levels+1 means calc alle Levels and Leaves, but this\n"
-       << "                         is the same as not giving this option here\n"
-       << "\n"
-       << "    -m|--mesh [<smooth>] Output stems as mesh2 objects the optional smooth value influences\n"
-       << "                         how much vertices are used for every stem section and for which\n"
-       << "                         levels normals should be used to hide the triangle borders\n"
-       << "\n"
-       << "    -c|--cones           output stems as unions of cones and spheres, Lobes don't work\n"
-       << "                         with this option, but source files are a little bit smaller.\n"
-       << "                         Povray read Mesh2 objects faster. Cones are handy for use with\n"
-       << "                         KPovmodeler, which doesn't support mesh objects yet.\n"
-       << "\n"
-       << "    --treecfg            Input file is a simple Param=Value list. Needs less typing for\n"
-       << "                         a new tree than writing XML code\n"
-       << "\n"
-       << "    -x|--xml             Output parameters as XML tree definition instead of creating\n"
-       << "                         the tree and writing it as povray code. Useful for converting a\n"
-       << "                         simple parameter list to a XML file: \n"
-       << "                            arbaro.py --treecfg -x < mytree.cfg > mytree.xml\n"
-       << "\n"
-       << "example:\n"
-       << "\n"
-       << "    arbaro.py < trees/quaking_aspen.xml > pov/quaking_aspen.inc\n"
-       << "\n";
-	*/
-    }
-
-    static void read_cfg_tree_file(InputStream is) throws Exception {
-	LineNumberReader r = new LineNumberReader(new InputStreamReader(is));
-	String line = r.readLine();
-	String param;
-	String value;
-	while (line != null) {
-	    if (line != "" && line.charAt(0) != '#') {
-		int equ = line.indexOf('=');
-		param = line.substring(0,equ).trim();
-		value = line.substring(equ+1).trim();
-		if (param.equals("species")) {
-		    tree.params.species = value;
-		} else {
-		    tree.params.setParam(param,value);
-		}
-		line = r.readLine();
-	    }
-	}
+	p("syntax:"); 
+	p("arbaro [OPTIONS]  < <paramfile.xml> > <tree.inc>");
+	p();
+	p("options");
+	p("     -h|--help            Show this helpscreen");
+	p();
+	p("     -q|--quiet           Only error messages are output to stderr no progress");
+	p();
+	p("     -d|--debug           Much debugging ouput should be interesting for developer only");
+	p();
+	p("     -s|--seed <seed>     Random seed for the tree, default is 13, but you won't all");
+	p("                          trees look the same as mine, so giv something like -s 17 here");
+	p("                          the seed is part of the  declaration string in the povray file");
+	p();
+	p("    -l|--levels <level>  1..Levels+1 -- calc and ouput only so much levels, usefull for");
+	p("                         fast testing of parameter changes or to get a draft tree for");
+	p("                         a first impression of a scene without all that small stems and");
+	p("                         leaves. Levels+1 means calc alle Levels and Leaves, but this");
+	p("                         is the same as not giving this option here");
+	p();
+	p("    -m|--mesh [<smooth>] Output stems as mesh2 objects the optional smooth value influences");
+	p("                         how much vertices are used for every stem section and for which");
+	p("                         levels normals should be used to hide the triangle borders");
+	p();
+	p("    -c|--cones           output stems as unions of cones and spheres, Lobes don't work");
+	p("                         with this option, but source files are a little bit smaller.");
+	p("                         Povray read Mesh2 objects faster. Cones are handy for use with");
+	p("                         KPovmodeler, which doesn't support mesh objects yet.");
+	p();
+	p("    --treecfg            Input file is a simple Param=Value list. Needs less typing for");
+	p("                         a new tree than writing XML code");
+	p();
+	p("    -x|--xml             Output parameters as XML tree definition instead of creating");
+	p("                         the tree and writing it as povray code. Useful for converting a");
+	p("                         simple parameter list to a XML file: ");
+	p("                            arbaro.py --treecfg -x < mytree.cfg > mytree.xml");
+	p();
+	p("example:");
+	p();
+	p("    arbaro.py < trees/quaking_aspen.xml > pov/quaking_aspen.inc");
+	p();
     }
 
     public static void main (String [] args) throws Exception{
@@ -213,9 +197,11 @@ public class arbaro {
       //read_xml_tree_file(sys.stdin)
     } else {
 	*/
-	tree.params.debug=true;
+	tree.params.debug=false;
+	tree.params.output=Params.MESH;
 	
-	read_cfg_tree_file(System.in);
+	CfgTreeParser parser = new CfgTreeParser();
+	parser.parse(System.in,tree.params);
       //    }
 
     
