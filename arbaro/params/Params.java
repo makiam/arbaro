@@ -437,8 +437,6 @@ public class Params {
 
 	// read in parameter values from ParamDB
 	fromDB();
-
-
    
 	if (ignoreVParams) {
 	    ScaleV=0;
@@ -448,7 +446,7 @@ public class Params {
 		lp.nLengthV = 0;
 		lp.nSplitAngleV = 0;
 		lp.nRotateV = 0;
-		lp.nBranchDistV = 0;
+		// lp.nBranchDistV = 0;
 		if (lp.nDownAngle>0) { lp.nDownAngle=0; }
 	    }
 	}
@@ -637,7 +635,7 @@ void Tree::setParams(Paramset &paramset) {
 		 "8 - envelope - use pruning envelope\n"+
 		 "(see PruneWidth, PruneWidtPeak, PrunePowerLow, PrunePowerHigh)\n");
 
-	flt_par ("BaseSize",0.0,1.0,0.25,"TRUNK","fractional branchless area at tree base",
+	flt_par ("BaseSize",0.0,1.0,0.25,"SHAPE","fractional branchless area at tree base",
 		 "BaseSize is the fractional branchless part of the trunk. E.g.\n"+
 		 "BaseSize=0   means branches begin on the bottom of the tree,\n"+
 		 "BaseSize=0.5 means half of the trunk is branchless,\n"+
@@ -960,19 +958,19 @@ void Tree::setParams(Paramset &paramset) {
 		 "length of theire parent.\n");
 
 	flt4_par("nBranchDist",0,1,0,1,1,1,
-		 "ADDBRANCH","branch distribution along the segment",
+		 "BRANCHING","branch distribution along the segment",
 		 "This is an additional parameter of Arbaro, it influences the\n"+
 		 "distribution of branches over a segment of the parent stem.\n"+
 		 "With 1.0 you get evenly distribution of branches like in the\n"+
 		 "original model. With 0.0 all branches grow from the segments\n"+
 		 "base like for conifers.\n");
 
-	flt4_par("nBranchDistV",0,1,0,0.5,0.5,0.5,
+	/*	flt4_par("nBranchDistV",0,1,0,0.5,0.5,0.5,
 		 "ADDBRANCH","branch distribution variation",
 		 "This is the variation of branch distribution.\n"+
 		 "A value of 0.0 means evenly distribution of branches over\n"+
 		 "the parent segment. With a value of 1.0 a branch can grow\n"+
-		 "from any point between the preceeding and the following branch.\n");
+		 "from any point between the preceeding and the following branch.\n"); */
     }
 
     public void readFromCfg(InputStream is) throws Exception {

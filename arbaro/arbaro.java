@@ -150,7 +150,7 @@ public class arbaro {
 		output = Params.CONES;
 	    } else if (args[i].equals("-m") || args[i].equals("--mesh")) {
 		output = Params.MESH;
-		if (args[i+1].charAt(0) == '0' || args[i+1].charAt(1) == '1') {
+		if (args[i+1].charAt(0) == '0' || args[i+1].charAt(0) == '1') {
 		    smooth = new Double(args[++i]).doubleValue();
 		}
 	    } else if (args[i].equals("-x") || args[i].equals("--xml")) {

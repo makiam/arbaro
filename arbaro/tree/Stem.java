@@ -489,7 +489,7 @@ public class Stem {
 	    // add flaring (thicker stem base)
 	    //DBG("Stem.stem_radius(): Flare: "+par.Flare);
 	    if (par.Flare != 0) {
-		double y = Math.max(0,1-8*z);
+		double y = Math.max(0,1-8*Z);
 		double flare = 1 + par.Flare * (Math.pow(100,y) - 1) / 100.0;
 		DBG("Stem.stem_radius(): Flare: "+flare+" h: "+h+" Z: "+Z);
 		radius = radius*flare;
@@ -619,7 +619,7 @@ public class Stem {
 
 	// what distance between the segements substems
 	double dist = (1.0-offs)/substems_eff*lpar_1.nBranchDist;
-	double distv = dist*lpar_1.nBranchDistV/2;
+	double distv = dist*0.25; // lpar_1.nBranchDistV/2;
 
 	DBG("Stem.make_substems(): offs: "+offs+" dist: "+dist+" distv: "+distv);
 

@@ -78,7 +78,7 @@ public class LevelParams {
     public double nBranchDist; // SubstemDistance within segment 
                 // 0: all substems at segment base
                 // 1: distributed over full segment
-    public double nBranchDistV; // Distance variation 
+    //    public double nBranchDistV; // Distance variation 
               // 0: evenly distribution of substems over segment
               // 1: distances variates between 0..nSubStemDist*seglen/substems
 
@@ -164,7 +164,7 @@ public class LevelParams {
 	if (! leafLevelOnly) {
 	    xml_param(w,"nBranches",nBranches);
 	    xml_param(w,"nBranchDist",nBranchDist);
-	    xml_param(w,"nBranchDistV",nBranchDistV);
+	    //	    xml_param(w,"nBranchDistV",nBranchDistV);
 	    xml_param(w,"nLength",nLength);
 	    xml_param(w,"nLengthV",nLengthV);
 	    xml_param(w,"nTaper",nTaper);
@@ -214,7 +214,7 @@ public class LevelParams {
 	    nBranches = int_param("nBranches");
 	}
 	nBranchDist = dbl_param("nBranchDist");
-	nBranchDistV = dbl_param("nBranchDistV");
+	//	nBranchDistV = dbl_param("nBranchDistV");
 	nDownAngle = dbl_param("nDownAngle");
 	nDownAngleV = dbl_param("nDownAngleV");
 	nRotate = dbl_param("nRotate");

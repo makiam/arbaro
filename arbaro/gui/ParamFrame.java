@@ -53,10 +53,11 @@ public class ParamFrame {
     final static ImageIcon radiusIcon = createImageIcon("images/radius.png","Trunk radius");
     final static ImageIcon leavesIcon = createImageIcon("images/leaves.png","Leaves");
     final static ImageIcon pruneIcon = createImageIcon("images/pruning.png","Pruning/Envelope");
-    final static ImageIcon substemIcon = createImageIcon("images/substem.png","Branching");
+    final static ImageIcon miscIcon = createImageIcon("images/misc.png","Miscellaneous parameters");
+    final static ImageIcon lentapIcon = createImageIcon("images/len_tapr.png","Length and taper");
     final static ImageIcon curveIcon = createImageIcon("images/curve.png","Curvature");
-    final static ImageIcon scaleIcon = createImageIcon("images/scale.png","Scale");
-    final static ImageIcon taperIcon = createImageIcon("images/taper.png","Taper");
+    final static ImageIcon splitIcon = createImageIcon("images/splitting.png","Splitting");
+    final static ImageIcon substemIcon = createImageIcon("images/substem.png","Branching");
 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path,
@@ -128,7 +129,7 @@ public class ParamFrame {
 	panel1.add(new ParamGroup(this,"PRUNING","Pruning/Envelope",
 				  AbstractParam.GENERAL,imagelabel,pruneIcon));
 	panel1.add(new ParamGroup(this,"MISC","Miscellaneous parameters",
-				  AbstractParam.GENERAL,imagelabel,curveIcon));
+				  AbstractParam.GENERAL,imagelabel,miscIcon));
 	
 	panel1.add(imagelabel);
 
@@ -170,16 +171,19 @@ public class ParamFrame {
 	    imagelabel.setForeground(Color.WHITE);
 
 	    // param groups
-	    panel.add(new ParamGroup(this,"LENTAPER","Length and tapering",
-				     i,imagelabel,taperIcon));
-	    panel.add(new ParamGroup(this,"CURVATURE","Curvature",
-				     i,imagelabel,curveIcon));
+	    JPanel lencurpanel = new JPanel();
+	    lencurpanel.setLayout(new GridLayout(2,1));
+	    lencurpanel.add(new ParamGroup(this,"LENTAPER","Length and taper",
+					   i,imagelabel,lentapIcon));
+	    lencurpanel.add(new ParamGroup(this,"CURVATURE","Curvature",
+					   i,imagelabel,curveIcon));
+	    panel.add(lencurpanel);
 	    panel.add(new ParamGroup(this,"SPLITTING","Splitting",
-				     i,imagelabel,curveIcon));
+				     i,imagelabel,splitIcon));
 	    panel.add(new ParamGroup(this,"BRANCHING","Branching",
 				     i,imagelabel,substemIcon));
-	    panel.add(new ParamGroup(this,"ADDBRANCH","Branch distribution",
-				     i,imagelabel,scaleIcon));
+	    //	    panel.add(new ParamGroup(this,"ADDBRANCH","Branch distribution",
+	    //		     i,imagelabel,branchdistIcon));
 	    
 	    panel.add(imagelabel);
 	}

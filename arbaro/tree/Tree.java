@@ -276,7 +276,8 @@ void Tree::dump() const {
     public synchronized void setMakeProgress() {
 	// how much of 0Branches*0CurveRes*(1Branches+1) are created yet
 	makeProgress = 1 //FIXME: only one trunk at the moment, later use trunks.size()
-	    * trunk.segments.size() * (trunk.substems.size()+1);
+	    * trunk.segments.size() * 
+	    ((trunk.substems == null? 0 : trunk.substems.size()) + 1);
     }
     /*    public synchronized void setPovrayProgress(int prog) {
 	povrayProgress = prog;
