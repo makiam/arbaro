@@ -140,9 +140,13 @@ class Leaf {
 	  
 	//mid = self.position+self.direction # what about connecting stem len?
 	// FIXME: move "scale..." to tree
+	/*
 	w.println(indent + "object { " + par.species + "_" + par.Seed 
 		  + "_leaf " + "scale <" + width + "," + length + "," + width + "> "
 		  + transf.povray()+"}");
+	*/
+	w.println(indent + "object { " + par.species + "_" + par.Seed 
+		  + "_leaf " + transf.povray()+"}");
     }
 
     void make() {

@@ -808,7 +808,7 @@ void Tree::setParams(Paramset &paramset) {
 	
 	flt4_par("nCurveBack",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,"curving angle upper stem half","");
 
-	flt4_par("nDownAngle",0.000001,179.999999,0,30,30,30,"angle from parent","");
+	flt4_par("nDownAngle",-179.9999999,179.999999,0,30,30,30,"angle from parent","");
 	
 	flt4_par("nDownAngleV",-179.9999999,179.9999999,0,0,0,0,"down angle variation","");
 

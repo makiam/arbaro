@@ -125,10 +125,13 @@ class Tree {
     }
     
     void povray_leaf(PrintWriter w) {
+	double length = params.LeafScale/Math.sqrt(params.LeafQuality);
+	double width = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
 	w.println("#include \"arbaro.inc\"");
 	w.println("#declare " + pov_prefix() + "leaf = " +
 		"object { Arb_leaf_" + (params.LeafShape.equals("0")? "disc" : params.LeafShape)
-		+ " translate " + (params.LeafStemLen+0.5) + "*y }");
+		  + " translate " + (params.LeafStemLen+0.5) + "*y scale <" 
+		  + width + "," + length + "," + width + "> }");
     }	  	
 
     public void povray_scene(PrintWriter w) {
@@ -151,8 +154,16 @@ class Tree {
 	w.println("         object { " + pov_prefix() + "stems");
 	w.println("                pigment {color rgb 0.9} }"); 
 	w.println("         object { " + pov_prefix() + "leaves");
-	w.println("                pigment {color rgb 1} }");
-	w.println("         finish { ambient 0.15 diffuse 0.8 } }");
+	w.println("                texture { pigment {color rgb 1} ");
+	w.println("                          finish { ambient 0.15 diffuse 0.8 }}}");
+	w.println("         rotate 90*y }");
+
+	if (params.Leaves > 0) {
+	    w.println("         object { " + pov_prefix() + "stems");
+	    w.println("                scale 0.7 rotate 45*y");  
+	    w.println("                translate <WIDTH*0.33,HEIGHT*0.33,WIDTH>");
+	    w.println("                pigment {color rgb 0.9} }"); 
+	}
 	w.flush();
     }
 

@@ -208,6 +208,8 @@ public class Mesh extends java.util.Vector {
 	    w.println();
 	}
 	w.println(indent + "  }");
+	// use less memory
+	// w.println(indent+"  hierarchy off");
 	w.println(indent + "}");
 	
 	if (debugmesh) try {

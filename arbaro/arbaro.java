@@ -24,6 +24,8 @@
 
 package net.sourceforge.arbaro;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.FileWriter;
@@ -48,18 +50,20 @@ public class arbaro {
 
     static void usage () {
 	p("syntax:"); 
-	p("arbaro [OPTIONS]  < <paramfile.xml> > <tree.inc>");
+	p("arbaro [OPTIONS] <paramfile.xml> > <tree.inc>");
 	p();
 	p("options");
-	p("     -h|--help            Show this helpscreen");
+	p("     -h|--help           Show this helpscreen");
 	p();
-	p("     -q|--quiet           Only error messages are output to stderr no progress");
+	p("     -q|--quiet          Only error messages are output to stderr no progress");
 	p();
-	p("     -d|--debug           Much debugging ouput should be interesting for developer only");
+	p("     -d|--debug          Much debugging ouput should be interesting for developer only");
 	p();
-	p("     -s|--seed <seed>     Random seed for the tree, default is 13, but you won't all");
-	p("                          trees look the same as mine, so giv something like -s 17 here");
-	p("                          the seed is part of the  declaration string in the povray file");
+	p("     -o|--output <file>  Output Povray code to this file instead of STDOUT");
+	p();
+	p("     -s|--seed <seed>    Random seed for the tree, default is 13, but you won't all");
+	p("                         trees look the same as mine, so giv something like -s 17 here");
+	p("                         the seed is part of the  declaration string in the povray file");
 	p();
 	p("    -l|--levels <level>  1..Levels+1 -- calc and ouput only so much levels, usefull for");
 	p("                         fast testing of parameter changes or to get a draft tree for");
@@ -91,7 +95,7 @@ public class arbaro {
 	p();
     }
 
-    class opt_val {
+    /*    class opt_val {
 	public String opt;
 	public String val;
 
@@ -105,6 +109,7 @@ public class arbaro {
 	// if ((String)args.firstElement()).startsWith
 	return "";
     }
+    */
 
     public static void main (String [] args) throws Exception{
 	//	try {
@@ -117,18 +122,22 @@ public class arbaro {
 	int output=Params.MESH;
 	double smooth=-1;
 	int input = XMLinput;
+	String input_file = null;
+	String output_file = null;
 	String scene_file = null;
 
 	for (int i=0; i<args.length; i++) {
 
-
 	    if (args[i].equals("-d") || args[i].equals("--debug")) {
 		debug = true;
 	    } else if (args[i].equals("-h") || args[i].equals("--help")) {
+		programname();
 		usage();
 		System.exit(0);
 	    } else if (args[i].equals("-q") || args[i].equals("--quiet")) {
 		quiet = true;
+	    } else if (args[i].equals("-o") || args[i].equals("--output")) {
+		output_file = args[++i];
 	    } else if (args[i].equals("-s") || args[i].equals("--seed")) {
 		seed = new Integer(args[++i]).intValue();
 	    } else if (args[i].equals("-l") || args[i].equals("--levels")) {
@@ -146,16 +155,19 @@ public class arbaro {
 		input = CFGinput;
 	    } else if (args[i].equals("-p") || args[i].equals("--scene")) {
 		scene_file = args[++i];
+	    } else if (args[i].charAt(0) == '-') {
+		programname();
+		usage();
+		System.err.println("Invalid option "+args[i]+"!");
+		System.exit(1);
+	    } else {
+		// rest of args should be files 
+		// input_files = new String[] = ...
+		input_file = args[i];
+		break;
 	    }
 	}
 		       
-	// rest of args should be files    
-	// ...
-	//if (optind < argc) {
-	//   while (optind < argc)
-	//                  argv[optind++]...
-	//           }
-	
 	
 	//########## read params from XML file ################
 	
@@ -168,12 +180,20 @@ public class arbaro {
 	// put here or later?
 	if (smooth>=0) tree.params.Smooth = smooth;
 	
-	if (! quiet) {
-	    System.err.println("Reading parameters from STDIN...");
+	if (! quiet) System.err.println("Reading parameters from "
+					+ (input_file==null?"STDIN":input_file)
+					+"...");
+
+	InputStream in;
+	if (input_file == null) {
+	    in = System.in;
+	} else {
+	    in = new FileInputStream(input_file);
 	}
-	
-	if (input == CFGinput) tree.params.readFromCfg(System.in);
-	else tree.params.readFromXML(System.in);
+
+	// read parameters
+	if (input == CFGinput) tree.params.readFromCfg(in);
+	else tree.params.readFromXML(in);
 	
 	// FIXME: put here or earlier?
 	if (smooth>=0) tree.params.setParam("Smooth",new Double(smooth).toString());
@@ -181,8 +201,13 @@ public class arbaro {
 	tree.params.verbose=(! quiet);
 	tree.params.Seed=seed;
 	tree.params.stopLevel = levels;
-	
-	PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
+
+	PrintWriter out;
+	if (output_file == null) {
+	    out = new PrintWriter(new OutputStreamWriter(System.out));
+	} else {
+	    out = new PrintWriter(new FileWriter(new File(output_file)));
+	}
 
 	if (output==XMLoutput) {
 	    // save parameters in XML file, don't create tree

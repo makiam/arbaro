@@ -207,7 +207,7 @@ public class Stem implements StemInterface {
     }
 		
     void pruning() {
-	if (par.verbose) System.err.print("?");
+	//if (par.verbose) System.err.print("?");
 	// save random state, split and len values
 	lpar.saveState();
 	double splitcorr = split_corr;
@@ -533,9 +533,11 @@ public class Stem implements StemInterface {
 	    DBG("Stem.prepare_substem_params(): stems_max: "+ substem_cnt 
 		+ " substems_per_segment: " + substems_per_segment);
 	} else if (stemlevel==1) {
-	    substem_cnt = (int)(stems_max * (0.2 + 0.8*(length/parent.length)) 
-				       / parent.length_child_max);
+	    substem_cnt = (int)(stems_max * 
+				(0.2 + 0.8*length/parent.length/parent.length_child_max));
 	    substems_per_segment = substem_cnt / (float)segment_cnt;
+	    //	    DBG("Stem.prepare_substem_params(): stems_max: "+stems_max+ "length/parlen"+
+	    //		(length/parent.length) + "len_ch_max: "+parent.length_child_max);
 	    DBG("Stem.prepare_substem_params(): substem_cnt: "+ substem_cnt 
 		+ " substems_per_segment: " + substems_per_segment);
 	} else {
