@@ -155,6 +155,8 @@ public class ParamFrame {
 	tabs.setSelectedIndex(0);
 
 	// add tabs for level params
+	JLabel imagelabel2;
+	JLabel imagelabel3;
 	for (int i=0; i<4; i++) {
 	    JPanel panel = new JPanel();
 	    panel.setLayout(new GridLayout(2,3,20,20));
@@ -162,13 +164,23 @@ public class ParamFrame {
 
 	    tabs.addTab("Level "+i, null, panel, "Parameters for branching level "+i);
 
-	    // image area
-	    imagelabel = new JLabel("", curveIcon, JLabel.CENTER);
+	    // image area 1
+	    imagelabel = new JLabel("", lentapIcon, JLabel.CENTER);
 	    imagelabel.setBorder(BorderFactory.createTitledBorder(
-			     BorderFactory.createEmptyBorder(5,10,5,10),"Curvature",
+			     BorderFactory.createEmptyBorder(5,10,5,10),"Length and taper",
 			     TitledBorder.CENTER,TitledBorder.TOP));
-	    imagelabel.setOpaque(true);
-	    imagelabel.setForeground(Color.WHITE);
+
+	    // image area 2
+	    imagelabel2 = new JLabel("", splitIcon, JLabel.CENTER);
+	    imagelabel2.setBorder(BorderFactory.createTitledBorder(
+			     BorderFactory.createEmptyBorder(5,10,5,10),"Splitting",
+			     TitledBorder.CENTER,TitledBorder.TOP));
+
+	    // image area 3
+	    imagelabel3 = new JLabel("", substemIcon, JLabel.CENTER);
+	    imagelabel3.setBorder(BorderFactory.createTitledBorder(
+			     BorderFactory.createEmptyBorder(5,10,5,10),"Branching",
+			     TitledBorder.CENTER,TitledBorder.TOP));
 
 	    // param groups
 	    JPanel lencurpanel = new JPanel();
@@ -179,14 +191,16 @@ public class ParamFrame {
 					   i,imagelabel,curveIcon));
 	    panel.add(lencurpanel);
 	    panel.add(new ParamGroup(this,"SPLITTING","Splitting",
-				     i,imagelabel,splitIcon));
+				     i,imagelabel2,splitIcon));
 	    panel.add(new ParamGroup(this,"BRANCHING","Branching",
-				     i,imagelabel,substemIcon));
+				     i,imagelabel3,substemIcon));
 	    //	    panel.add(new ParamGroup(this,"ADDBRANCH","Branch distribution",
 	    //		     i,imagelabel,branchdistIcon));
 	    
 	    panel.add(imagelabel);
-	}
+	    panel.add(imagelabel2);
+	    panel.add(imagelabel3);
+}
 
 	// add more
 	frame.getContentPane().add(tabs);
