@@ -30,13 +30,16 @@ package net.sourceforge.arbaro.transformation;
 import java.lang.String;
 import java.lang.Math;
 
-import java.io.PrintWriter;
-
 import java.text.NumberFormat;
 import net.sourceforge.arbaro.params.FloatFormat;
 
+/**
+ * A 3x3 matrix class
+ * 
+ * @author Wolfram Diestel
+ *
+ */
 class Matrix {
-    // A matrix class
     final int X=0;
     final int Y=1;
     final int Z=2;
@@ -123,8 +126,13 @@ class Matrix {
 	return R;
     }
 	
+    /**
+     * Adds the matrix to another
+     * 
+     * @param M the matrix to be added
+     * @return the sum of the two matrices
+     */
     public Matrix add(Matrix M) {
-	// returns the sum of the two matrices
 	Matrix R = new Matrix();
   
 	for (int r=X; r<=Z; r++) {
@@ -135,15 +143,32 @@ class Matrix {
 	return R;
     }
 		
+    /**
+     * Multiplies the matrix with a vector
+     * 
+     * @param v the vector
+     * @return The product of the matrix and the vector
+     */
     public Vector prod(Vector v) {
-	// returns the product of the matrix with a vector
 	return new Vector(row(X).prod(v),row(Y).prod(v),row(Z).prod(v));
     }
 
+    /**
+     * Divids the matrix by a value
+     * 
+     * @param factor the divisor
+     * @return The matrix divided by the value
+     */
     public Matrix div(double factor) {
 	return mul(-1);
     }
 
+    /**
+     * Substracts a matrix
+     * 
+     * @param M the matrix to be subtracted
+     * @return The result of subtracting another matrix
+     */
     public Matrix sub(Matrix M) {
 	return add(M.mul(-1));
     }
@@ -151,8 +176,12 @@ class Matrix {
 };  // class Matrix
 
 
+/**
+ * A transformation class - a matrix for rotations and a vector for translations
+ * 
+ * @author Wolfram Diestel
+ */
 public class Transformation {
-    // A transformation class - a matrix for rotations and a vector for translations
     final int X=0;
     final int Y=1;
     final int Z=2;
@@ -179,31 +208,65 @@ public class Transformation {
 	return vector;
     }
 
+    /**
+	 * Returns the product of two transformations, .i.e. the tranformation
+	 * resulting of the two transformations applied one after the other
+	 * 
+     * @param T
+     * @return
+     */
     public Transformation prod(Transformation T) {
-	// the product of two transformations, .i.e. the tranformation
-	// resulting of the two transformations aplied one after the other
 	return new Transformation(matrix.prod(T.matrix()),
 			      matrix.prod(T.vector()).add(vector));
     }
 	
+    /**
+	 * Applies the transformation to a vector
+	 * 
+     * @param v
+     * @return
+     */
     public Vector apply(Vector v) {
-	// aplies transformation to vector v
 	return matrix.prod(v).add(vector);
     }
 
+    /**
+     * Returns the X-column of the rotation matrix. This
+     * is the projection on to the x-axis
+     * 
+     * @return
+     */
     public Vector getX() {
 	return matrix.col(X);
     }
 
+    /**
+     * Returns the Y-column of the rotation matrix. This
+     * is the projection on to the y-axis
+     * 
+     * @return
+     */
     public Vector getY() {
 	return matrix.col(Y);
     }
 
+    /**
+     * Returns the Z-column of the rotation matrix. This
+     * is the projection on to the z-axis
+     * 
+     * @return
+     */
     public Vector getZ() {
 	return matrix.col(Z);
     }
 
-    public Vector getT() { // for convenince same as vector()
+    /**
+     * Returns the translation vector of the transformation.
+     * (for convenience, same as vector()) 
+     * 
+     * @return
+     */
+    public Vector getT() { 
 	return vector;
     }
 

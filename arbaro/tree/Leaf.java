@@ -30,8 +30,12 @@ import java.lang.Math;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.params.*;
 
+/**
+ * A class for the leaves of the tree
+ * 
+ * @author Wolfram Diestel
+ */
 class Leaf {
-    // A class for the leaves of the tree
  
     Transformation transf;
     Params par;
@@ -61,9 +65,14 @@ class Leaf {
 	leaf_orientation();
     }
 
+    /**
+     * Returns the angle of a 2-dimensional vector (u,v) with the u-axis 
+     *
+     * @param v v-coordinate of the vector
+     * @param u u-coordinate of the vector
+     * @return a value from (-180..180)
+     */
     private double atan2(double v, double u)  {
-	// returns the angle of a 2-dimensional vector (u,v) with the u-axis 
-	// returns a value from (-180..180)
 	if (u==0) {
 	    if (v>=0) return 90;
 	    else return -90;
@@ -76,14 +85,18 @@ class Leaf {
 	}
     }
       
+    /**
+     *	Sets the length and width of a leaf
+     */
     private void leaf_dimension() {
-	// set the length and width of a leaf
 	length = par.LeafScale/Math.sqrt(par.LeafQuality);
 	width = par.LeafScale*par.LeafScaleX/Math.sqrt(par.LeafQuality);
     }
 
+    /**
+     *	Leaf rotation toward light
+     */
     private void leaf_orientation() {
-	// leaf rotation toward light
 	if (par.LeafBend==0) return;
 	  
 	// FIXME: make this function as fast as possible - a tree has a lot of leafs
@@ -126,6 +139,12 @@ class Leaf {
 	    // self.parent.TRF("leaf_orient after rot up",self.transf)
     }
 	
+    /**
+     * Makes a string with a number of spaces
+     * 
+     * @param len the number of spaces
+     * @return a string of spaces
+     */
     private String whitespace(int len) {
 	char[] ws = new char[len];
 	for (int i=0; i<len; i++) {
@@ -134,6 +153,11 @@ class Leaf {
 	return new String(ws);
     }
 
+    /**
+     * Outputs leaves as Povray code when primitive output is used
+     * 
+     * @param w the output stream
+     */
     public void povray(PrintWriter w) {
 	// prints povray code for the leaf
 	String indent = whitespace(4);
@@ -149,6 +173,10 @@ class Leaf {
 		  + "_leaf " + transf.povray()+"}");
     }
 
+    /**
+     * Makes the leave. Does nothing at the moment, because
+     * all the values can be calculated in the constructor 
+     */
     void make() {
 	// makes the leaf shape
 	// FIXME: add code here if necessary

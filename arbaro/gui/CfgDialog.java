@@ -24,11 +24,11 @@
 
 package net.sourceforge.arbaro.gui;
 
-import java.io.*;
+//import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;    
-import javax.swing.event.*;
+//import javax.swing.event.*;
 
 public class CfgDialog {
     JFrame frame;

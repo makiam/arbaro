@@ -31,6 +31,11 @@ import java.lang.Math;
 import java.text.NumberFormat;
 import net.sourceforge.arbaro.params.FloatFormat;
 
+/**
+ * A x,y,z-vector class
+ * 
+ * @author Wolfram Diestel
+ */
 public class Vector {
     final int X=0;
     final int Y=1;

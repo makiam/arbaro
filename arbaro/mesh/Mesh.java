@@ -28,11 +28,23 @@ package net.sourceforge.arbaro.mesh;
 
 import java.io.PrintWriter;
 
+/**
+ * A class for creation, handling and output of a mesh object.
+ * A Mesh consists of MeshParts which are tube like objects,
+ * made from MeshSections. See the this diagram:
+ * <p>
+ * <img src="doc-files/Mesh-1.png" />
+ * <p>
+ *  
+ * 
+ * @author Wolfram Diestel
+ *
+ * TODO 
+ */
 public class Mesh extends java.util.Vector {
     final boolean debugmesh = false;
 
 
-    // A class for creation, handling and output a mesh object
     public Mesh() { }
 
     public void add_meshpart(MeshPart meshpart) {

@@ -45,9 +45,14 @@ class ErrorNotYetImplemented extends ArbaroError{
 };
 
 
+/**
+ * A helper class for making 3d trees, this class makes a stem
+ * (trunk or branch). Most of the generation algorithm is here.
+ * 
+ * @author Wolfram Diestel
+ * 
+ */
 public class Stem {
-    // A helper class for making 3d trees, this class makes a stem
-    // (trunk or branch)
     Tree tree;
     Params par;
     LevelParams lpar;
@@ -55,7 +60,7 @@ public class Stem {
 
     Transformation transf;
     //FIXME: trees with Levels>4 not yet tested!!!
-    int stemlevel; // the branch level, coudl be > 4
+    int stemlevel; // the branch level, could be > 4
     double offset; // how far from the parent's base
   
     java.util.Vector segments; // the segments forming the stem
@@ -80,6 +85,17 @@ public class Stem {
     int index; // substem number
     java.util.Vector clone_index; // clone number (Integers)
 
+    /**
+     * Creates a new stem
+     * 
+     * @param tr the tree object 
+     * @param params the general tree parameters
+     * @param lparams the parameters for the stem level
+     * @param parnt the parent stem, from wich the stems grows out
+     * @param stlev the stem level
+     * @param trf the base transformation of the stem
+     * @param offs the offset of ste stem within the parent stem (0..1)
+     */
     public Stem(Tree tr, Params params, LevelParams lparams, Stem parnt, int stlev,
 		Transformation trf, double offs) /* offs=0 */ {
 	tree = tr;
@@ -116,16 +132,36 @@ public class Stem {
 	//...
     }
 
+    /**
+     * For debugging:
+	 * Prints out the transformation to stderr nicely 
+	 * (only if debugging is enabled)
+     * 
+     * @param where The position in the tree, i.e. wich stem
+     *              has this transformation
+     * @param trf  The transformation
+     */
     void TRF(String where, Transformation trf) {
-	// print out the transformation to stderr nicely if debugging is enabled
 	DBG(where + ": " + trf.toString());
     }
 
+    /**
+     * Output debug string, when debugging ist enabled
+     * 
+     * @param dbgstr The output string
+     */
     public void DBG(String dbgstr) {
 	// print debug string to stderr if debugging is enabled
 	if (par.debug) System.err.println(tree_position() + ":" + dbgstr);
     }
 
+    /**
+     * The position of the stem in the tree. 0.1c2.3 means:
+     * fourth twig of the third clone of the second branch growing
+     * out of the first (only?) trunk 
+     * 
+     * @return The stem position in the tree as a string
+     */
     String tree_position() {
 	// returns the position of the stem in the tree as a string, e.g. 0c0.1
 	// for the second substem of the first clone of the trunk
@@ -149,6 +185,14 @@ public class Stem {
 	return pos;
     }
 	 
+    /**
+     * Make a clone of the stem at this position
+     * 
+     * @param trf The base transformation for the clone
+     * @param start_segm Start segment number, i.e. the height, where
+     *        the clone spreads out
+     * @return The clone stem object
+     */
     Stem clone(Transformation trf, int start_segm) {
 	// creates a clone stem with same atributes as this stem
 	Stem clone = new Stem(tree,par,lpar,parent,stemlevel,trf,offset);
@@ -180,6 +224,10 @@ public class Stem {
 	return clone;
     }
     
+    /**
+     * Makes the stem, i.e. calculates all its segments, clones and substems
+     * a.s.o. recursively
+     */
     public void make() {
 	// makes the stem with all its segments, substems, clones and leaves
 	segment_cnt = lpar.nCurveRes;
@@ -204,6 +252,10 @@ public class Stem {
 	}
     }
 		
+    /**
+     * Apply pruning to the stem. If it grows out of the 
+     * pruning envelope, it is shortened.
+     */
     void pruning() {
 	//if (par.verbose) System.err.print("?");
 	// save random state, split and len values
@@ -265,6 +317,11 @@ public class Stem {
 	//self.DBG("PRUNE-ok: len: %f, segm: %d/%d\n"%(self.length,segm,self.segment_cnt))
     }
    
+    /**
+     * Calcs stem length from parameters and parent length
+     * 
+     * @return the stem length
+     */
     double stem_length() {
 	if (stemlevel == 0) { // trunk
 	    return (lpar.nLength + lpar.var(lpar.nLengthV)) * par.scale_tree;
@@ -281,7 +338,7 @@ public class Stem {
 
     // makes the segments of the stem
     int make_segments(int start_seg,int end_seg) {
-	if (stemlevel==1) tree.setMakeProgress();
+	if (stemlevel==1) tree.updateGenProgress();
 	
 	if (par.verbose) {
 	    if (! prunetest) {
@@ -294,7 +351,7 @@ public class Stem {
 	Transformation trf = transf;
 	  	
 	for (int s=start_seg; s<end_seg; s++) {
-	    if (stemlevel==0) tree.setMakeProgress();
+	    if (stemlevel==0) tree.updateGenProgress();
 	
 	    if (! prunetest && par.verbose) {
 		if (stemlevel==0) System.err.print("|");
@@ -350,6 +407,12 @@ public class Stem {
 	return -1;
     }
     
+    /**
+     * Tests if a point is inside the pruning envelope
+     * 
+     * @param vector the point to test
+     * @return true if the point is inside the pruning envelope
+     */
     boolean inside_envelope(Vector vector) {
 	// FIXME: why vector is of type Matrix here?
 	// self.DBG("TRANSFVECTOR: %s, class: %s\n"%(vector,vector.__class__))
@@ -361,6 +424,14 @@ public class Stem {
     }
 
   
+    /**
+     * Calcs a new direction for the current segment
+     * 
+     * @param trf The transformation of the previous segment
+     * @param nsegm The number of the segment ( for testing, if it's the
+     *              first stem segment
+     * @return The new transformation of the current segment
+     */
     Transformation new_direction(Transformation trf, int nsegm) {
 	    // next segments  direction
     
@@ -431,6 +502,11 @@ public class Stem {
 	    return trf;
     }
 	  
+    /**
+     * Calcs the base radius of the stem
+     * 
+     * @return
+     */
     double stem_base_radius() {
 	if (stemlevel == 0) { // trunk
 	    // radius at the base of the stem
@@ -440,11 +516,18 @@ public class Stem {
 	} else {
 	    // max radius is the radius of the parent at offset
 	    double max_radius = parent.stem_radius(offset);
+	    //FIXME: RatioPower=0 seems not to work here
 	    double radius = parent.base_radius * Math.pow(length/parent.length,par.RatioPower);
 	    return Math.min(radius,max_radius);
 	}
     }
 
+    /**
+     * Calcs the stem radius at a given offset
+     * 
+     * @param h the offset at which the radius is calculated
+     * @return the stem radius at this position
+     */
     public double stem_radius(double h) {
 	DBG("Stem.stem_radius("+h+") base_rad:"+base_radius);
 
@@ -520,6 +603,10 @@ public class Stem {
     }
 	
 
+    /**
+     * Precalcs some stem parameters used later during when generating
+     * the current stem
+     */
     void prepare_substem_params() {
 	//int level = min(stemlevel+1,3);
 	LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
@@ -559,6 +646,11 @@ public class Stem {
 	}
     }
    
+    /**
+     * Number of leaves of the stem
+     * 
+     * @return
+     */
     double leaves_per_branch() {
 	// calcs the number of leaves for a stem
 	if (par.Leaves==0) return 0;
@@ -580,6 +672,11 @@ public class Stem {
 		     * par.LeafQuality);
     }
 
+    /**
+     * Make substems of the current stem
+     * 
+     * @param segment
+     */
     void make_substems(Segment segment) {
 	// creates substems for the current segment
 	LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
@@ -670,6 +767,13 @@ public class Stem {
 	}
     }
       
+    /**
+     * Calcs the direction of a substem from the parameters
+     * 
+     * @param trf The transformation of the current stem segment
+     * @param offset The offset of the substem from the base of the currents stem
+     * @return The direction of the substem
+     */
     Transformation substem_direction(Transformation trf, double offset) {
 	LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
 	//lev = min(level+1,3);
@@ -701,6 +805,11 @@ public class Stem {
 	return trf.rotxz(downangle,rotangle);
     }
 	      
+    /**
+     * Creates the leaves for the current stem segment
+     * 
+     * @param segment
+     */
     void make_leaves(Segment segment) {
 	// creates leaves for the current segment
  
@@ -787,6 +896,14 @@ public class Stem {
     }
       
  
+    /**
+     * Make clones of the current stem at the current segment
+     * 
+     * @param trf The current segments's direction
+     * @param nseg The number of the current segment
+     * @return Segments outside the pruning envelope, -1
+     *         if ste clone is completely inside the envelope
+     */
     int make_clones(Transformation trf,int nseg) {
 	// splitting
 	// FIXME: maybe move this calculation to LevelParams
@@ -851,6 +968,15 @@ public class Stem {
     }
   
       
+    /**
+     * Gives a clone a new direction (splitting)
+     * 
+     * @param trf The base transformation of the clone 
+     * @param s_angle The splitting angle
+     * @param nseg The segment number, where the clone begins
+     * @param nsplits The number of clones
+     * @return The new direction for the clone
+     */
     Transformation split(Transformation trf,
 			 double s_angle, int nseg, int nsplits) {
 	// applies a split angle to the stem - the Weber/Penn method
@@ -904,50 +1030,54 @@ public class Stem {
     */
     
 
-    void add_to_mesh(Mesh mesh, int level) throws Exception {
-	// create mesh parts for one stem level
+    /**
+     * Adds the current stem to the mesh object
+     *  
+     * @param mesh the mesh object
+     * @throws Exception
+     */
+    void add_to_mesh(Mesh mesh) throws Exception {
 	  
-	if (par.verbose) {
-	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
-	}
+    	if (par.verbose) {
+    		if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
+    	}
 	
-	String indent = "    ";
+    	String indent = "    ";
 	  
-	// mesh parts for self and clones of same level
-	if (level==stemlevel) {
-
-	    // create mesh part
-	    MeshPart meshpart = new MeshPart(tree_position(),level<=par.smooth_mesh_level);
-	    for (int i=0; i<segments.size(); i++) {
-		((Segment)segments.elementAt(i)).add_to_meshpart(meshpart);
-	    }
-	    mesh.add_meshpart(meshpart);
-
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).add_to_mesh(mesh,level);
-		}
-	    }
-	}
-
-	else if (level > stemlevel) {
-	    // FIXME? more correct it would be inc by 1 in the for block,
-	    // but this would need more calls to synchronized incProgress
-	    // if this work ok, don't change this
-	    tree.incPovrayProgress(substems.size());
-
-	    for (int i=0; i<substems.size(); i++) {
-		((Stem)substems.elementAt(i)).add_to_mesh(mesh,level);
-	    }
-	    if (clones != null) {
-		for (int i=0; i<clones.size(); i++) {
-		    ((Stem)clones.elementAt(i)).add_to_mesh(mesh,level);
-		}	  	
-	    }
-	}
+    	// create mesh part for myself
+    	MeshPart meshpart = new MeshPart(tree_position(),stemlevel<=par.smooth_mesh_level);
+    	for (int i=0; i<segments.size(); i++) {
+    		((Segment)segments.elementAt(i)).add_to_meshpart(meshpart);
+    	}
+    	mesh.add_meshpart(meshpart);
+    	
+    	// add clones to the mesh
+    	if (clones != null) {
+    		for (int i=0; i<clones.size(); i++) {
+    			((Stem)clones.elementAt(i)).add_to_mesh(mesh);
+    		}
+    	}
+	
+    	if (substems != null) {
+    		// FIXME? more correct it would be inc by 1 in the for block,
+    		// but this would need more calls to synchronized incProgress
+    		// if this works ok, don't change this
+    		tree.incPovProgress(substems.size());
+    		
+    		for (int i=0; i<substems.size(); i++) {
+    			((Stem)substems.elementAt(i)).add_to_mesh(mesh);
+    		}
+    	}
     }
 
-
+    
+    /**
+     * Output stem as Povray code when output=CONES
+     * 
+     * @param w the output stream
+     * @param level the stem level
+     * @throws Exception
+     */
     void povray_stems(PrintWriter w, int level) throws Exception {
 	// output povray code for one stem level
 	
@@ -993,7 +1123,7 @@ public class Stem {
 	    // FIXME? more correct it would be inc by 1 in the for block,
 	    // but this would need more calls to synchronized incProgress
 	    // if this work ok, don't change this
-	    tree.incPovrayProgress(substems.size());
+	    tree.incPovProgress(substems.size());
 	    for (int i=0; i<substems.size(); i++) {
 		((Stem)substems.elementAt(i)).povray_stems(w,level);
 	    }
@@ -1006,8 +1136,13 @@ public class Stem {
     }
 
 
+    /**
+     * Outputs the Povray code for the leaves as primitives (e.g. discs)
+     * 
+     * @param w the output stream
+     * @throws Exception
+     */
     void povray_leaves_objs(PrintWriter w) throws Exception {
-	// output povray code for leaves
 	
 	if (par.verbose) {
 	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
@@ -1041,7 +1176,7 @@ public class Stem {
 	    // FIXME? more correct it would be inc by 1 in the for block,
 	    // but this would need more calls to synchronized incProgress
 	    // if this work ok, don't change this
-	    tree.incPovrayProgress(substems.size());
+	    tree.incPovProgress(substems.size());
 	    for (int i=0; i<substems.size(); i++) {
 		((Stem)substems.elementAt(i)).povray_leaves_objs(w);
 	    }
@@ -1054,8 +1189,14 @@ public class Stem {
     }
 
 
+    /**
+     * 	Outputs Povray code points section of the mesh2 object for the leaves
+     *  
+     * @param w the output stream
+     * @param mesh the mesh object
+     * @throws Exception
+     */
     void povray_leaves_points(PrintWriter w, LeafMesh mesh) throws Exception {
-	// output povray code points section of mesh2 object for the leaves 
 	
 	if (par.verbose) {
 	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
@@ -1084,7 +1225,7 @@ public class Stem {
 	    // FIXME? more correct it would be inc by 1 in the for block,
 	    // but this would need more calls to synchronized incProgress
 	    // if this work ok, don't change this
-	    tree.incPovrayProgress(substems.size());
+	    tree.incPovProgress(substems.size());
 	    for (int i=0; i<substems.size(); i++) {
 		((Stem)substems.elementAt(i)).povray_leaves_points(w,mesh);
 	    }
@@ -1097,8 +1238,14 @@ public class Stem {
     }
 
 
+    /**
+     * Outputs Povray code points section of the mesh2 object for the leaves
+     * 
+     * @param w the output stream
+     * @param mesh the mesh object
+     * @throws Exception
+     */
     void povray_leaves_faces(PrintWriter w, LeafMesh mesh) throws Exception {
-	// output povray code points section of mesh2 object for the leaves 
 	
 	if (par.verbose) {
 	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
@@ -1127,7 +1274,7 @@ public class Stem {
 	    // FIXME? more correct it would be inc by 1 in the for block,
 	    // but this would need more calls to synchronized incProgress
 	    // if this work ok, don't change this
-	    tree.incPovrayProgress(substems.size());
+	    tree.incPovProgress(substems.size());
 	    for (int i=0; i<substems.size(); i++) {
 		((Stem)substems.elementAt(i)).povray_leaves_faces(w,mesh);
 	    }
@@ -1140,8 +1287,14 @@ public class Stem {
     }
 
 
+    /**
+     * Outputs Povray code normals section of the mesh2 object for the leaves
+     *  
+     * @param w the output stream
+     * @param mesh the mesh object
+     * @throws Exception
+     */
     void povray_leaves_normals(PrintWriter w, LeafMesh mesh) throws Exception {
-	// output povray code points section of mesh2 object for the leaves 
 	
 	if (par.verbose) {
 	    if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
@@ -1170,7 +1323,7 @@ public class Stem {
 	    // FIXME? more correct it would be inc by 1 in the for block,
 	    // but this would need more calls to synchronized incProgress
 	    // if this work ok, don't change this
-	    tree.incPovrayProgress(substems.size());
+	    tree.incPovProgress(substems.size());
 	    for (int i=0; i<substems.size(); i++) {
 		((Stem)substems.elementAt(i)).povray_leaves_normals(w,mesh);
 	    }
@@ -1183,7 +1336,12 @@ public class Stem {
     }
 
 
-    /* return the number of all substems and substems of substems a.s.o. */
+    /**
+     *  Returns the total number of all the substems and substems of substems a.s.o.
+     *  of the current stem 
+     *
+     * @return totals number of susbstems and all theire children a.s.o
+     */
     long substemTotal() {
 	if (substems == null) return 0;
 
