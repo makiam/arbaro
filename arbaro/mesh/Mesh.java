@@ -155,8 +155,8 @@ public class Mesh extends java.util.Vector {
 
 	if (face_cnt == 0) {
 	    //FIXME: stem radius to small, can avoid this?
-	    // maybe could avoid this, not makin stems with to small length
-	    System.err.println("WARNING: no faces in mesh - stem radius to small");
+	    // maybe could avoid this, not makin stems with too small length
+	    System.err.println("WARNING: no faces in mesh - stem radius too small");
 	    return;
 	}
 
