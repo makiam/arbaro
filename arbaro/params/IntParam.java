@@ -75,16 +75,21 @@ public class IntParam extends AbstractParam {
 	return i.toString();
     }
 
+    public boolean empty() {
+	return value == Integer.MIN_VALUE;
+    }
+
     public int intValue() {
-	if (value==Integer.MIN_VALUE) {
+	if (empty()) {
 	    warn(name+" not given, using default value("+deflt+")");
-	    // set value to default, t.e. don't warn again
+	    // set value to default, i.e. don't warn again
 	    value=deflt;
 	    fireStateChanged();
 	}
 	return value;
     }
 }
+
 
 
 

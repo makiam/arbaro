@@ -53,6 +53,7 @@ public class Tree {
     }
     
     public void make() throws Exception {
+	setMakeProgressMax();
 	params.prepare();
 	  
 	if (params.verbose) {
@@ -78,7 +79,6 @@ public class Tree {
 	trunk.make();
 
 	// making finished
-	setProgress(getProgressMax());
 	if (params.verbose) System.err.println(".");
     }
   
@@ -87,8 +87,11 @@ public class Tree {
     }
 
     public void povray(PrintWriter w) throws Exception {
-	NumberFormat frm = FloatFormat.getInstance();
+	setPovrayProgressMax();
+	incPovrayProgress(1); // for the trunk
 
+	NumberFormat frm = FloatFormat.getInstance();
+	
 	// output povray code
 	if (params.verbose) System.err.print("writing povray code ");
 	  
@@ -109,7 +112,7 @@ public class Tree {
 	// leaves
 	if (params.Leaves!=0) {
 	    w.println("#declare " + pov_prefix() + "leaves = union {");
-	    // FIXME split Stem.povray into Stem.povray_stems and STem.povray_leaves
+	    // FIXME split Stem.povray into Stem.povray_stems and Stem.povray_leaves
 	    trunk.povray(w,params.Levels);
 	    w.println("}");
 	} else { // empty declaration
@@ -220,24 +223,62 @@ void Tree::dump() const {
 	params.Smooth = s;
     }
 
-    public long getProgressMax() {
-	return ((IntParam)params.getParam("0Branches")).intValue()
+    /*** calculation of progress */
+    long makeProgressMax;
+    long povrayProgressMax;
+    final float makeProgressRatio = 0.6F; // if no output will occur it should be set to 1.0F
+    long makeProgress;
+    long povrayProgress;
+    boolean writingPovray; 
+    String progressMsg = "";
+
+    /** max progress during make() */
+    public synchronized void setMakeProgressMax() {
+	makeProgressMax = 
+	    ((IntParam)params.getParam("0Branches")).intValue()
 	    * ((IntParam)params.getParam("0CurveRes")).intValue()
-	    * (((IntParam)params.getParam("1Branches")).intValue()); //+1);
+	    * (((IntParam)params.getParam("1Branches")).intValue()+1);
+	povrayProgress = 0;
+	povrayProgress = 0;
+	progressMsg = "creating tree structure";
     }
 
-
-    private long progress;
-    public synchronized long getProgress() {
-	return progress;
+    /** max progress during povray() */
+    public synchronized void setPovrayProgressMax() {
+	povrayProgressMax = trunk.substemTotal();
+	if (params.Leaves != 0) povrayProgressMax += povrayProgressMax;
+	makeProgress = makeProgressMax;
+	povrayProgress = 0;
+	progressMsg = "writing povray code";
     }
-    public synchronized void setProgress() {
+
+    public synchronized float getProgress() {
+	// System.err.println("mMax:"+makeProgressMax+" m:"+makeProgress
+	//		   +" pMax:"+povrayProgressMax+" p:"+povrayProgress);
+	if (makeProgressMax == 0) return 0;
+	if (makeProgressRatio > 0.999999 || povrayProgressMax == 0) {
+	    // System.err.println("progr: "+makeProgress/(float)makeProgressMax * makeProgressRatio);
+	    return makeProgress/(float)makeProgressMax * makeProgressRatio;
+	} else {
+	    return makeProgress/(float)makeProgressMax * makeProgressRatio
+		+ povrayProgress/(float)povrayProgressMax * (1-makeProgressRatio); 
+	}
+    }
+    
+    public synchronized String getProgressMsg() {
+	return progressMsg;
+    }
+
+    public synchronized void setMakeProgress() {
 	// how much of 0Branches*0CurveRes*(1Branches+1) are created yet
-	progress = 1 //FIXME: only one trunk at the moment, later use trunks.size()
+	makeProgress = 1 //FIXME: only one trunk at the moment, later use trunks.size()
 	    * trunk.segments.size() * (trunk.substems.size()+1);
     }
-    public synchronized void setProgress(long prog) {
-	progress = prog;
+    /*    public synchronized void setPovrayProgress(int prog) {
+	povrayProgress = prog;
+	}*/
+    public synchronized void incPovrayProgress(long inc) {
+	povrayProgress +=inc;
     }
 
 };

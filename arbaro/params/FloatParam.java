@@ -73,8 +73,12 @@ public class FloatParam extends AbstractParam {
 	return d.toString();
     }
 
+    public boolean empty() {
+	return Double.isNaN(value);
+    }
+
     public double doubleValue() {
-	if (Double.isNaN(value)) {
+	if (empty()) {
 	    warn(name+" not given, using default value("+deflt+")");
 	    // set value to default, t.e. don't warn again
 	    value=deflt;

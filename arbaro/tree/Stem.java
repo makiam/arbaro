@@ -281,7 +281,7 @@ public class Stem {
 
     // makes the segments of the stem
     int make_segments(int start_seg,int end_seg) {
-	if (stemlevel==1) tree.setProgress();
+	if (stemlevel==1) tree.setMakeProgress();
 	
 	if (par.verbose) {
 	    if (! prunetest) {
@@ -294,7 +294,7 @@ public class Stem {
 	Transformation trf = transf;
 	  	
 	for (int s=start_seg; s<end_seg; s++) {
-	    if (stemlevel==0) tree.setProgress();
+	    if (stemlevel==0) tree.setMakeProgress();
 	
 	    if (! prunetest && par.verbose) {
 		if (stemlevel==0) System.err.print("|");
@@ -809,7 +809,7 @@ public class Stem {
 	    // NOTE: its a little bit problematic here
 	    // when the clone is given as a parent to
 	    // the substems, it should have the same
-	    //params for length and segment_cnt like
+	    // params for length and segment_cnt like
 	    // the original stem, but this could be
 	    // somewhat confusing(?)
 	    // clone.segment_cnt = remaining_segs;
@@ -976,6 +976,10 @@ public class Stem {
 	  		  
 	// recursive call to substems
 	else if (level > stemlevel) {
+	    // FIXME? more correct it would be inc by 1 in the for block,
+	    // but this would need more calls to synchronized incProgress
+	    // if this work ok, don't change this
+	    tree.incPovrayProgress(substems.size());
 	    for (int i=0; i<substems.size(); i++) {
 		((Stem)substems.elementAt(i)).povray(w,level);
 	    }
@@ -985,6 +989,17 @@ public class Stem {
 		}	  	
 	    }
 	}
+    }
+
+    /* return the number of all substems and substems of substems a.s.o. */
+    long substemTotal() {
+	if (substems == null) return 0;
+
+	long sum = substems.size();
+	for (int i=0; i<substems.size(); i++) {
+	    sum += ((Stem)substems.elementAt(i)).substemTotal();
+	}
+	return sum;
     }
 	  
   /*

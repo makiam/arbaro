@@ -285,7 +285,10 @@ public class Params {
 	for (Enumeration e = paramDB.elements(); e.hasMoreElements();) {
 	    AbstractParam p = ((AbstractParam)e.nextElement());
 	    try {
-		p.setValue(other.getParam(p.name).getValue());
+		AbstractParam otherParam = other.getParam(p.name);
+		if (! otherParam.empty()) {
+		    p.setValue(otherParam.getValue());
+		} // else use default value
 	    } catch (ErrorParam err) {
 		System.err.println("Error copying params: "+err.getMessage());
 	    }

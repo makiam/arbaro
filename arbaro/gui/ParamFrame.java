@@ -337,9 +337,8 @@ class ParamField extends JTextField {
 	super(width);
 
 	param = par;
-	//setText("0");
-	//abhängig von Klasse: setText(par.getDefaultValue());
 	setText(param.getDefaultValue());
+	// ? param.setValue(getText());
 	setToolTipText(param.getShortDesc());
 
 	if (param.getClass() != StringParam.class) {

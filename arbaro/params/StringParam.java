@@ -49,8 +49,12 @@ public class StringParam extends AbstractParam {
 	fireStateChanged();
     }
 
+    public boolean empty() {
+	return value.equals("");
+    }
+
     public String getValue() {
-	if (value.equals("")) {
+	if (empty()) {
 	    warn(name+" not given, using default value("+deflt+")");
 	    // set value to default, t.e. don't warn again
 	    value=deflt;

@@ -50,6 +50,7 @@ public abstract class AbstractParam {
     public abstract String getValue();
     public abstract String getDefaultValue();
     public abstract void clear();
+    public abstract boolean empty();
 
     protected void warn(String warning) {
 	System.err.println("WARNING: "+warning);
