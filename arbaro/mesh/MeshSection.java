@@ -27,147 +27,183 @@ package net.sourceforge.arbaro.mesh;
 
 import net.sourceforge.arbaro.transformation.Vector;
 
+/**
+ * A class holding a section of a mesh.
+ * 
+ * This is a number of vertices in one layer. 
+ * Several layers build the mesh part for a stem.
+ * 
+ * @author wdiestel
+ */
 public class MeshSection extends java.util.Vector {
-    //A class holding a section of a mesh - 
-    // this is a number of points in one layer - several layers build the mesh
-      
-    public MeshSection previos;
-    public MeshSection next;
-    /*Stem stem;*/
-    
-    public MeshSection(/*Stem st,*/ int ptcnt) {
-	super(ptcnt);
-	/*stem = st;*/
-    }
-
-    public void add_point(Vector pt) {
-	addElement(new Vertex(pt,null));
-    } 
-
-    public Vector point_at(int i) {
-	return ((Vertex)elementAt(i)).point;
-    }
-
-    // FIXME: Exception -> ArbaroError?
-    public Vector normal_at(int i) throws Exception {
-	Vertex v = (Vertex)elementAt(i);
-	if (v.normal == null) throw new Exception("Error: Normal not set for point "+v.point.povray());
-	return v.normal;
-    }
-   
-    public Vector here(int i) {
-	// returns point n-o i
-	return ((Vertex)elementAt(i)).point;
-    }
 	
-    public Vector left(int i) {
-	// returns point to the left from point n-o i
-	return ((Vertex)elementAt((i-1+size())%size())).point;
-    }
-
-    public Vector right(int i) {
-	// returns point to the right from point n-o i
-	return ((Vertex)elementAt((i+1)%size())).point;
-    }
-
-    public Vector up(int i) {
-	// returns the point on top of the point n-o i (from next section)
-	// next section has same number of points or only one point
-	return ((Vertex)(next.elementAt(i%next.size()))).point;
-    }
-
-    public Vector down(int i) {
-	// returns the point below the point n-o i (from previous section)
-	// next section has same number of points or only one point
-	return ((Vertex)(previos.elementAt(i%previos.size()))).point;
-    }	  	  
-
-    public Vector normal(Vector a, Vector b, Vector c) {
-	// returns the normal of the plane buildt by the vectors a-b and c-b
-	// n= (a1*b2 - a2*b1, a2*b0 - a0*b2, a0*b1 - a1*b0)
-	Vector u = (a.sub(b)).normalize();
-	Vector v = (c.sub(b)).normalize();
-	Vector norm = new Vector(u.getY()*v.getZ() - u.getZ()*v.getY(),
-		      u.getZ()*v.getX() - u.getX()*v.getZ(),
-		      u.getX()*v.getY() - u.getY()*v.getX()).normalize();
-	if (Double.isNaN(norm.getX()) && Double.isNaN(norm.getY()) 
-	    && Double.isNaN(norm.getZ())) {
-	    System.err.println("WARNING: invalid normal vector - stem radius too small?");
-	    norm = new Vector(0,0,1);
+	public MeshSection previos;
+	public MeshSection next;
+	/*Stem stem;*/
+	
+	public MeshSection(/*Stem st,*/ int ptcnt) {
+		super(ptcnt);
+		/*stem = st;*/
 	}
-	return norm;
-    }
-	  	  
-    public void set_normals_vector(Vector vec) {
-	// set all normals to the vector vec
-	for (int i=0; i<size(); i++) {
-	    ((Vertex)elementAt(i)).normal=vec;
+	
+	/**
+	 * Adds a point to the mesh section
+	 * 
+	 * @param pt
+	 */
+	public void addPoint(Vector pt) {
+		addElement(new Vertex(pt,null));
+	} 
+	
+	/**
+	 * Returns the location point of the vertex i.
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public Vector pointAt(int i) {
+		return ((Vertex)elementAt(i)).point;
 	}
-
-	// System.err.println("set_normals_vector for "+size()+" points, vec: "+vec.povray());
-
-    }
-
-    public void set_normals_up() {
-	// set all normals to the average 
-	// of the two left and right upper triangles
-	for (int i=0; i<size(); i++) {
-	    ((Vertex)elementAt(i)).normal = 
-		(normal(up(i),here(i),left(i)).add(
-		 normal(right(i),here(i),up(i)))).normalize();
-
-	    //DBG
-	    /*
-	    Vector n =  ((Vertex)elementAt(i)).normal;
-	    if (Double.isNaN(n.getX())) {
-		System.err.println("STRANGENORMAL: here"+here(i).povray()
-				 +" up"+up(i).povray()+" left"+left(i).povray()
-				 +" right"+right(i).povray());
-		System.err.println("STRANGEN1: "+DBGnormal(up(i),here(i),left(i)).povray());
-		System.err.println("STRANGEN2: "+DBGnormal(right(i),here(i),up(i)).povray());
-
-	    }
-	    */
-
+	
+	/**
+	 * Returns the normal of the vertex i.
+	 * 
+	 * @param i
+	 * @return
+	 * @throws Exception
+	 */
+	public Vector normalAt(int i) throws Exception {
+		Vertex v = (Vertex)elementAt(i);
+		if (v.normal == null) throw new ErrorMesh("Error: Normal not set for point "+v.point.povray());
+		return v.normal;
 	}
-    }
-    /*
-    Vector DBGnormal(Vector a, Vector b, Vector c) {
-	// returns the normal of the plane buildt by the vectors a-b and c-b
-	// n= (a1*b2 - a2*b1, a2*b0 - a0*b2, a0*b1 - a1*b0)
-	Vector u = (a.sub(b)).normalize();
-	Vector v = (c.sub(b)).normalize();
-	System.err.println("STRANGENN: u:"+u.povray()+" v:"+v.povray());
-	return new Vector(u.getY()*v.getZ() - u.getZ()*v.getY(),
-		      u.getZ()*v.getX() - u.getX()*v.getZ(),
-		      u.getX()*v.getY() - u.getY()*v.getX()).normalize();
-    }
-    */
-
-    public void set_normals_down() {
-	// set all normals to the average 
-	//of the two left and right lower triangles
-	for (int i=0; i<size(); i++) {
-	    ((Vertex)elementAt(i)).normal = 
-		(normal(down(i),here(i),right(i)).add(
-		 normal(left(i),here(i),down(i)))).normalize();
+	
+	/**
+	 * Returns the point number i.
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public Vector here(int i) {
+		
+		return ((Vertex)elementAt(i)).point;
 	}
-    }
-
-    public void set_normals_updown() {
-	// set all normals to the average 
-	// of the four left and right upper and lower triangles
-	for (int i=0; i<size(); i++) {
-	    ((Vertex)elementAt(i)).normal = 
-		(normal(up(i),here(i),left(i)).add(
-		 normal(right(i),here(i),up(i))).add(
-		 normal(down(i),here(i),right(i))).add(
-		 normal(left(i),here(i),down(i)))).normalize();
+	
+	/**
+	 * Returns the point to the left of the point number i
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public Vector left(int i) {
+		return ((Vertex)elementAt((i-1+size())%size())).point;
 	}
-    }
-
+	
+	/**
+	 * Returns the point to the right of the point number i
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public Vector right(int i) {
+		return ((Vertex)elementAt((i+1)%size())).point;
+	}
+	
+	/**
+	 * Returns the point on top of the point number i (from the next section).
+	 * The next section has the same number of points or only one point.
+	 * @param i
+	 * @return
+	 */
+	public Vector up(int i) {
+		return ((Vertex)(next.elementAt(i%next.size()))).point;
+	}
+	
+	/**
+	 * Returns the point below the point number i (from the previous section).
+	 * The next section has the same number of points or only one point.
+	 * @param i
+	 * @return
+	 */
+	public Vector down(int i) {
+		return ((Vertex)(previos.elementAt(i%previos.size()))).point;
+	}	  	  
+	
+	/**
+	 * Returns the normal of the plane built by the vectors a-b and c-b
+	 * 
+	 * @param a  
+	 * @param b 
+	 * @param c
+	 * @return 
+	 */
+	public Vector normal(Vector a, Vector b, Vector c) {
+		Vector u = (a.sub(b)).normalize();
+		Vector v = (c.sub(b)).normalize();
+		Vector norm = new Vector(u.getY()*v.getZ() - u.getZ()*v.getY(),
+				u.getZ()*v.getX() - u.getX()*v.getZ(),
+				u.getX()*v.getY() - u.getY()*v.getX()).normalize();
+		if (Double.isNaN(norm.getX()) && Double.isNaN(norm.getY()) 
+				&& Double.isNaN(norm.getZ())) {
+			System.err.println("WARNING: invalid normal vector - stem radius too small?");
+			norm = new Vector(0,0,1);
+		}
+		return norm;
+	}
+	
+	/**
+	 * Sets all normals to the vector vec
+	 *
+	 * @param vec
+	 */
+	public void setNormalsToVector(Vector vec) {
+		for (int i=0; i<size(); i++) {
+			((Vertex)elementAt(i)).normal=vec;
+		}
+	}
+	
+	/**
+	 * Sets all normals to the average
+	 * of the two left and right upper triangles
+	 * 
+	 */
+	public void setNormalsUp() {
+		for (int i=0; i<size(); i++) {
+			((Vertex)elementAt(i)).normal = 
+				(normal(up(i),here(i),left(i)).add(
+						normal(right(i),here(i),up(i)))).normalize();
+		}
+	}
+	
+	/**
+	 * Sets all normals to the average
+	 * of the two left and right lower triangles
+	 * 
+	 */
+	public void setNormalsDown() {
+		for (int i=0; i<size(); i++) {
+			((Vertex)elementAt(i)).normal = 
+				(normal(down(i),here(i),right(i)).add(
+						normal(left(i),here(i),down(i)))).normalize();
+		}
+	}
+	
+	/**
+	 * Sets all normals to the average
+	 * of the four left and right upper and lower triangles
+	 */
+	public void setNormalsUpDown() {
+		for (int i=0; i<size(); i++) {
+			((Vertex)elementAt(i)).normal = 
+				(normal(up(i),here(i),left(i)).add(
+						normal(right(i),here(i),up(i))).add(
+								normal(down(i),here(i),right(i))).add(
+										normal(left(i),here(i),down(i)))).normalize();
+		}
+	}
+	
 };
-	
+
 
 
 

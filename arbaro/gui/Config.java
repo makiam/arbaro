@@ -29,56 +29,65 @@ import java.util.Properties;
 
 
 class Config extends Properties {
-    String configFileName;
-
-    public Config() {
-
-	// config file name
-        String folder = System.getProperty("user.home");
-	String os = System.getProperty("os.name");
-        String filesep = System.getProperty("file.separator");
-	if (os.indexOf("Windows") >= 0) {
-	    configFileName = folder + filesep + "arbaro.cfg";	
-	} else {
-	    configFileName = folder + filesep + ".arbarorc";	
+	String configFileName;
+	
+	public Config() {
+		
+		// config file name
+		String folder = System.getProperty("user.home");
+		String os = System.getProperty("os.name");
+		String filesep = System.getProperty("file.separator");
+		if (os.indexOf("Windows") >= 0) {
+			configFileName = folder + filesep + "arbaro.cfg";	
+		} else {
+			configFileName = folder + filesep + ".arbarorc";	
+		}
+		
+		// load properties
+		FileInputStream in=null;
+		
+		try {
+			in = new FileInputStream(configFileName);
+			load(in);
+		} catch (java.io.FileNotFoundException e) {
+			in = null;
+			System.err.println("Can't find config file. Please do setup Arbaro "+
+			"using the setup dialog.");
+		} catch (java.io.IOException e) {
+			System.err.println("I/O Error. Can't read config file!");
+		} finally {
+			if (in != null) {
+				try { in.close(); } catch (java.io.IOException e) { }
+				in = null;
+			}
+		}
 	}
-
-	// load properties
-	FileInputStream in=null;
-
-	try {
-	    in = new FileInputStream(configFileName);
-	    load(in);
-	} catch (java.io.FileNotFoundException e) {
-	    in = null;
-	    System.err.println("Can't find config file. Please do setup Arbaro "+
-				"using the setup dialog.");
-	} catch (java.io.IOException e) {
-	    System.err.println("I/O Error. Can't read config file!");
-	} finally {
-	    if (in != null) {
-		try { in.close(); } catch (java.io.IOException e) { }
-		in = null;
-	    }
+	
+	public void store() throws Exception {
+		FileOutputStream out = null;
+		
+		try {
+			out = new FileOutputStream(configFileName);
+			store(out,"Arbaro setup");
+		} catch (java.io.IOException e) {
+			throw new Exception("Can't save config file.");
+		} finally {
+			if (out != null) {
+				try { out.close(); } catch (java.io.IOException e) { }
+				out = null;
+			}
+		}
 	}
-    }
-
-    public void store() throws Exception {
-	FileOutputStream out = null;
-
-	try {
-	    out = new FileOutputStream(configFileName);
-	    store(out,"Arbaro setup");
-	} catch (java.io.IOException e) {
-	    throw new Exception("Can't save config file.");
-	} finally {
-	    if (out != null) {
-		try { out.close(); } catch (java.io.IOException e) { }
-		out = null;
-	    }
+	
+	public String defaultPovrayExe() {
+		String os = System.getProperty("os.name");
+		if (os.indexOf("Windows") >= 0) {
+			return "pvengine.exe";
+		} else {
+			return "povray"; // Unix
+		}
 	}
-    }
-
+	
 };
 
 

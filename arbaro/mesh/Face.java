@@ -25,7 +25,7 @@
 package net.sourceforge.arbaro.mesh;
 
 /**
- * A class holding three point forming a triangular face 
+ * A class holding three points forming a triangular face (of a mesh). 
  * 
  * @author Wolfram Diestel
  */

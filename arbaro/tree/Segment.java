@@ -35,323 +35,322 @@ import net.sourceforge.arbaro.params.*;
  * @author Wolfram Diestel
  */
 public class Segment {
-  
-    Params par;
-    public LevelParams lpar;
-    int index;
-    Transformation transf;
-    double rad1;
-    public double rad2;
-    double length;
-
-    Stem stem;
-
-    public java.util.Vector subsegs;
-
-    public Segment(Params params, LevelParams lparams, Stem stm, int inx, 
-		   Transformation trf, double r1, double r2, double len) {
-	par = params;
-	lpar = lparams;
-	index = inx;
-	transf = trf; 
-	rad1 = r1;
-	rad2 = r2;
-	length = len;
-	stem = stm;
-	// FIXME: rad1 and rad2 could be calculated only when output occurs (?)
-	// or here in the constructor ?
-	// FIXME: inialize subsegs with a better estimation of size
-	subsegs = new java.util.Vector(10);
-    }
 	
-    /**
-     * Makes the segments from subsegments 
-     */
-    public void make() {
-	// FIXME: numbers for cnt should correspond to Smooth value
-	// helical stem
-	if (lpar.nCurveV<0) { 
-	    make_helix(10);
-	}
-    
-	// spherical end
-	else if (lpar.nTaper > 1 && lpar.nTaper <=2 && is_last_stem_segment()) {
-	    make_spherical_end(10);
-	}
-
-	// periodic tapering
-	else if (lpar.nTaper>2) {
-	    make_subsegs(20);
+	Params par;
+	public LevelParams lpar;
+	int index;
+	Transformation transf;
+	double rad1;
+	public double rad2;
+	double length;
+	
+	Stem stem;
+	
+	public java.util.Vector subsegments;
+	
+	public Segment(Params params, LevelParams lparams, Stem stm, int inx, 
+			Transformation trf, double r1, double r2, double len) {
+		par = params;
+		lpar = lparams;
+		index = inx;
+		transf = trf; 
+		rad1 = r1;
+		rad2 = r2;
+		length = len;
+		stem = stm;
+		// FIXME: rad1 and rad2 could be calculated only when output occurs (?)
+		// or here in the constructor ?
+		// FIXME: inialize subsegs with a better estimation of size
+		subsegments = new java.util.Vector(10);
 	}
 	
-	// trunk flare
-	// FIXME: if nCurveRes[0] > 10 this division into several
-	// subsegs should be extended over more then one segments?
-	else if (lpar.level==0 && par.Flare!=0 && index==0) {
-	    stem.DBG("Segment.make() - flare");
-	    make_flare(10);
-
-	} else {
-	    make_subsegs(1);
+	/**
+	 * Makes the segments from subsegments 
+	 */
+	public void make() {
+		// FIXME: numbers for cnt should correspond to Smooth value
+		// helical stem
+		if (lpar.nCurveV<0) { 
+			makeHelix(10);
+		}
+		
+		// spherical end
+		else if (lpar.nTaper > 1 && lpar.nTaper <=2 && isLastStemSegment()) {
+			makeSphericalEnd(10);
+		}
+		
+		// periodic tapering
+		else if (lpar.nTaper>2) {
+			makeSubsegments(20);
+		}
+		
+		// trunk flare
+		// FIXME: if nCurveRes[0] > 10 this division into several
+		// subsegs should be extended over more then one segments?
+		else if (lpar.level==0 && par.Flare!=0 && index==0) {
+			stem.DBG("Segment.make() - flare");
+			makeFlare(10);
+			
+		} else {
+			makeSubsegments(1);
+		}
 	}
-    }
-
-    /**
-     * Creates susbsegments for the segment
-     * 
-     * @param cnt the number of subsegments
-     */
-    private void make_subsegs(int cnt) {
-	Vector dir = pos_to().sub(pos_from());
-	for (int i=0; i<cnt+1; i++) {
-	    double pos = i*length/cnt;
-	    // System.err.println("SUBSEG:stem_radius");
-	    double rad = stem.stem_radius(index*length + pos);
-	    // System.err.println("SUBSEG: pos: "+ pos+" rad: "+rad+" inx: "+index+" len: "+length);
-
-	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/length)),rad));
-	}
-    }
-
-    /**
-     * Make a subsegments for a segment with spherical end
-     * (last stem segment), subsegment lengths decrements near
-     * the end to get a smooth surface
-     * 
-     * @param cnt the number of subsegments
-     */
-    private void make_spherical_end(int cnt) {
-	Vector dir = pos_to().sub(pos_from());
-	for (int i=0; i<cnt; i++) {
-	    double pos = length-length/Math.pow(2,i);
-	    double rad = stem.stem_radius(index*length + pos);
-      //stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/length)),rad));
-	}
-	subsegs.addElement(new Subsegment(pos_to(),rad2));
-    }
-
-    /**
-     * Make subsegments for a segment with flare
-     * (first trunk segment). Subsegment lengths are decrementing
-     * near the base of teh segment to get a smooth surface
-     * 
-     * @param cnt the number of subsegments
-     */
-    private void make_flare(int cnt) {
-	Vector dir = pos_to().sub(pos_from());
-	subsegs.addElement(new Subsegment(pos_from(),rad1));
-	for (int i=cnt-1; i>=0; i--) {
-	    double pos = length/Math.pow(2,i);
-	    double rad = stem.stem_radius(index*length+pos);
-	    //self.stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-	    subsegs.addElement(new Subsegment(pos_from().add(dir.mul(pos/length)),rad));
-	}
-    }
-
-    /**
-     * Make subsegments for a segment with helical curving.
-     * They curve around with 360° from base to top of the
-     * segment
-     * 
-     * @param cnt the number of subsegments, should be higher
-     *        when a smooth curve is needed.
-     */
-    private void make_helix(int cnt) {
-	double angle = Math.abs(lpar.nCurveV)/180*Math.PI;
-	// this is the radius of the helix
-	double rad = Math.sqrt(1.0/(Math.cos(angle)*Math.cos(angle)) - 1)*length/Math.PI/2.0;
-	stem.DBG("Segment.make_helix angle: "+angle+" len: "+length+" rad: "+rad);
-
-	//self.stem.DBG("HELIX: rad: %f, len: %f\n" % (rad,len))
-	for (int i=0; i<cnt+1; i++) {
-	    Vector pos = new Vector(rad*Math.cos(2*Math.PI*i/cnt)-rad,
-				rad*Math.sin(2*Math.PI*i/cnt),
-				i*length/cnt);
-	    //self.stem.DBG("HELIX: pos: %s\n" % (str(pos)))
-	    // this is the stem radius
-	    double srad = stem.stem_radius(index*length + i*length/cnt);
-	    subsegs.addElement(new Subsegment(transf.apply(pos),srad));
-	}
-    }
 	
-    /**
-     * Calcs the position of a substem in the segment given 
+	/**
+	 * Creates susbsegments for the segment
+	 * 
+	 * @param cnt the number of subsegments
+	 */
+	private void makeSubsegments(int cnt) {
+		Vector dir = posTo().sub(posFrom());
+		for (int i=0; i<cnt+1; i++) {
+			double pos = i*length/cnt;
+			// System.err.println("SUBSEG:stem_radius");
+			double rad = stem.getStemRadius(index*length + pos);
+			// System.err.println("SUBSEG: pos: "+ pos+" rad: "+rad+" inx: "+index+" len: "+length);
+			
+			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad));
+		}
+	}
+	
+	/**
+	 * Make a subsegments for a segment with spherical end
+	 * (last stem segment), subsegment lengths decrements near
+	 * the end to get a smooth surface
+	 * 
+	 * @param cnt the number of subsegments
+	 */
+	private void makeSphericalEnd(int cnt) {
+		Vector dir = posTo().sub(posFrom());
+		for (int i=0; i<cnt; i++) {
+			double pos = length-length/Math.pow(2,i);
+			double rad = stem.getStemRadius(index*length + pos);
+			//stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
+			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad));
+		}
+		subsegments.addElement(new Subsegment(posTo(),rad2));
+	}
+	
+	/**
+	 * Make subsegments for a segment with flare
+	 * (first trunk segment). Subsegment lengths are decrementing
+	 * near the base of teh segment to get a smooth surface
+	 * 
+	 * @param cnt the number of subsegments
+	 */
+	private void makeFlare(int cnt) {
+		Vector dir = posTo().sub(posFrom());
+		subsegments.addElement(new Subsegment(posFrom(),rad1));
+		for (int i=cnt-1; i>=0; i--) {
+			double pos = length/Math.pow(2,i);
+			double rad = stem.getStemRadius(index*length+pos);
+			//self.stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
+			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad));
+		}
+	}
+	
+	/**
+	 * Make subsegments for a segment with helical curving.
+	 * They curve around with 360° from base to top of the
+	 * segment
+	 * 
+	 * @param cnt the number of subsegments, should be higher
+	 *        when a smooth curve is needed.
+	 */
+	private void makeHelix(int cnt) {
+		double angle = Math.abs(lpar.nCurveV)/180*Math.PI;
+		// this is the radius of the helix
+		double rad = Math.sqrt(1.0/(Math.cos(angle)*Math.cos(angle)) - 1)*length/Math.PI/2.0;
+		stem.DBG("Segment.make_helix angle: "+angle+" len: "+length+" rad: "+rad);
+		
+		//self.stem.DBG("HELIX: rad: %f, len: %f\n" % (rad,len))
+		for (int i=0; i<cnt+1; i++) {
+			Vector pos = new Vector(rad*Math.cos(2*Math.PI*i/cnt)-rad,
+					rad*Math.sin(2*Math.PI*i/cnt),
+					i*length/cnt);
+			//self.stem.DBG("HELIX: pos: %s\n" % (str(pos)))
+			// this is the stem radius
+			double srad = stem.getStemRadius(index*length + i*length/cnt);
+			subsegments.addElement(new Subsegment(transf.apply(pos),srad));
+		}
+	}
+	
+	/**
+	 * Calcs the position of a substem in the segment given 
 	 * a relativ position where in 0..1 - needed esp. for helical stems,
 	 * because the substems doesn't grow from the axis of the segement
-     *
-     * @param trf the transformation of the substem
-     * @param where the offset, where the substem spreads out
-     * @return the new transformation of the substem (shifted from
-     *        the axis of the segment to the axis of the subsegment)
-     */
-    public Transformation substem_position(Transformation trf,double where) {
-	if (lpar.nCurveV>=0) { // normal segment 
-	    return trf.translate(transf.getZ().mul(where*length));
-	} else { // helix
-	    // get index of the subsegment
-	    int i = (int)(where*(subsegs.size()-1));
-	    // interpolate position
-	    Vector p1 = ((Subsegment)subsegs.elementAt(i)).pos;
-	    Vector p2 = ((Subsegment)subsegs.elementAt(i+1)).pos;
-	    Vector pos = p1.add(p2.sub(p1).mul(where - i/(subsegs.size()-1)));
-	    return trf.translate(pos.sub(pos_from()));
+	 *
+	 * @param trf the transformation of the substem
+	 * @param where the offset, where the substem spreads out
+	 * @return the new transformation of the substem (shifted from
+	 *        the axis of the segment to the axis of the subsegment)
+	 */
+	public Transformation substem_position(Transformation trf,double where) {
+		if (lpar.nCurveV>=0) { // normal segment 
+			return trf.translate(transf.getZ().mul(where*length));
+		} else { // helix
+			// get index of the subsegment
+			int i = (int)(where*(subsegments.size()-1));
+			// interpolate position
+			Vector p1 = ((Subsegment)subsegments.elementAt(i)).pos;
+			Vector p2 = ((Subsegment)subsegments.elementAt(i+1)).pos;
+			Vector pos = p1.add(p2.sub(p1).mul(where - i/(subsegments.size()-1)));
+			return trf.translate(pos.sub(posFrom()));
+		}
 	}
-    }
-  
-    /**
-     * Position at the beginning of the segment
-     * 
-     * @return beginning point of the segment
-     */
-    Vector pos_from() {
-	// self.stem.DBG("segmenttr0: %s, t: %s\n"%(self.transf_pred,self.transf_pred.t()))
-	return transf.getT();
-    }
-  
-    /**
-     * Position of the end of the segment
-     * 
-     * @return end point of the segment
-     */
-    public Vector pos_to() {
-	//self.stem.DBG("segmenttr1: %s, t: %s\n"%(self.transf,self.transf.t()))
-	return transf.getT().add(transf.getZ().mul(length));
-    }
-
-    /**
-     * Tests, if the segment is the first stem segment
-     * 
-     * @return true, if it's the first stem segment, false otherwise
-     */
-    public boolean is_first_stem_segment() {
-	return index == 0;
-    }
-  
-    /**
-     * Tests, if the segment ist the last stem segment
-     * 
-     * @return true, if it's the last stem segment, false otherwise
-     */
-    public boolean is_last_stem_segment() {
-	return index == lpar.nCurveRes-1;
-    }
-
-    
-  
-    /**
+	
+	/**
+	 * Position at the beginning of the segment
+	 * 
+	 * @return beginning point of the segment
+	 */
+	Vector posFrom() {
+		// self.stem.DBG("segmenttr0: %s, t: %s\n"%(self.transf_pred,self.transf_pred.t()))
+		return transf.getT();
+	}
+	
+	/**
+	 * Position of the end of the segment
+	 * 
+	 * @return end point of the segment
+	 */
+	public Vector posTo() {
+		//self.stem.DBG("segmenttr1: %s, t: %s\n"%(self.transf,self.transf.t()))
+		return transf.getT().add(transf.getZ().mul(length));
+	}
+	
+	/**
+	 * Tests, if the segment is the first stem segment
+	 * 
+	 * @return true, if it's the first stem segment, false otherwise
+	 */
+	public boolean isFirstStemSegment() {
+		return index == 0;
+	}
+	
+	/**
+	 * Tests, if the segment ist the last stem segment
+	 * 
+	 * @return true, if it's the last stem segment, false otherwise
+	 */
+	public boolean isLastStemSegment() {
+		return index == lpar.nCurveRes-1;
+	}
+	
+	
+	
+	/**
 	 * Creates the mesh points for a cross section somewhere in the segment
-     * 
-     * @param pos the position of the section
-     * @param rad the radius of the cross section
-     * @param meshpart the mesh part where the points should be added
-     * @param donttrf if true, the transformation is not applied to the section points
-     */
-    void create_section_meshpoints(Vector pos, double rad, MeshPart meshpart,
-				   boolean donttrf) {
-	//h = (self.index+where)*self.stem.segment_len
-	//rad = self.stem.stem_radius(h)
-	// self.stem.DBG("MESH: pos: %s, rad: %f\n"%(str(pos),rad))
-
-	// System.err.println("Segment-create meshpts, pos: "+pos+" rad: "+rad);
-
-    
-	Transformation trf = transf.translate(pos.sub(pos_from()));
-	//self.stem.TRF("MESH:",trf)
-    
-	// if radius = 0 create only one point
-	if (rad<0.000001) {
-	    MeshSection section = new MeshSection(1);
-	    section.add_point(trf.apply(new Vector(0,0,0)));
-	    meshpart.add_section(section);
-	} else { //create pt_cnt points
-	    int pt_cnt = lpar.mesh_points;
-	    MeshSection section = new MeshSection(pt_cnt);
-	    //stem.DBG("MESH+LOBES: lobes: %d, depth: %f\n"%(self.tree.Lobes, self.tree.LobeDepth))
-      
-	    for (int i=0; i<pt_cnt; i++) {
-		double angle = i*360/pt_cnt;
-		// for Lobes ensure that points are near lobes extrema, but not exactly there
-		// otherwise there are to sharp corners at the extrema
-		if (lpar.level==0 && par.Lobes != 0) {
-		    angle -= 10/par.Lobes;
+	 * 
+	 * @param pos the position of the section
+	 * @param rad the radius of the cross section
+	 * @param meshpart the mesh part where the points should be added
+	 * @param donttrf if true, the transformation is not applied to the section points
+	 */
+	void createSectionMeshpoints(Vector pos, double rad, MeshPart meshpart,
+			boolean donttrf) {
+		//h = (self.index+where)*self.stem.segment_len
+		//rad = self.stem.stem_radius(h)
+		// self.stem.DBG("MESH: pos: %s, rad: %f\n"%(str(pos),rad))
+		
+		// System.err.println("Segment-create meshpts, pos: "+pos+" rad: "+rad);
+		
+		
+		Transformation trf = transf.translate(pos.sub(posFrom()));
+		//self.stem.TRF("MESH:",trf)
+		
+		// if radius = 0 create only one point
+		if (rad<0.000001) {
+			MeshSection section = new MeshSection(1);
+			section.addPoint(trf.apply(new Vector(0,0,0)));
+			meshpart.addSection(section);
+		} else { //create pt_cnt points
+			int pt_cnt = lpar.mesh_points;
+			MeshSection section = new MeshSection(pt_cnt);
+			//stem.DBG("MESH+LOBES: lobes: %d, depth: %f\n"%(self.tree.Lobes, self.tree.LobeDepth))
+			
+			for (int i=0; i<pt_cnt; i++) {
+				double angle = i*360/pt_cnt;
+				// for Lobes ensure that points are near lobes extrema, but not exactly there
+				// otherwise there are to sharp corners at the extrema
+				if (lpar.level==0 && par.Lobes != 0) {
+					angle -= 10/par.Lobes;
+				}
+				
+				// create some point on the unit circle
+				Vector pt = new Vector(Math.cos(angle*Math.PI/180),Math.sin(angle*Math.PI/180),0);
+				// scale it to stem radius
+				if (lpar.level==0 && (par.Lobes != 0 || par._0ScaleV !=0)) {
+					// self.stem.DBG("MESH+LOBES: angle: %f, sinarg: %f, rad: %f\n"%(angle, \
+					//self.tree.Lobes*angle*pi/180.0, \
+					//	rad*(1.0+self.tree.LobeDepth*cos(self.tree.Lobes*angle*pi/180.0))))
+					double rad1 = rad * (1 + 
+							par.random.uniform(-par._0ScaleV,par._0ScaleV)/
+							subsegments.size());
+					pt = pt.mul(rad1*(1.0+par.LobeDepth*Math.cos(par.Lobes*angle*Math.PI/180.0))); 
+				} else {
+					pt = pt.mul(rad); // faster - no radius calculations
+				}
+				// apply transformation to it
+				// (for the first trunk segment transformation shouldn't be applied to
+				// the lower meshpoints, otherwise there would be a gap between 
+				// ground and trunk)
+				// FIXME: for helical stems may be/may be not a random rotation 
+				// should applied additionally?
+				
+				if (! donttrf) {  // not (stem.level==0 && index==0):
+					pt = trf.apply(pt);
+				} else {
+					// FIXME: should apply z-rotation and translation only here
+					pt = trf.apply(pt); //FIXME: trf.getT(); // tranlate only
+				}
+				section.addPoint(pt);
+			}
+			//add section to the mesh part
+			meshpart.addSection(section);
 		}
+	}
 	
-		// create some point on the unit circle
-		Vector pt = new Vector(Math.cos(angle*Math.PI/180),Math.sin(angle*Math.PI/180),0);
-		// scale it to stem radius
-		if (lpar.level==0 && (par.Lobes != 0 || par._0ScaleV !=0)) {
-		    // self.stem.DBG("MESH+LOBES: angle: %f, sinarg: %f, rad: %f\n"%(angle, \
-		    //self.tree.Lobes*angle*pi/180.0, \
-		    //	rad*(1.0+self.tree.LobeDepth*cos(self.tree.Lobes*angle*pi/180.0))))
-		    double rad1 = rad * (1 + 
-					 par.random.uniform(-par._0ScaleV,par._0ScaleV)/
-					 subsegs.size());
-		    pt = pt.mul(rad1*(1.0+par.LobeDepth*Math.cos(par.Lobes*angle*Math.PI/180.0))); 
-		} else {
-		    pt = pt.mul(rad); // faster - no radius calculations
+	/**
+	 * Adds the segments to a mesh part. For every subsegment one ore
+	 * two mesh sections are added.
+	 * 
+	 * @param meshpart the mesh part, to wich the segment should be added
+	 */
+	public void addToMeshpart(MeshPart meshpart) {
+		// creates the part of the mesh for this segment
+		//pt_cnt = self.tree.meshpoints[self.stem.level]
+		//smooth = self.stem.level<=self.tree.smooth_mesh_level
+		
+		if (meshpart.size() == 0) { // first segment, create lower meshpoints
+			Subsegment ss = (Subsegment)subsegments.elementAt(0);
+			// one point at the stem origin, with normal in reverse z-direction
+			createSectionMeshpoints(ss.pos,0,meshpart,
+					isFirstStemSegment() && lpar.level==0);
+			((MeshSection)meshpart.firstElement()).setNormalsToVector(transf.getZ().mul(-1));
+			
+			// more points around the stem origin
+			createSectionMeshpoints(ss.pos,ss.rad,meshpart,
+					isFirstStemSegment() && lpar.level==0);
 		}
-		// apply transformation to it
-		// (for the first trunk segment transformation shouldn't be applied to
-		// the lower meshpoints, otherwise there would be a gap between 
-		// ground and trunk)
-		// FIXME: for helical stems may be/may be not a rotation 
-		// should applied additionally?
-	
-		if (! donttrf) {  // not (stem.level==0 && index==0):
-		    pt = trf.apply(pt);
-		} else {
-		    // FIXME: should apply z-rotation and translation only here
-		    pt = trf.apply(pt); //FIXME: trf.getT(); // tranlate only
+		
+		// create meshpoints on top of each subsegment
+		for (int i=1; i<subsegments.size(); i++) {
+			Subsegment ss = (Subsegment)subsegments.elementAt(i);
+			createSectionMeshpoints(ss.pos,ss.rad,meshpart,false);
 		}
-		//self.stem.DBG("MESHPT: %s\n"%(pt))
-		section.add_point(pt);
-	    }
-	    //add section to the mesh part
-	    meshpart.add_section(section);
+		
+		// System.err.println("MESHCREATION, segmindex: "+index);
+		
+		// close mesh with normal in z-direction
+		if (isLastStemSegment()) {
+			if (rad2>0.000001) {
+				createSectionMeshpoints(posTo(),0,meshpart,false);
+			}
+			//DBG System.err.println("LAST StemSegm, setting normals to Z-dir");
+			((MeshSection)meshpart.lastElement()).setNormalsToVector(transf.getZ());
+		}
 	}
-    }
-  
-    /**
-     * Adds the segments to a mesh part. For every subsegment one ore
-     * two mesh sections are added.
-     * 
-     * @param meshpart the mesh part, to wich the segment should be added
-     */
-    public void add_to_meshpart(MeshPart meshpart) {
-	// creates the part of the mesh for this segment
-	//pt_cnt = self.tree.meshpoints[self.stem.level]
-	//smooth = self.stem.level<=self.tree.smooth_mesh_level
-
-	if (meshpart.size() == 0) { // first segment, create lower meshpoints
-	    Subsegment ss = (Subsegment)subsegs.elementAt(0);
-	    // one point at the stem origin, with normal in reverse z-direction
-	    create_section_meshpoints(ss.pos,0,meshpart,
-				      is_first_stem_segment() && lpar.level==0);
-	    ((MeshSection)meshpart.firstElement()).set_normals_vector(transf.getZ().mul(-1));
-      
-	    // more points around the stem origin
-	    create_section_meshpoints(ss.pos,ss.rad,meshpart,
-				      is_first_stem_segment() && lpar.level==0);
-	}
-    
-	// create meshpoints on top of each subsegment
-	for (int i=1; i<subsegs.size(); i++) {
-	    Subsegment ss = (Subsegment)subsegs.elementAt(i);
-	    create_section_meshpoints(ss.pos,ss.rad,meshpart,false);
-	}
-
-	// System.err.println("MESHCREATION, segmindex: "+index);
-    
-	// close mesh with normal in z-direction
-	if (is_last_stem_segment()) {
-	    if (rad2>0.000001) {
-		create_section_meshpoints(pos_to(),0,meshpart,false);
-	    }
-	    //DBG System.err.println("LAST StemSegm, setting normals to Z-dir");
-	    ((MeshSection)meshpart.lastElement()).set_normals_vector(transf.getZ());
-	}
-    }
 };
 
 

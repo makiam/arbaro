@@ -92,7 +92,7 @@ public class IntParam extends AbstractParam {
 
     public String getLongDesc() {
 	String desc = super.getLongDesc();
-	desc += "<br>";
+	desc += "<br><br>";
 	if (min != Integer.MIN_VALUE) {
 	    desc += "Minimum: "+min+"\n";
 	}

@@ -29,42 +29,53 @@ import net.sourceforge.arbaro.transformation.*;
 import java.util.regex.*;
 
 
+/**
+ * Base class for all mesh based leaves
+ * 
+ * @author wdiestel
+ *
+ */
 abstract class LeafShape {
-    Vertex[] vertices;
-    Face[] faces;
-
-    double length=1;
-    double width=1;
-    double stemLen=0.5;
-
-    LeafShape(double len, double wid, double stem_len) {
-	length = len;
-	width = wid;
-	stemLen = stem_len;
-    }
-
-    void setPoint(int i, double x, double y, double z) {
-	Vector point = new Vector(x*width,y*width,(stemLen+z)*length);
-	if (vertices[i] == null) {
-	    vertices[i] = new Vertex(point,null);
-	} else {
-	    vertices[i].point = point;
+	Vertex[] vertices;
+	Face[] faces;
+	
+	double length=1;
+	double width=1;
+	double stemLen=0.5;
+	
+	LeafShape(double len, double wid, double stem_len) {
+		length = len;
+		width = wid;
+		stemLen = stem_len;
 	}
-    }
-
-
-    int getVertexCount() {
-	return vertices.length;
-    }
-
-    int getFaceCount() {
-	return faces.length;
-    }
+	
+	void setPoint(int i, double x, double y, double z) {
+		Vector point = new Vector(x*width,y*width,(stemLen+z)*length);
+		if (vertices[i] == null) {
+			vertices[i] = new Vertex(point,null);
+		} else {
+			vertices[i].point = point;
+		}
+	}
+	
+	
+	int getVertexCount() {
+		return vertices.length;
+	}
+	
+	int getFaceCount() {
+		return faces.length;
+	}
 };
 
 
+/**
+ * An oval leaf shape having the outline of an averag leaf.
+ * 
+ * @author wdiestel
+ */
 class DiscShape extends LeafShape {
-
+	
 	public DiscShape(int facecount, double len, double wid, double stem_len) {
 		super(len,wid,stem_len);
 		
@@ -74,7 +85,7 @@ class DiscShape extends LeafShape {
 		setCirclePoints();
 		setFaces();
 	}
-
+	
 	void setCirclePoints() {
 		double angle;
 		double x;
@@ -123,103 +134,126 @@ class DiscShape extends LeafShape {
 	}
 };
 
+/**
+ * A spherical leaf shape. It is aproximated by an ikosaeder.
+ * 
+ * @author wdiestel
+ */
 class SphereShape extends LeafShape {
-    // use ikosaeder as a "sphere"
-
-    public SphereShape(double len, double wid, double stem_len) {
-	super(len,wid,stem_len);
-
-	vertices = new Vertex[12];
-	faces = new Face[20];
-
-	double s = (Math.sqrt(5)-1)/2*Math.sqrt(2/(5-Math.sqrt(5))) / 2; 
-	// half edge length so, that the vertices are at distance of 0.5 from the center
-	double t = Math.sqrt(2/(5-Math.sqrt(5))) / 2;
-
-	setPoint(0, 0,s,-t+0.5);	setPoint(6, 0,-s,-t+0.5);
-	setPoint(1, t,0,-s+0.5);	setPoint(7, t,0,s+0.5);
-	setPoint(2, -s,t,0+0.5);	setPoint(8, s,t,0+0.5);
-	setPoint(3, 0,s,t+0.5);	setPoint(9, 0,-s,t+0.5);
-	setPoint(4, -t,0,-s+0.5);	setPoint(10,-t,0,s+0.5);
-	setPoint(5,-s,-t,0+0.5);	setPoint(11, s,-t,0+0.5);
+	// use ikosaeder as a "sphere"
 	
-	faces[0] = new Face(0,1,6); faces[1] = new Face(0,6,4);
-	faces[2] = new Face(1,8,7); faces[3] = new Face(1,7,11);
-	faces[4] = new Face(2,3,0); faces[5] = new Face(2,3,8);
-
-	faces[6] = new Face(3,9,7);  faces[7] = new Face(3,10,9);
-	faces[8] = new Face(4,10,2); faces[9] = new Face(4,5,10);
-	faces[10] = new Face(5,6,11);faces[11] = new Face(5,11,9);
-	
-	faces[12] = new Face(0,8,1); faces[13] = new Face(6,1,11);
-	faces[14] = new Face(6,5,4); faces[15] = new Face(0,4,2);
-
-	faces[16] = new Face(7,8,3); faces[17] = new Face(10,3,2);
-	faces[18] = new Face(10,5,9);faces[19] = new Face(9,11,7);
-    }
+	public SphereShape(double len, double wid, double stem_len) {
+		super(len,wid,stem_len);
+		
+		vertices = new Vertex[12];
+		faces = new Face[20];
+		
+		double s = (Math.sqrt(5)-1)/2*Math.sqrt(2/(5-Math.sqrt(5))) / 2; 
+		// half edge length so, that the vertices are at distance of 0.5 from the center
+		double t = Math.sqrt(2/(5-Math.sqrt(5))) / 2;
+		
+		setPoint(0, 0,s,-t+0.5);	setPoint(6, 0,-s,-t+0.5);
+		setPoint(1, t,0,-s+0.5);	setPoint(7, t,0,s+0.5);
+		setPoint(2, -s,t,0+0.5);	setPoint(8, s,t,0+0.5);
+		setPoint(3, 0,s,t+0.5);	setPoint(9, 0,-s,t+0.5);
+		setPoint(4, -t,0,-s+0.5);	setPoint(10,-t,0,s+0.5);
+		setPoint(5,-s,-t,0+0.5);	setPoint(11, s,-t,0+0.5);
+		
+		faces[0] = new Face(0,1,6); faces[1] = new Face(0,6,4);
+		faces[2] = new Face(1,8,7); faces[3] = new Face(1,7,11);
+		faces[4] = new Face(2,3,0); faces[5] = new Face(2,3,8);
+		
+		faces[6] = new Face(3,9,7);  faces[7] = new Face(3,10,9);
+		faces[8] = new Face(4,10,2); faces[9] = new Face(4,5,10);
+		faces[10] = new Face(5,6,11);faces[11] = new Face(5,11,9);
+		
+		faces[12] = new Face(0,8,1); faces[13] = new Face(6,1,11);
+		faces[14] = new Face(6,5,4); faces[15] = new Face(0,4,2);
+		
+		faces[16] = new Face(7,8,3); faces[17] = new Face(10,3,2);
+		faces[18] = new Face(10,5,9);faces[19] = new Face(9,11,7);
+	}
 };
 
+/**
+ * A class for creation of a leaf in the mesh of all leaves.
+ * It is initialized with a leaf shape name. The leaf mesh is
+ * located at the origin. To create a leaf at it's position,
+ * you have to apply the leafs transformation to the leaf mesh
+ * points.
+ * 
+ * @author wdiestel
+ */
 public class LeafMesh {
-    
-    LeafShape shape;
-    long faceOffset;
+	
+	LeafShape shape;
+	long faceOffset;
+	
+	public LeafMesh(String leafShape, double length, double width, double stemLen) {
+		Pattern pattern = Pattern.compile("disc(\\d*)");
+		Matcher m = pattern.matcher(leafShape);
+		// disc shape
+		if (m.matches()) {
+			// FIXME: given "disc" without a number, the face count could 
+			// be dependent from the smooth value
+			int facecnt = 6;
+			if (! m.group(1).equals("")) {
+				facecnt = Integer.parseInt(m.group(1));
+			}
+			shape = new DiscShape(facecnt,length,width,stemLen);
+		} else if (leafShape.equals("sphere")) {
+			shape = new SphereShape(length,width,stemLen);
+		} else
+			// test other shapes like  palm here
+		{
+			// any other leaf shape, like "0" a.s.o. - use normal disc
+			
+			// FIXME: given "disc" without a number, the face count could 
+			// be dependent from the smooth value
+			int facecnt = 6;
+			shape = new DiscShape(facecnt,length,width,stemLen);
+		}
+	}
+	
+	/**
+	 * Returns the i-th vertex.
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public Vertex shapeVertexAt(int i) {
+		return shape.vertices[i];
+	}
+	
+	/**
+	 * Returns the i-th face (triangle).
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public Face shapeFaceAt(int i) {
+		return shape.faces[i];
+	}
+	
+	/**
+	 * Returns the number of vertices the leaf mesh consist of.
+	 * 
+	 * @return
+	 */
+	public int getShapeVertexCount() {
+		return shape.getVertexCount();
+	}
 
-    public LeafMesh(String leafShape, double length, double width, double stemLen) {
-    	Pattern pattern = Pattern.compile("disc(\\d*)");
-    	Matcher m = pattern.matcher(leafShape);
-    	// disc shape
-    	if (m.matches()) {
-    		// FIXME: given "disc" without a number, the face count could 
-    		// be dependent from the smooth value
-    		int facecnt = 6;
-    		if (! m.group(1).equals("")) {
-    			facecnt = Integer.parseInt(m.group(1));
-    		}
-    		shape = new DiscShape(facecnt,length,width,stemLen);
-    	} else if (leafShape.equals("sphere")) {
-    		shape = new SphereShape(length,width,stemLen);
-    	} else
-    		// test other shapes like  palm here
-    	{
-    		// any other leaf shape, like "0" a.s.o. - use normal disc
-    		
-    		// FIXME: given "disc" without a number, the face count could 
-    		// be dependent from the smooth value
-    		int facecnt = 6;
-    		shape = new DiscShape(facecnt,length,width,stemLen);
-    	}
-    }
-
-    public Vertex shapeVertexAt(int i) {
-    	return shape.vertices[i];
-    }
-    
-    public Face shapeFaceAt(int i) {
-    	return shape.faces[i];
-    }
-    
-//    public void povray_points(PrintWriter w, String indent, Transformation transf) {
-//	shape.povray_points(w,indent,transf);
-//	faceOffset = 0;
-//    }
-//
-//    public void povray_faces(PrintWriter w, String indent) {
-//	shape.povray_faces(w,indent,faceOffset);
-//	faceOffset += shape.getVertexCount();
-//    }
-//
-//    public void povray_normals(PrintWriter w, String indent, Transformation transf) {
-//	shape.povray_normals(w,indent,transf);
-//    }
-
-    public int getShapeVertexCount() {
-	return shape.getVertexCount();
-    }
-
-    public int getShapeFaceCount() {
-	return shape.getFaceCount();
-    }
-
+	
+	/**
+	 * Returns the number ov faces the leaf mesh consists of.
+	 * 
+	 * @return
+	 */
+	public int getShapeFaceCount() {
+		return shape.getFaceCount();
+	}
+	
 };
 
 

@@ -37,39 +37,52 @@ package net.sourceforge.arbaro.mesh;
  *  
  * 
  * @author Wolfram Diestel
- *
- * TODO 
  */
 public class Mesh extends java.util.Vector {
-    final boolean debugmesh = false;
-
-
-    public Mesh() { }
-
-    public void add_meshpart(MeshPart meshpart) {
-	addElement(meshpart);
-    }
-    
-    public int vertex_cnt() {
-	// count all meshpoints of all parts
-	int cnt=0;
+	final boolean debugMesh = false;
 	
-	for (int i = 0; i<size(); i++) {
-	    cnt += ((MeshPart)elementAt(i)).vertex_cnt();
+	
+	public Mesh() { }
+	
+	/**
+	 * Adds a mesh part (i.e. a stem) to the mesh.
+	 * 
+	 * @param meshpart
+	 */
+	public void addMeshpart(MeshPart meshpart) {
+		addElement(meshpart);
 	}
-	return cnt;
-    }
-    
-    public int face_cnt()  {
-	// calcs how much faces have to be created, povray wants to know this
-	// before the faces itself
-	int cnt = 0;
-	for (int i=0; i<size(); i++) {
-	    cnt += ((MeshPart)elementAt(i)).face_cnt();
+	
+	/**
+	 * Returns the total number of vertices in the mesh.
+	 * 
+	 * @return
+	 */
+	public int vertexCount() {
+		// count all meshpoints of all parts
+		int cnt=0;
+		
+		for (int i = 0; i<size(); i++) {
+			cnt += ((MeshPart)elementAt(i)).vertexCount();
+		}
+		return cnt;
 	}
-	return cnt;
-    }
-    
+	
+	/**
+	 * Returns the total number of faces, that has to be
+	 * created for the mesh. Povray wants to know this
+	 * before the faces itself.
+	 * 
+	 * @return
+	 */
+	public int faceCount()  {
+		int cnt = 0;
+		for (int i=0; i<size(); i++) {
+			cnt += ((MeshPart)elementAt(i)).faceCount();
+		}
+		return cnt;
+	}
+	
 };    
 
 

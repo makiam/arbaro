@@ -156,33 +156,30 @@ public class Stem {
     final static double MIN_STEM_LEN=0.0005; 
     final static double MIN_STEM_RADIUS=MIN_STEM_LEN/10; 
     
-    //FIXME: trees with Levels>4 not yet tested!!!
     public int stemlevel; // the branch level, could be > 4
     double offset; // how far from the parent's base
   
-    // FIXME: instead of making them public, there should
-    // be iterators
-    public java.util.Vector segments; // the segments forming the stem
+    java.util.Vector segments; // the segments forming the stem
     java.util.Vector clones;      // the stem clones (for splitting)
     java.util.Vector substems;    // the substems
-    public java.util.Vector leaves;     // the leaves
+    java.util.Vector leaves;     // the leaves
 
     double length;
-    double segment_len;
-    int segment_cnt;
-    double base_radius;
+    double segmentLength;
+    int segmentCount;
+    double baseRadius;
 
-    double length_child_max;
-    double substems_per_segment;
-    double substem_rotangle;
+    double lengthChildMax;
+    double substemsPerSegment;
+    double substemRotangle;
 
-    double leaves_per_segment;
-    double split_corr;
+    double leavesPerSegment;
+    double splitCorrection;
 
-    boolean prunetest; // flag for pruning cycles
+    boolean pruneTest; // flag for pruning cycles
 
     int index; // substem number
-    public java.util.Vector clone_index; // clone number (Integers)
+    public java.util.Vector cloneIndex; // clone number (Integers)
     
     
     private class AllStemsEnumerator implements Enumeration {
@@ -266,12 +263,46 @@ public class Stem {
     }
     
     
+    /**
+     * Returns an enumeration of the stem itself an all
+     * it's substems and clones. If level is giben only
+     * substems of this level are enumerated.
+     * 
+     * @param level
+     * @return
+     */
     public Enumeration allStems(int level) {
     	return new AllStemsEnumerator(level);
     }
     
+    /**
+     * Returns an enumeration of all leaves of the stem
+     * itself (if it is of the last stem level) or all 
+     * it's substems and clones.
+     * 
+     * @return
+     */
     public Enumeration allLeaves() {
-    		return new AllLeavesEnumerator();
+    	return new AllLeavesEnumerator();
+    }
+    
+    /**
+     * Returns an enumeration of the segments of the stem
+     * 
+     * @return
+     */
+    public Enumeration stemSegments() {
+    	return segments.elements();
+    }
+    
+    /**
+     * Returns an enumeration of the leaves of the stem,
+     * but not the leaves of it's substems.
+     * 
+     * @return
+     */
+    public Enumeration stemLeaves() {
+    	return leaves.elements();
     }
 
     
@@ -313,11 +344,11 @@ public class Stem {
 	}
 
 	// inialize other variables
-	leaves_per_segment = 0;
-	split_corr = 0;
+	leavesPerSegment = 0;
+	splitCorrection = 0;
 	index=0; // substem number
-	clone_index = new java.util.Vector();
-	prunetest = false; // flag used for pruning
+	cloneIndex = new java.util.Vector();
+	pruneTest = false; // flag used for pruning
       
 	//...
     }
@@ -342,7 +373,7 @@ public class Stem {
      */
     public void DBG(String dbgstr) {
 	// print debug string to stderr if debugging is enabled
-	if (par.debug) System.err.println(tree_position() + ":" + dbgstr);
+	if (par.debug) System.err.println(getTreePosition() + ":" + dbgstr);
     }
 
     /**
@@ -352,17 +383,17 @@ public class Stem {
      * 
      * @return The stem position in the tree as a string
      */
-    public String tree_position() {
+    public String getTreePosition() {
 	// returns the position of the stem in the tree as a string, e.g. 0c0.1
 	// for the second substem of the first clone of the trunk
 	Stem stem = this;
 	int lev = stemlevel;
 	String pos = "";
 	while (lev>=0) {
-	    if (stem.clone_index.size()>0) { 
+	    if (stem.cloneIndex.size()>0) { 
 		String clonestr = "";
-		for (int i=0; i<stem.clone_index.size(); i++) {
-		    clonestr += "c"+((Integer)stem.clone_index.elementAt(i)).toString();
+		for (int i=0; i<stem.cloneIndex.size(); i++) {
+		    clonestr += "c"+((Integer)stem.cloneIndex.elementAt(i)).toString();
 		}
 		pos = "" + stem.index+clonestr+"."+pos;
 	    } else {
@@ -386,30 +417,30 @@ public class Stem {
     Stem clone(Transformation trf, int start_segm) {
 	// creates a clone stem with same atributes as this stem
 	Stem clone = new Stem(tree,par,lpar,parent,stemlevel,trf,offset);
-	clone.segment_len = segment_len;
-	clone.segment_cnt = segment_cnt;
+	clone.segmentLength = segmentLength;
+	clone.segmentCount = segmentCount;
 	clone.length = length;
-	clone.base_radius = base_radius;
-	clone.split_corr = split_corr; 
-	clone.prunetest = prunetest;
+	clone.baseRadius = baseRadius;
+	clone.splitCorrection = splitCorrection; 
+	clone.pruneTest = pruneTest;
 	clone.index = index;
 
 	//DBG("Stem.clone(): clone_index "+clone_index);
-	clone.clone_index.addAll(clone_index);
+	clone.cloneIndex.addAll(cloneIndex);
 
 	//DBG("Stem.clone(): level: "+stemlevel+" clones "+clones);
-	clone.clone_index.addElement(new Integer(clones.size()));
-	if (! prunetest) {
-	    clone.length_child_max = length_child_max;
+	clone.cloneIndex.addElement(new Integer(clones.size()));
+	if (! pruneTest) {
+	    clone.lengthChildMax = lengthChildMax;
 	    //clone.substem_cnt = substem_cnt;
-	    clone.substems_per_segment = substems_per_segment;
+	    clone.substemsPerSegment = substemsPerSegment;
 	    //clone.substemdist = substemdist;
 	    //clone.substemdistv = substemdistv;
 	    //clone.seg_splits = self.seg_splits
 	    // FIXME: for more then one clone this angle should somehow
 	    // correspond to the rotation angle of the clone
-	    clone.substem_rotangle=substem_rotangle+180;
-	    clone.leaves_per_segment=leaves_per_segment;
+	    clone.substemRotangle=substemRotangle+180;
+	    clone.leavesPerSegment=leavesPerSegment;
 	}
 	return clone;
     }
@@ -420,15 +451,12 @@ public class Stem {
      */
     public void make() {
     	// makes the stem with all its segments, substems, clones and leaves
-    	segment_cnt = lpar.nCurveRes;
-    	length = stem_length();
-    	segment_len = length/lpar.nCurveRes;
-    	base_radius = stem_base_radius();
+    	segmentCount = lpar.nCurveRes;
+    	length = getStemLength();
+    	segmentLength = length/lpar.nCurveRes;
+    	baseRadius = getStemBaseRadius();
     	
-    	if (base_radius < MIN_STEM_RADIUS)
-    		System.err.println("WARNING: stem radius ("+base_radius+") too small for stem "+tree_position());
-    	
-    	DBG("Stem.make(): len: "+length+" sgm_cnt: "+ segment_cnt+" base_rad: "+base_radius);
+    	DBG("Stem.make(): len: "+length+" sgm_cnt: "+ segmentCount+" base_rad: "+baseRadius);
     	
     	// FIXME: should pruning occur for the trunk too?
     	if (stemlevel>0 && par.PruneRatio > 0) {
@@ -436,40 +464,41 @@ public class Stem {
     	}
     	
     	// FIXME: if length<=MIN_STEM_LEN the stem object persists here but without any segments
-    	// alternativly make could return an error value, the invoking function
+    	// alternatively make could return an error value, the invoking function
     	// then had to delete this stem
-    	if (length > MIN_STEM_LEN) {
-    		prepare_substem_params();
-    		make_segments(0,segment_cnt);
+    	if (length > MIN_STEM_LEN && baseRadius > MIN_STEM_RADIUS)
+    	{
+    		prepareSubstemParams();
+    		makeSegments(0,segmentCount);
     	} else {
     		DBG("length "+length+" (after pruning?) to small - stem not created");
     	}
     }
-		
+    
     /**
      * Apply pruning to the stem. If it grows out of the 
      * pruning envelope, it is shortened.
      */
     void pruning() {
-
+    	
     	// save random state, split and len values
     	lpar.saveState();
-    	double splitcorr = split_corr;
+    	double splitcorr = splitCorrection;
     	double origlen = length;
-    	double seglen = segment_len;
+    	double seglen = segmentLength;
     	
     	// start pruning
-    	prunetest = true;
+    	pruneTest = true;
     	
     	// test length
-    	int segm = make_segments(0,segment_cnt);
+    	int segm = makeSegments(0,segmentCount);
     	
     	while (segm >= 0 && length > 0.001*par.scale_tree) {
     		
     		// restore random state and split values
     		lpar.restoreState();
-    		split_corr = splitcorr;
-
+    		splitCorrection = splitcorr;
+    		
     		// delete segments and clones
     		if (clones != null) clones.clear();
     		segments.clear();
@@ -477,17 +506,17 @@ public class Stem {
     		// get new length
     		double minlen = length/2; // shorten max. half of length
     		double maxlen = length-origlen/15; // shorten min of 1/15 of orig. len
-    		length = Math.min(Math.max(segment_len*segm,minlen),maxlen);
+    		length = Math.min(Math.max(segmentLength*segm,minlen),maxlen);
     		
     		// calc new values dependent from length
-    		segment_len = length/lpar.nCurveRes;
-    		base_radius = stem_base_radius();
+    		segmentLength = length/lpar.nCurveRes;
+    		baseRadius = getStemBaseRadius();
     		
-        	if (length>MIN_STEM_LEN && base_radius < MIN_STEM_RADIUS)
-        		System.err.println("WARNING: stem radius ("+base_radius+") too small for stem "+tree_position());
+    		if (length>MIN_STEM_LEN && baseRadius < MIN_STEM_RADIUS)
+    			System.err.println("WARNING: stem radius ("+baseRadius+") too small for stem "+getTreePosition());
     		
     		// test once more
-    		if (length > MIN_STEM_LEN) segm = make_segments(0,segment_cnt);
+    		if (length > MIN_STEM_LEN) segm = makeSegments(0,segmentCount);
     	}
     	// this length fits the envelope, 
     	// diminish the effect corresp. to PruneRatio
@@ -495,102 +524,102 @@ public class Stem {
     	
     	// restore random state and split values
     	lpar.restoreState();
-    	split_corr = splitcorr;
+    	splitCorrection = splitcorr;
     	// delete segments and clones
     	if (clones != null) clones.clear();
     	segments.clear();
-    	prunetest = false;
+    	pruneTest = false;
     	//self.DBG("PRUNE-ok: len: %f, segm: %d/%d\n"%(self.length,segm,self.segment_cnt))
     }
-   
+    
     /**
      * Calcs stem length from parameters and parent length
      * 
      * @return the stem length
      */
-    double stem_length() {
-	if (stemlevel == 0) { // trunk
-	    return (lpar.nLength + lpar.var(lpar.nLengthV)) * par.scale_tree;
-	} else if (stemlevel == 1) {
-	    double parlen = parent.length;
-	    double baselen = par.BaseSize*par.scale_tree;
-	    double ratio  = (parlen-offset)/(parlen-baselen);
-	    DBG("Stem.stem_length(): parlen: "+parlen+" offset: "+offset+" baselen: "+baselen+" ratio: "+ratio);
-	    return parlen * parent.length_child_max * par.shape_ratio(ratio);
-	} else { // higher levels
-	    return parent.length_child_max*(parent.length-0.6*offset);
-	}
+    double getStemLength() {
+    	if (stemlevel == 0) { // trunk
+    		return (lpar.nLength + lpar.var(lpar.nLengthV)) * par.scale_tree;
+    	} else if (stemlevel == 1) {
+    		double parlen = parent.length;
+    		double baselen = par.BaseSize*par.scale_tree;
+    		double ratio  = (parlen-offset)/(parlen-baselen);
+    		DBG("Stem.stem_length(): parlen: "+parlen+" offset: "+offset+" baselen: "+baselen+" ratio: "+ratio);
+    		return parlen * parent.lengthChildMax * par.getShapeRatio(ratio);
+    	} else { // higher levels
+    		return parent.lengthChildMax*(parent.length-0.6*offset);
+    	}
     }
 
     // makes the segments of the stem
-    int make_segments(int start_seg,int end_seg) {
-	if (stemlevel==1) tree.updateGenProgress();
-	
-	if (par.verbose) {
-	    if (! prunetest) {
-		if (stemlevel==0) System.err.print("=");
-		else if (stemlevel==1 && start_seg==0) System.err.print("/");
-		else if (stemlevel==2 && start_seg==0) System.err.print(".");
-	    }
-	}
-	
-	Transformation trf = transf;
-	  	
-	for (int s=start_seg; s<end_seg; s++) {
-	    if (stemlevel==0) tree.updateGenProgress();
-	
-	    if (! prunetest && par.verbose) {
-		if (stemlevel==0) System.err.print("|");
-	    }
-	  
-	    // curving
-	    trf=new_direction(trf,s);
-	    TRF("Stem.make_segments(): after new_direction ",trf);
-	    
-	    // segment radius
-	    double rad1 = stem_radius(s*segment_len);
-	    double rad2 = stem_radius((s+1)*segment_len);
-	    
-	    // create new segment
-	    Segment segment = new Segment(par,lpar,this,s,trf,rad1,rad2,segment_len);
-	    segment.make();
-	    segments.addElement(segment);
-	      
-	    // create substems
-	    // self.DBG("SS-makingsubst? pt: %d, lev: %d\n"%(self.prunetest,self.level))
-	    if (! prunetest && lpar.level<par.Levels-1) {
-		// self.DBG("SS-making substems\n")
-		make_substems(segment);
-	    }
-	    
-	    if (! prunetest && lpar.level==par.Levels-1 && par.Leaves!=0) {
-		make_leaves(segment);
-	    }
-
-	    // shift to next position
-	    trf = trf.translate(trf.getZ().mul(segment_len));
-	    //self.DBG("transf: %s\n"%(transf))
-	    //self.DBG("pos: %s\n"%(transf.vector))
-	      
-	    // test if too long
-	    if (prunetest && ! inside_envelope(trf.getT())) {
-		// DBG("PRUNE: not inside - return %d\n"%(s))
-		return s;
-	    }
-    
-	    // splitting (create clones)
-	    if (s<end_seg-1) {
-		int segm = make_clones(trf,s);
-		// trf is changed by make_clones
-		// prune test - clone not inside envelope 
-		if (segm>=0) {
-		    //DBG("PRUNE: clone not inside - return %d\n"%(segm))
-		    return segm;
-		}
-	    }
-	}
-
-	return -1;
+    int makeSegments(int start_seg,int end_seg) {
+    	if (stemlevel==1) tree.updateGenProgress();
+    	
+    	if (par.verbose) {
+    		if (! pruneTest) {
+    			if (stemlevel==0) System.err.print("=");
+    			else if (stemlevel==1 && start_seg==0) System.err.print("/");
+    			else if (stemlevel==2 && start_seg==0) System.err.print(".");
+    		}
+    	}
+    	
+    	Transformation trf = transf;
+    	
+    	for (int s=start_seg; s<end_seg; s++) {
+    		if (stemlevel==0) tree.updateGenProgress();
+    		
+    		if (! pruneTest && par.verbose) {
+    			if (stemlevel==0) System.err.print("|");
+    		}
+    		
+    		// curving
+    		trf=getNewDirection(trf,s);
+    		TRF("Stem.make_segments(): after new_direction ",trf);
+    		
+    		// segment radius
+    		double rad1 = getStemRadius(s*segmentLength);
+    		double rad2 = getStemRadius((s+1)*segmentLength);
+    		
+    		// create new segment
+    		Segment segment = new Segment(par,lpar,this,s,trf,rad1,rad2,segmentLength);
+    		segment.make();
+    		segments.addElement(segment);
+    		
+    		// create substems
+    		// self.DBG("SS-makingsubst? pt: %d, lev: %d\n"%(self.prunetest,self.level))
+    		if (! pruneTest && lpar.level<par.Levels-1) {
+    			// self.DBG("SS-making substems\n")
+    			make_substems(segment);
+    		}
+    		
+    		if (! pruneTest && lpar.level==par.Levels-1 && par.Leaves!=0) {
+    			makeLeaves(segment);
+    		}
+    		
+    		// shift to next position
+    		trf = trf.translate(trf.getZ().mul(segmentLength));
+    		//self.DBG("transf: %s\n"%(transf))
+    		//self.DBG("pos: %s\n"%(transf.vector))
+    		
+    		// test if too long
+    		if (pruneTest && ! isInsideEnvelope(trf.getT())) {
+    			// DBG("PRUNE: not inside - return %d\n"%(s))
+    			return s;
+    		}
+    		
+    		// splitting (create clones)
+    		if (s<end_seg-1) {
+    			int segm = makeClones(trf,s);
+    			// trf is changed by make_clones
+    			// prune test - clone not inside envelope 
+    			if (segm>=0) {
+    				//DBG("PRUNE: clone not inside - return %d\n"%(segm))
+    				return segm;
+    			}
+    		}
+    	}
+    	
+    	return -1;
     }
     
     /**
@@ -599,10 +628,10 @@ public class Stem {
      * @param vector the point to test
      * @return true if the point is inside the pruning envelope
      */
-    boolean inside_envelope(Vector vector) {
+    boolean isInsideEnvelope(Vector vector) {
     	double r = Math.sqrt(vector.getX()*vector.getX() + vector.getY()*vector.getY());
     	double ratio = (par.scale_tree - vector.getZ())/(par.scale_tree*(1-par.BaseSize));
-    	return (r/par.scale_tree) < (par.PruneWidth * par.shape_ratio(ratio,8));
+    	return (r/par.scale_tree) < (par.PruneWidth * par.getShapeRatio(ratio,8));
     }
 
   
@@ -614,7 +643,7 @@ public class Stem {
      *              first stem segment
      * @return The new transformation of the current segment
      */
-    Transformation new_direction(Transformation trf, int nsegm) {
+    Transformation getNewDirection(Transformation trf, int nsegm) {
     	// next segments  direction
     	
     	// The first segment shouldn't get another direction 
@@ -635,7 +664,7 @@ public class Stem {
     			delta = lpar.nCurveBack*2 / lpar.nCurveRes;
     		}
     	}
-    	delta += split_corr;
+    	delta += splitCorrection;
     	DBG("Stem.new_direction(): delta: "+delta);
     	trf = trf.rotx(delta);
     	
@@ -679,9 +708,6 @@ public class Stem {
     		double curve_up = par.AttractionUp * 
 				Math.abs(declination * Math.sin(declination)) / lpar.nCurveRes;
 
-//    		System.err.println("ATTRAC"+ tree_position()+" curveup: "+(curve_up*180/Math.PI)+" decl: "+declination); 
-    		  // +" orient: "+orient+  " d_old: "+((curve_up_orig-curve_up)+curve_up*180/Math.PI));
-    		
     		Vector z = trf.getZ();
     		// FIXME: the mesh is twisted for high values of AttractionUp
     		trf = trf.rotaxis(-curve_up*180/Math.PI,new Vector(-z.getY(),z.getX(),0));
@@ -695,7 +721,7 @@ public class Stem {
      * 
      * @return
      */
-    double stem_base_radius() {
+    double getStemBaseRadius() {
     	if (stemlevel == 0) { // trunk
     		// radius at the base of the stem
     		// I think nScale+-nScaleV should applied to the stem radius but not to base radius(?)
@@ -703,9 +729,10 @@ public class Stem {
     		//+ var(par._0ScaleV))
     	} else {
     		// max radius is the radius of the parent at offset
-    		double max_radius = parent.stem_radius(offset);
-    		//FIXME: RatioPower=0 seems not to work here
-    		double radius = parent.base_radius * Math.pow(length/parent.length,par.RatioPower);
+    		double max_radius = parent.getStemRadius(offset);
+
+    		// FIXME: RatioPower=0 seems not to work here
+    		double radius = parent.baseRadius * Math.pow(length/parent.length,par.RatioPower);
     		return Math.min(radius,max_radius);
     	}
     }
@@ -716,11 +743,11 @@ public class Stem {
      * @param h the offset at which the radius is calculated
      * @return the stem radius at this position
      */
-    public double stem_radius(double h) {
-    	DBG("Stem.stem_radius("+h+") base_rad:"+base_radius);
+    public double getStemRadius(double h) {
+    	DBG("Stem.stem_radius("+h+") base_rad:"+baseRadius);
     	
-    	double angle = 0; //FIXME: add some arg angle for Lobes, but in the moment
-    	// Lobes are calculated later in mesh creation
+    	double angle = 0; //FIXME: add an argument "angle" for Lobes, 
+    	  // but at the moment Lobes are calculated later in mesh creation
     	
     	// gets the stem width at a given position within the stem
     	double Z = h/length;
@@ -733,7 +760,7 @@ public class Stem {
     		unit_taper = 2 - taper;
     	}
     	
-    	double radius = base_radius * (1 - unit_taper * Z);
+    	double radius = baseRadius * (1 - unit_taper * Z);
     	
     	// spherical end or periodic tapering
     	double depth;
@@ -784,12 +811,12 @@ public class Stem {
      * Precalcs some stem parameters used later during when generating
      * the current stem
      */
-    void prepare_substem_params() {
+    void prepareSubstemParams() {
     	//int level = min(stemlevel+1,3);
     	LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
     	
     	// maximum length of a substem
-    	length_child_max = lpar_1.nLength+lpar_1.var(lpar_1.nLengthV);
+    	lengthChildMax = lpar_1.nLength+lpar_1.var(lpar_1.nLengthV);
     	
     	// maximum number of substems
     	double stems_max = lpar_1.nBranches;
@@ -798,24 +825,24 @@ public class Stem {
     	double substem_cnt;
     	if (stemlevel==0) {
     		substem_cnt = stems_max;
-    		substems_per_segment = substem_cnt / (float)segment_cnt / (1-par.BaseSize);
+    		substemsPerSegment = substem_cnt / (float)segmentCount / (1-par.BaseSize);
     		DBG("Stem.prepare_substem_params(): stems_max: "+ substem_cnt 
-    				+ " substems_per_segment: " + substems_per_segment);
+    				+ " substems_per_segment: " + substemsPerSegment);
     	} else if (stemlevel==1) {
     		substem_cnt = (int)(stems_max * 
-    				(0.2 + 0.8*length/parent.length/parent.length_child_max));
-    		substems_per_segment = substem_cnt / (float)segment_cnt;
+    				(0.2 + 0.8*length/parent.length/parent.lengthChildMax));
+    		substemsPerSegment = substem_cnt / (float)segmentCount;
     		DBG("Stem.prepare_substem_params(): substem_cnt: "+ substem_cnt 
-    				+ " substems_per_segment: " + substems_per_segment);
+    				+ " substems_per_segment: " + substemsPerSegment);
     	} else {
     		substem_cnt = (int)(stems_max * (1.0 - 0.5 * offset/parent.length));
-    		substems_per_segment = substem_cnt / (float)segment_cnt;
+    		substemsPerSegment = substem_cnt / (float)segmentCount;
     	}
-    	substem_rotangle = 0;
+    	substemRotangle = 0;
     	
     	// how much leaves for this stem - not really a substem parameter
     	if (lpar.level == par.Levels-1) {
-    		leaves_per_segment = leaves_per_branch() / segment_cnt;
+    		leavesPerSegment = leavesPerBranch() / segmentCount;
     	}
     }
    
@@ -824,7 +851,7 @@ public class Stem {
      * 
      * @return
      */
-    double leaves_per_branch() {
+    double leavesPerBranch() {
     	// calcs the number of leaves for a stem
     	if (par.Leaves==0) return 0;
     	if (stemlevel == 0) {
@@ -833,15 +860,8 @@ public class Stem {
     		return 0;
     	}
     	
-//    	DBG("leaves_per_branch: abs:"+Math.abs(par.Leaves) +
-//    			"ratio:"+ par.shape_ratio(offset/parent.length,par.LeafDistrib)+ 
-//				"qual:"+ par.LeafQuality + "result: "+
-//				Math.abs(par.Leaves) 
-//				* par.shape_ratio(offset/parent.length,par.LeafDistrib) 
-//				* par.LeafQuality);
-    	
     	return (Math.abs(par.Leaves) 
-    			* par.shape_ratio(offset/parent.length,par.LeafDistrib) 
+    			* par.getShapeRatio(offset/parent.length,par.LeafDistrib) 
 				* par.LeafQuality);
     }
 
@@ -854,30 +874,30 @@ public class Stem {
     	// creates substems for the current segment
     	LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
     	
-    	DBG("Stem.make_substems(): substems_per_segment "+substems_per_segment);
+    	DBG("Stem.make_substems(): substems_per_segment "+substemsPerSegment);
     	
     	double subst_per_segm;
     	double offs;
     	
     	if (stemlevel>0) {
     		// full length of stem can have substems
-    		subst_per_segm = substems_per_segment;
+    		subst_per_segm = substemsPerSegment;
     		
     		if (segment.index==0) {
-    			offs = parent.stem_radius(offset)/segment_len;
+    			offs = parent.getStemRadius(offset)/segmentLength;
     		} else { offs = 0; }
     		
-    	} else if (segment.index*segment_len > par.BaseSize*length) {
+    	} else if (segment.index*segmentLength > par.BaseSize*length) {
     		// segment is fully out of the bare trunk region => normal nb of substems
-    		subst_per_segm = substems_per_segment;
+    		subst_per_segm = substemsPerSegment;
     		offs = 0;
-    	} else if ((segment.index+1)*segment_len <= par.BaseSize*length) {
+    	} else if ((segment.index+1)*segmentLength <= par.BaseSize*length) {
     		// segment is fully part of the bare trunk region => no substems
     		return;
     	} else {
     		// segment has substems in the upper part only
-    		offs = (par.BaseSize*length - segment.index*segment_len)/segment_len;
-    		subst_per_segm = substems_per_segment*(1-offs);
+    		offs = (par.BaseSize*length - segment.index*segmentLength)/segmentLength;
+    		subst_per_segm = substemsPerSegment*(1-offs);
     	}	
     	
     	// how many substems in this segment
@@ -901,12 +921,12 @@ public class Stem {
     		double where = offs+dist/2+s*dist+lpar_1.var(distv);
     		
     		//offset from stembase
-    		double offset = (segment.index + where) * segment_len;
+    		double offset = (segment.index + where) * segmentLength;
     		
     		DBG("Stem.make_substems(): offset: "+ offset+" segminx: "+segment.index
-    				+" where: "+where+ " seglen: "+segment_len);
+    				+" where: "+where+ " seglen: "+segmentLength);
     		
-    		Transformation trf = substem_direction(segment.transf,offset);
+    		Transformation trf = getSubstemDirection(segment.transf,offset);
     		trf = segment.substem_position(trf,where);
     		
     		// create new substem
@@ -925,19 +945,19 @@ public class Stem {
      * @param offset The offset of the substem from the base of the currents stem
      * @return The direction of the substem
      */
-    Transformation substem_direction(Transformation trf, double offset) {
+    Transformation getSubstemDirection(Transformation trf, double offset) {
     	LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
     	//lev = min(level+1,3);
     	
     	// get rotation angle
     	double rotangle;
     	if (lpar_1.nRotate>=0) { // rotating substems
-    		substem_rotangle = (substem_rotangle + lpar_1.nRotate+lpar_1.var(lpar_1.nRotateV)+360) % 360;
-    		rotangle = substem_rotangle;
+    		substemRotangle = (substemRotangle + lpar_1.nRotate+lpar_1.var(lpar_1.nRotateV)+360) % 360;
+    		rotangle = substemRotangle;
     	} else { // alternating substems
-    		if (Math.abs(substem_rotangle) != 1) substem_rotangle = 1;
-    		substem_rotangle = -substem_rotangle;
-    		rotangle = substem_rotangle * (180+lpar_1.nRotate+lpar_1.var(lpar_1.nRotateV));
+    		if (Math.abs(substemRotangle) != 1) substemRotangle = 1;
+    		substemRotangle = -substemRotangle;
+    		rotangle = substemRotangle * (180+lpar_1.nRotate+lpar_1.var(lpar_1.nRotateV));
     	}
     	
     	// get downangle
@@ -947,7 +967,7 @@ public class Stem {
     	} else {
     		double len = (stemlevel==0)? length*(1-par.BaseSize) : length;
     		downangle = lpar_1.nDownAngle +
-			lpar_1.nDownAngleV*(1 - 2 * par.shape_ratio((length-offset)/len,0));
+			lpar_1.nDownAngleV*(1 - 2 * par.getShapeRatio((length-offset)/len,0));
     	}  
     	DBG("Stem.substem_direction(): down: "+downangle+" rot: "+rotangle);
     	
@@ -959,21 +979,21 @@ public class Stem {
      * 
      * @param segment
      */
-    void make_leaves(Segment segment) {
+    void makeLeaves(Segment segment) {
     	// creates leaves for the current segment
     	
     	if (par.Leaves > 0) { // ### NORMAL MODE, leaves along the stem
     		// how many leaves in this segment
-    		double leaves_eff = (int)(leaves_per_segment + par.leavesErrorValue+0.5);
+    		double leaves_eff = (int)(leavesPerSegment + par.leavesErrorValue+0.5);
     		
     		// adapt error value
-    		par.leavesErrorValue -= (leaves_eff - leaves_per_segment);
+    		par.leavesErrorValue -= (leaves_eff - leavesPerSegment);
     		
     		if (leaves_eff <= 0) return;
     		
     		double offs;
     		if (segment.index==0) {
-    			offs = parent.stem_radius(offset)/segment_len;
+    			offs = parent.getStemRadius(offset)/segmentLength;
     		} else {
     			offs = 0;
     		}
@@ -988,11 +1008,11 @@ public class Stem {
     			double where = offs+dist/2+s*dist+lpar.var(dist/2);
     			
     			// offset from stembase
-    			double loffs = (segment.index+where)*segment_len;
+    			double loffs = (segment.index+where)*segmentLength;
     			// get a new direction for the leaf
-    			Transformation trf = substem_direction(segment.transf,loffs);
+    			Transformation trf = getSubstemDirection(segment.transf,loffs);
     			// translate it to its position on the stem
-    			trf = trf.translate(segment.transf.getZ().mul(where*segment_len));
+    			trf = trf.translate(segment.transf.getZ().mul(where*segmentLength));
     			
     			// create new leaf
     			Leaf leaf = new Leaf(par,trf,loffs);
@@ -1003,12 +1023,12 @@ public class Stem {
     	}
     	
     	// ##### FAN MOD, leaves placed in a fan at stem end
-    	else if (par.Leaves<0 && segment.index == segment_cnt-1) {
+    	else if (par.Leaves<0 && segment.index == segmentCount-1) {
     		
     		LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
-    		int cnt = (int)(leaves_per_branch()+0.5);
+    		int cnt = (int)(leavesPerBranch()+0.5);
     		
-    		Transformation trf = segment.transf.translate(segment.transf.getZ().mul(segment_len));
+    		Transformation trf = segment.transf.translate(segment.transf.getZ().mul(segmentLength));
     		double distangle = lpar_1.nRotate/cnt;
     		double varangle = lpar_1.nRotateV/cnt;
     		double downangle = lpar_1.nDownAngle;
@@ -1017,7 +1037,7 @@ public class Stem {
     		// use different method for odd and even number
     		if (cnt%2 == 1) {
     			// create one leaf in the middle
-    			Leaf leaf = new Leaf(par,trf,segment_cnt*segment_len);
+    			Leaf leaf = new Leaf(par,trf,segmentCount*segmentLength);
     			leaf.make();
     			leaves.addElement(leaf);
     			offsetangle = distangle;
@@ -1030,7 +1050,7 @@ public class Stem {
     				Transformation transf1 = trf.roty(rot*(offsetangle+s*distangle
     						+lpar_1.var(varangle)));
     				transf1 = transf1.rotx(downangle+lpar_1.var(vardown));
-    				Leaf leaf = new Leaf(par,transf1,segment_cnt*segment_len);
+    				Leaf leaf = new Leaf(par,transf1,segmentCount*segmentLength);
     				leaf.make();
     				leaves.addElement(leaf);
     			}
@@ -1047,7 +1067,7 @@ public class Stem {
      * @return Segments outside the pruning envelope, -1
      *         if ste clone is completely inside the envelope
      */
-    int make_clones(Transformation trf,int nseg) {
+    int makeClones(Transformation trf,int nseg) {
     	// splitting
     	// FIXME: maybe move this calculation to LevelParams
     	// but pay attention to saving errorValues and restoring when making prune tests
@@ -1094,7 +1114,7 @@ public class Stem {
     		//	(str(clone.split_corr),str(clone.direction)))
     		
     		// make segments etc. for the clone
-    		int segm = clone.make_segments(nseg+1,clone.segment_cnt);
+    		int segm = clone.makeSegments(nseg+1,clone.segmentCount);
     		if (segm>=0) { // prune test - clone not inside envelope
     			return segm;
     		}
@@ -1119,7 +1139,7 @@ public class Stem {
     Transformation split(Transformation trf,
     		double s_angle, int nseg, int nsplits) {
     	// applies a split angle to the stem - the Weber/Penn method
-    	int remaining_seg = segment_cnt-nseg-1;
+    	int remaining_seg = segmentCount-nseg-1;
     	
     	// the splitangle
     	// FIXME: don't know if it should be nSplitAngle or nSplitAngle/2
@@ -1132,7 +1152,7 @@ public class Stem {
     	trf = trf.rotx(split_angle);
     	
     	// adapt split correction
-    	split_corr -=  split_angle/remaining_seg;
+    	splitCorrection -=  split_angle/remaining_seg;
     	//t_corr = Transformation().rotx(-split_angle/remaining_seg)
 
     	double split_diverge;
@@ -1153,10 +1173,9 @@ public class Stem {
     	//split_cnt = split_cnt+1;
     	
     	// lower substem prospensity
-    	if (! prunetest) {
-    		substems_per_segment /= (float)(nsplits+1);
-    		//      self.DBG("SS-half: %f\n"%self.substems_per_segment)
-    		// FIXME same reduction for leaves_per_segment?
+    	if (! pruneTest) {
+    		substemsPerSegment /= (float)(nsplits+1);
+    		// FIXME: same reduction for leaves_per_segment?
     	}
     	return trf;
     }
@@ -1174,36 +1193,35 @@ public class Stem {
      * @param mesh the mesh object
      * @throws Exception
      */
-    void add_to_mesh(Mesh mesh) throws Exception {
+    void addToMesh(Mesh mesh) throws Exception {
 	  
     	if (par.verbose) {
-    		if (stemlevel<=1 && clone_index.size()==0) System.err.print(".");
+    		if (stemlevel<=1 && cloneIndex.size()==0) System.err.print(".");
     	}
 	
     	String indent = "    ";
 	  
     	// create mesh part for myself
-    	MeshPart meshpart = new MeshPart(tree_position(),stemlevel<=par.smooth_mesh_level);
-    	for (int i=0; i<segments.size(); i++) {
-    		((Segment)segments.elementAt(i)).add_to_meshpart(meshpart);
+    	if (segments.size()>0) {
+    		MeshPart meshpart = new MeshPart(getTreePosition(),stemlevel<=par.smooth_mesh_level);
+    		for (int i=0; i<segments.size(); i++) {
+    			((Segment)segments.elementAt(i)).addToMeshpart(meshpart);
+    		}
+    		mesh.addMeshpart(meshpart);
     	}
-    	mesh.add_meshpart(meshpart);
     	
     	// add clones to the mesh
     	if (clones != null) {
     		for (int i=0; i<clones.size(); i++) {
-    			((Stem)clones.elementAt(i)).add_to_mesh(mesh);
+    			((Stem)clones.elementAt(i)).addToMesh(mesh);
     		}
     	}
 	
     	if (substems != null) {
-    		// FIXME? more correct it would be inc by 1 in the for block,
-    		// but this would need more calls to synchronized incProgress
-    		// if this works ok, don't change this
     		tree.getProgress().incProgress(substems.size());
     		
     		for (int i=0; i<substems.size(); i++) {
-    			((Stem)substems.elementAt(i)).add_to_mesh(mesh);
+    			((Stem)substems.elementAt(i)).addToMesh(mesh);
     		}
     	}
     }

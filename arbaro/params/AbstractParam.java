@@ -33,8 +33,8 @@ public abstract class AbstractParam {
     String name;
     String group;
     int level;
-    String short_desc;
-    String long_desc;
+    String shortDesc;
+    String longDesc;
     boolean enabled;
     
     protected ChangeEvent changeEvent = null;
@@ -44,8 +44,8 @@ public abstract class AbstractParam {
     	name = nam;
     	group = grp;
     	level = lev;
-    	short_desc = sh;
-    	long_desc = lng;
+    	shortDesc = sh;
+    	longDesc = lng;
     	enabled=true;
     }
 
@@ -54,9 +54,11 @@ public abstract class AbstractParam {
     public abstract String getDefaultValue();
     public abstract void clear();
     public abstract boolean empty();
+    
+    public static boolean loading=false;
 
-    protected void warn(String warning) {
-    	System.err.println("WARNING: "+warning);
+    protected static void warn(String warning) {
+    	if (! loading) System.err.println("WARNING: "+warning);
     }
     
     public void setEnabled(boolean en) {
@@ -81,11 +83,11 @@ public abstract class AbstractParam {
     }
 
     public String getShortDesc() {
-	return short_desc;
+	return shortDesc;
     }
 
     public String getLongDesc() {
-    	return long_desc;
+    	return longDesc;
     }
 
     public void addChangeListener(ChangeListener l) {

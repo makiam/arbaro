@@ -28,8 +28,6 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;    
-import javax.swing.border.BevelBorder;
-//import javax.swing.event.*;
 
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.params.*;
@@ -239,7 +237,7 @@ public class PovDialog {
 		primitives.setActionCommand("primitives");
 		meshes = new JRadioButton("Meshes");
 		meshes.setActionCommand("meshes");
-		if (tree.params.output==Params.CONES) primitives.setSelected(true);
+		if (tree.params.outputType==Params.CONES) primitives.setSelected(true);
 		else meshes.setSelected(true);
 		ActionListener alisten = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -409,6 +407,7 @@ class Progressbar extends JPanel {
 //		System.err.println("setProg "+val);
 		if (val<=0) {
 			progressbar.setIndeterminate(true);
+			progressbar.setString("");
 		} else {
 			progressbar.setIndeterminate(false);
 			progressbar.setValue(val);

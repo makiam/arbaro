@@ -101,9 +101,11 @@ public class ParamFrame {
     	
     	config = new Config();
     	
+    	AbstractParam.loading=true;
     	createGUI();
     	frame.setVisible(true);
     	setModified(false);
+    	AbstractParam.loading=false;
     }
 
     void createGUI() {
@@ -417,10 +419,11 @@ public class ParamFrame {
     	public void actionPerformed(ActionEvent e) {
     		// ask if should save when modified...
     		if (! shouldSave()) return;
-    		
+    		AbstractParam.loading=true;
     		tree.clearParams();
     		tree.setSpecies("default");
     		setModified(false);
+    		AbstractParam.loading=false;
     	}
     };
 
@@ -434,10 +437,12 @@ public class ParamFrame {
 		System.err.println("opening file: " +
 				   fileChooser.getSelectedFile().getName());
 		try {
+    		AbstractParam.loading=true;
 		    tree.clearParams();
 		    treefile = fileChooser.getSelectedFile();
 		    // read parameters
 		    tree.readFromXML(new FileInputStream(treefile));
+    		AbstractParam.loading=false;
 		    setModified(false);
 		} catch (ErrorParam err) {
 		    setModified(false);
@@ -549,7 +554,7 @@ public class ParamFrame {
 
     class HelpAboutListener implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
-    		JOptionPane.showMessageDialog(frame, net.sourceforge.arbaro.arbaro.progname,
+    		JOptionPane.showMessageDialog(frame, net.sourceforge.arbaro.arbaro.programName,
     				"About Arbaro",JOptionPane.INFORMATION_MESSAGE);
     	}
     }

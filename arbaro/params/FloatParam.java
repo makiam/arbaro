@@ -90,7 +90,7 @@ public class FloatParam extends AbstractParam {
 
     public String getLongDesc() {
     	String desc = super.getLongDesc();
-    	desc += "<br>";
+    	desc += "<br><br>";
     	if (! Double.isNaN(min)) {
     		desc += "Minimum: "+min+"\n";
     	}
