@@ -42,6 +42,7 @@ public class StringParam extends AbstractParam {
 
     public void clear() {
 	value = "";
+	fireStateChanged();
     }
 
     public void setValue(String val) {

@@ -223,6 +223,10 @@ void Tree::dump() const {
 	params.Smooth = s;
     }
 
+    public void setOutput(int output) {
+	params.output = output;
+    }
+
     /*** calculation of progress */
     long makeProgressMax;
     long povrayProgressMax;

@@ -44,6 +44,8 @@ public class ParamFrame {
     File treefile = null;
     JFileChooser fileChooser;
     SpeciesField species;
+    Component lastFocused = null;
+    boolean modified = false;
 
     public ParamFrame() {
 	// create tree with paramDB
@@ -51,6 +53,12 @@ public class ParamFrame {
 
 	frame = new JFrame("Arbaro");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	frame.addWindowListener(new WindowAdapter() {
+		public void windowClosing(WindowEvent e) {
+		     if (! shouldSave()) return;
+		     frame.dispose();
+		}
+	    });
 
 	fileChooser = new JFileChooser();
 	fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")+"/trees"));
@@ -118,66 +126,46 @@ public class ParamFrame {
     }
 
     void createMenuBar() {
+	JMenuBar menubar;
+	JMenu menu;
 	JMenuItem item;
+	
+	/**** file menu ***/
 
-	JMenuBar menubar=new JMenuBar();
-	JMenu menu = new JMenu("File");
-	menu.setMnemonic('f');
+	menubar=new JMenuBar();
+	menu = new JMenu("File");
+	menu.setMnemonic('F');
 
 	// File new
 	item = new JMenuItem("New");
 	item.setMnemonic('N');
-	item.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    FileNew();
-		}
-	    });
+	item.addActionListener(new FileNewListener());
 	menu.add(item);
 
 	// File open
 	item = new JMenuItem("Open...");
 	item.setMnemonic('O');
-	item.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    FileOpen();
-		}
-	    });
+	item.addActionListener(new FileOpenListener());
 	menu.add(item);
 
 	// File save
 	item = new JMenuItem("Save");
 	item.setMnemonic('S');
-	item.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    if (treefile != null) {
-			FileSave();
-		    } else {
-			FileSaveAs();
-		    }
-		}
-	    });
+	item.addActionListener(new FileSaveListener());
 	menu.add(item);
 
 	// File save as
 	item = new JMenuItem("Save as...");
 	item.setMnemonic('A');
-	item.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    FileSaveAs();
-		}
-	    });
+	item.addActionListener(new FileSaveAsListener());
 	menu.add(item);
 	
 	menu.add(new JSeparator());
 
 	// Save POV file
 	item = new JMenuItem("Create tree...");
-	item.setMnemonic('P');
-	item.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    FileSavePOV();
-		}
-	    });
+	item.setMnemonic('C');
+	item.addActionListener(new CreateTreeListener());
 	menu.add(item);
 
 	menu.add(new JSeparator());
@@ -187,13 +175,33 @@ public class ParamFrame {
 	item.setMnemonic('Q');
 	item.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-		    // FIXME: ask if values should be saved
-		    System.exit(0);
+		    // ask if values should be saved
+		    if (! shouldSave()) return;
+		    frame.dispose();
 		}
 	    });
 	menu.add(item);
 	
 	menubar.add(menu);
+
+	/**** help menu ****/
+	menu = new JMenu("Help");
+	menu.setMnemonic('H');
+
+	// help paramter
+	item = new JMenuItem("Parameter");
+	item.setMnemonic('P');
+	item.addActionListener(new HelpParameterListener());
+	menu.add(item);	
+
+	// help about
+	item = new JMenuItem("About Arbaro");
+	item.setMnemonic('A');
+	item.addActionListener(new HelpAboutListener());
+	menu.add(item);
+
+	menubar.add(menu);
+
 	frame.setJMenuBar(menubar);
     }
 
@@ -206,7 +214,7 @@ public class ParamFrame {
 	for (Iterator e=params.values().iterator();e.hasNext();) {
 	    AbstractParam p = (AbstractParam)e.next();
 	    panel.add(new JLabel(p.getName()));
-	    panel.add(new ParamField(6,p));
+	    panel.add(new ParamField(this,6,p));
 	}
 
 	JPanel panel1 = new JPanel();
@@ -218,47 +226,86 @@ public class ParamFrame {
 	//panel1.setAlignmentX(Component.LEFT_ALIGNMENT);
     }
 
-    void FileNew() {
-	//FIXME ... ask if should save when modified...
-	tree.clearParams();
+    void setModified(boolean mod) {
+	modified = mod;
     }
 
-    void FileOpen() {
-	int returnVal = fileChooser.showOpenDialog(frame);
-	if(returnVal == JFileChooser.APPROVE_OPTION) {
-	    System.err.println("opening file: " +
-			       fileChooser.getSelectedFile().getName());
-	    try {
-		tree.clearParams();
-		treefile = fileChooser.getSelectedFile();
-		// read parameters
-		tree.readFromXML(new FileInputStream(treefile));
-	    } catch (ErrorParam err) {
-		JOptionPane.showMessageDialog(frame,err.getMessage(),
-					      "Parameter Error",
-					      JOptionPane.ERROR_MESSAGE);
-	    } catch (FileNotFoundException err) {
-		JOptionPane.showMessageDialog(frame,err.getMessage(),
-					      "File not found",
-					      JOptionPane.ERROR_MESSAGE);
+    class FileNewListener implements ActionListener {
+	public void actionPerformed(ActionEvent e) {
+	    // ask if should save when modified...
+	    if (! shouldSave()) return;
+
+	    tree.clearParams();
+	    tree.setSpecies("default");
+	    modified = false;
+	}
+    };
+
+    class FileOpenListener implements ActionListener {
+	public void actionPerformed(ActionEvent e) {
+	    // ask if should saved
+	    if (! shouldSave()) return;
+
+	    int returnVal = fileChooser.showOpenDialog(frame);
+	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+		System.err.println("opening file: " +
+				   fileChooser.getSelectedFile().getName());
+		try {
+		    tree.clearParams();
+		    treefile = fileChooser.getSelectedFile();
+		    // read parameters
+		    tree.readFromXML(new FileInputStream(treefile));
+		    modified = false;
+		} catch (ErrorParam err) {
+		    JOptionPane.showMessageDialog(frame,err.getMessage(),
+						  "Parameter Error",
+						  JOptionPane.ERROR_MESSAGE);
+		} catch (FileNotFoundException err) {
+		    JOptionPane.showMessageDialog(frame,err.getMessage(),
+						  "File not found",
+						  JOptionPane.ERROR_MESSAGE);
+		}
+	    }	
+	}
+    };
+
+    boolean shouldSave() {
+	if (modified) {
+	    int result = JOptionPane.showConfirmDialog(frame,
+		   "Some parameters are modified. Should the tree definition be saved?",
+						       "Tree definition modified",
+						       JOptionPane.YES_NO_CANCEL_OPTION,
+						       JOptionPane.QUESTION_MESSAGE);  
+	    if (result == JOptionPane.YES_OPTION) {
+		if (treefile != null) {
+		    return fileSave();
+		} else {
+		    return fileSaveAs();
+		}
 	    }
-	}	
+	    return (result != JOptionPane.CANCEL_OPTION);
+	} else
+	    return true;
     }
 
-    void FileSaveAs() {
+
+    boolean fileSaveAs() {
 	int returnVal = fileChooser.showSaveDialog(frame);
 	if(returnVal == JFileChooser.APPROVE_OPTION) {
 	    treefile = fileChooser.getSelectedFile();
-	    FileSave();
+	    return fileSave();
 	}
+	return false;
     }
 
-    void FileSave() {
+    boolean fileSave() {
 	System.err.println("saving to file: " +
 			       fileChooser.getSelectedFile().getName());
 	try {
 	    PrintWriter out = new PrintWriter(new FileWriter(treefile));
 	    tree.toXML(out);
+	    modified = false;
+	    return true;
 	} catch (ErrorParam err) {
 	    JOptionPane.showMessageDialog(frame,err.getMessage(),
 					  "Parameter Error",
@@ -273,29 +320,46 @@ public class ParamFrame {
 					  "Output error",
 					  JOptionPane.ERROR_MESSAGE);
 	}
+	return false;
     }	
 
-
-    void FileSavePOV() {
-	/*
-	JFileChooser chooser = new JFileChooser();
-	chooser.setCurrentDirectory(new File(System.getProperty("user.dir")+"/pov"));
-
-	int returnVal = chooser.showSaveDialog(frame);
-	if(returnVal == JFileChooser.APPROVE_OPTION) {
-	    try {
-		File povFile = chooser.getSelectedFile();
-		PrintWriter out = new PrintWriter(new FileWriter(povFile));  
-		tree.make();
-		tree.povray(out);
-	    } catch (Exception err) {
-		JOptionPane.showMessageDialog(frame,err.getMessage(),
-					      "Output error",
-					      JOptionPane.ERROR_MESSAGE);
+    class FileSaveListener implements ActionListener {
+	public void actionPerformed(ActionEvent e) {
+	    if (treefile != null) {
+		fileSave();
+	    } else {
+		fileSaveAs();
 	    }
 	}
-	*/
-	new PovDialog(tree);
+    };
+
+    class FileSaveAsListener implements ActionListener {
+	public void actionPerformed(ActionEvent e) {
+	    fileSaveAs();
+	}
+    }
+
+    class CreateTreeListener implements ActionListener {
+	public void actionPerformed(ActionEvent e) {
+	    new PovDialog(tree);
+	}
+    }
+
+    class HelpParameterListener implements ActionListener {
+	public void actionPerformed(ActionEvent e) {
+	    // Component c = frame.getMostRecentFocusOwner();
+	    // System.err.println(c.getClass());
+	    if (lastFocused.getClass() == ParamField.class) {
+		JOptionPane.showMessageDialog(frame, 
+					      ((ParamField)lastFocused).param.getLongDesc());
+	    }
+	}
+    }
+
+    class HelpAboutListener implements ActionListener {
+	public void actionPerformed(ActionEvent e) {
+	    JOptionPane.showMessageDialog(frame, net.sourceforge.arbaro.arbaro.progname);
+	}
     }
 }
 
@@ -331,12 +395,14 @@ class SpeciesField extends JTextField {
 
 class ParamField extends JTextField {
 
+    ParamFrame parent;
     AbstractParam param;
 
-    public ParamField(int width, AbstractParam par) {
+    public ParamField(ParamFrame pnt, int width, AbstractParam par) {
 	super(width);
-
+	parent = pnt;
 	param = par;
+
 	setText(param.getDefaultValue());
 	// ? param.setValue(getText());
 	setToolTipText(param.getShortDesc());
@@ -353,19 +419,28 @@ class ParamField extends JTextField {
 		public void focusLost(FocusEvent e) {
 		    setParamValue();
 		}
+		public void focusGained(FocusEvent e) {
+		    parent.lastFocused = (Component)e.getSource();
+		}
 	    });
 	param.addChangeListener(new ChangeListener() {
 		public void stateChanged(ChangeEvent e) {
-		    setText(param.getValue());
+		    if (!param.empty()) {
+			setText(param.getValue());
+		    } else {
+			setText(param.getDefaultValue());
+		    }
 		}
 	    });
 				
     }
 
+
     void setParamValue() {
 	try {
 	    param.setValue(getText());
 	    setText(param.getValue());
+	    parent.setModified(true);
 	} catch (ErrorParam err) {
 	    JOptionPane.showMessageDialog(getParent(),err.getMessage(),"Parameter Error",
 					  JOptionPane.ERROR_MESSAGE);

@@ -192,7 +192,7 @@ public class Params {
     public double BaseSize;
     public double Flare;
     
-    public double Lobes;
+    public int Lobes;
     public double LobeDepth;
     
     // leave parameters
@@ -659,20 +659,20 @@ void Tree::setParams(Paramset &paramset) {
 	flt_par("ZScale",0.000001,Double.POSITIVE_INFINITY,1.0,"SHAPE",
 		"additional Z-scaling (not used)",
 		"ZScale and ZScaleV are not described in the Weber/Penn paper.\n"+
-		"so there meaning is unclear and they aren't used at the moment\n");
+		"so theire meaning is unclear and they aren't used at the moment\n");
 
 	flt_par("ZScaleV",0.0,Double.POSITIVE_INFINITY,0.0,"SHAPE",
 		"additional Z-scaling variation (not used)",
 		"ZScale and ZScaleV are not described in the Weber/Penn paper.\n"+
-		"so there meaning is unclear and they aren't used at the moment\n");
+		"so theire meaning is unclear and they aren't used at the moment\n");
 
 	int_par("Levels",0,9,3,"SHAPE","levels of recursion",
 		"Levels are the levels of recursion when creating the\n"+
 		"stems of the tree.\n" +
 		"Levels=1 means the tree consist only of the (may be splitting) trunk\n"+
-		"Levels=2 the tree consist of the trunk an one level of branches\n"+
+		"Levels=2 the tree consist of the trunk with one level of branches\n"+
 		"Levels>4 seldom necesarry, the parameters of the forth level are used\n"+
-		"Leaves are considered to be one level over the last stem level.\n");
+		"Leaves are considered to be one level above the last stem level.\n");
 
 	flt_par("Ratio",0.000001,Double.POSITIVE_INFINITY,0.05,"TRUNK",
 		"trunk radius/length ratio",
@@ -771,9 +771,9 @@ void Tree::setParams(Paramset &paramset) {
 
 	flt_par("LeafBend",0,1,0.3,"LEAVESADD","leaf orientation toward light",
 		"With LeafBend you can influence, how much leaves are oriented\n"+
-		"outside and up. Values near 0.5 are good. With low values the leaves\n"+
-		"are oriented to the stem with high value to the light.\n"+
-		"For trees with bi long leaves like palms you should use lower values.\n");
+		"outside and upwards. Values near 0.5 are good. For low values the leaves\n"+
+		"are oriented to the stem, for high value to the light.\n"+
+		"For trees with long leaves like palms you should use lower values.\n");
 	
 	flt_par("LeafStemLen",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0.5,
 		"LEAVESADD","fractional leaf stem length",
@@ -793,7 +793,7 @@ void Tree::setParams(Paramset &paramset) {
 		"With a LeafQuality less then 1.0 you can reduce the number of leaves\n"+
 		"to improve rendering speed and memory usage. The leaves are scaled\n"+
 		"with the same amount to get the same coverage.\n"+
-		"For trees in the background of the scene you will use a reduces\n"+
+		"For trees in the background of the scene you will use a reduced\n"+
 		"LeafQuality around 0.9. Very small values would cause strange results.\n"+
 		"(See LeafScale)" );
 
@@ -877,27 +877,27 @@ void Tree::setParams(Paramset &paramset) {
 	flt4_par("nTaper",0.0,2.99999999,1.0,1.0,1.0,1.0,
 		 "LENTAPER","cross-section scaling",
 		 "nTaper gives the tapering of the stem along its length.\n"+
-		 "0 non-tapering cylinder\n"+
-		 "1 taper to a point (cone)\n"+
-		 "2 taper to a spherical end\n"+
-		 "3 periodic tapering (concatenated spheres)\n"+
-		 "You can use also fractional values\n");
+		 "0 - non-tapering cylinder\n"+
+		 "1 - taper to a point (cone)\n"+
+		 "2 - taper to a spherical end\n"+
+		 "3 - periodic tapering (concatenated spheres)\n"+
+		 "You can use fractional values, to get intermediate results\n");
 	
 	flt4_par("nSegSplits",0,Double.POSITIVE_INFINITY,0,0,0,0,
 		 "SPLITTING","stem splits per segment",
-		 "comes later");
+		 "");
 	
 	flt4_par("nSplitAngle",0,180,0,0,0,0,"SPLITTING",
 		 "splitting angle",
-		 "comes later");
+		 "");
 
 	flt4_par("nSplitAngleV",0,180,0,0,0,0,"SPLITTING",
 		 "splitting angle variation",
-		 "comes later");
+		 "");
 	
 	int4_par("nCurveRes",1,Integer.MAX_VALUE,3,3,1,1,
 		 "CURVATURE","curvature resolution",
-		 "comes later");
+		 "");
 	
 	flt4_par("nCurve",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,0,0,0,0,
 		 "CURVATURE","curving angle","");
@@ -924,7 +924,7 @@ void Tree::setParams(Paramset &paramset) {
 		 "BRANCHING","number of branches","");
 
 	flt4_par("nBranchDist",0,1,0,1,1,1,
-		 "ADDBRANCH","branch distribution over the segment","");
+		 "ADDBRANCH","branch distribution along the segment","");
 
 	flt4_par("nBranchDistV",0,1,0,0.5,0.5,0.5,
 		 "ADDBRANCH","branch distribution variation","");

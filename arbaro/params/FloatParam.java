@@ -48,6 +48,7 @@ public class FloatParam extends AbstractParam {
 
     public void clear() {
 	value = Double.NaN;
+	fireStateChanged();
     }
 
     public void setValue(String val) throws ErrorParam {

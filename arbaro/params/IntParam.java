@@ -47,6 +47,7 @@ public class IntParam extends AbstractParam {
 
     public void clear() {
 	value = Integer.MIN_VALUE;
+	fireStateChanged();
     }
 
     public void setValue(String val) throws ErrorParam {
@@ -89,6 +90,8 @@ public class IntParam extends AbstractParam {
 	return value;
     }
 }
+
+
 
 
 

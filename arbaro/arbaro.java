@@ -43,9 +43,12 @@ public class arbaro {
     static void p(String s) { System.err.println(s); }
     static void p() { System.err.println(); }
 
+    public static final String progname = 
+	"Arbaro - creates trees for rendering with povray from xml parameter files\n"+
+	"(c) 2003 by Wolfram Diestel (GPL see file COPYING)\n";
+
     static void programname() {
-	p("arbaro - creates trees for rendering with povray from xml parameter files");
-	p("(c) 2003 by Wolfram Diestel (GPL see file COPYING)");
+	p(progname);
 	p();
     }
 
