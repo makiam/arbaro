@@ -1,6 +1,7 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - Stem class - here is most of the logic of 
+//  #    $Id$  
+//  #             - Stem class - here is most of the logic of 
 //  #               the tree generating algorithm
 //  #
 //  #    Copyright (C) 2003  Wolfram Diestel
@@ -208,8 +209,7 @@ public class Stem implements StemInterface {
     void pruning() {
 	if (par.verbose) System.err.print("?");
 	// save random state, split and len values
-	long randstate = lpar.random.getstate();
-	double spliterrval = lpar.splitErrorValue;
+	lpar.saveState();
 	double splitcorr = split_corr;
 	double origlen = length;
 	double seglen = segment_len;
@@ -227,8 +227,7 @@ public class Stem implements StemInterface {
 	    //			(self.level,self.offset,self.length,segm,self.segment_cnt))
 	    
 	    // restore random state and split values
-	    lpar.random.setstate(randstate);
-	    lpar.splitErrorValue=spliterrval;
+	    lpar.restoreState();
 	    split_corr = splitcorr;
 	    // delete segments and clones
 	    if (clones != null) clones.clear();
@@ -259,8 +258,7 @@ public class Stem implements StemInterface {
 	length = origlen - (origlen-length)*par.PruneRatio;
 	  	
 	// restore random state and split values
-	lpar.random.setstate(randstate);
-	lpar.splitErrorValue=spliterrval;
+	lpar.restoreState();
 	split_corr = splitcorr;
 	// delete segments and clones
 	if (clones != null) clones.clear();
@@ -861,8 +859,8 @@ public class Stem implements StemInterface {
 		split_diverge = s_angle + lpar.var(lpar.nSplitAngleV);
 	    }	else {
 		split_diverge = 20 + 0.75 * (30 + Math.abs(declination-90)) 
-		    * Math.pow(lpar.random.uniform(0,1),2);
-		if (lpar.random.uniform(0,1)>=0.5) split_diverge = - split_diverge;
+		    * Math.pow((lpar.var(1)+1)/2.0,2);
+		if (lpar.var(1) >= 0) split_diverge = - split_diverge;
 	    }
 	
 	    trf = trf.rotaxis(split_diverge,new Vector(0,0,1));

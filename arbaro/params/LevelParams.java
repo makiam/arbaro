@@ -100,9 +100,17 @@ public class LevelParams {
     // param DB
     java.util.Hashtable paramDB;
 
+
+    // variables to store state when making prune test
+    private long randstate;
+    private double spliterrval;
+
     public LevelParams(int l, java.util.Hashtable parDB) {
 	level = l;
 	paramDB = parDB;
+
+	randstate = Long.MIN_VALUE;
+	spliterrval = Double.NaN;
     }
 
     public long initRandom(long seed) {
@@ -113,6 +121,27 @@ public class LevelParams {
     public double var(double variation) {
 	// return a random variation value from (-variation,+variation)
 	return random.uniform(-variation,variation);
+    }
+
+    public void saveState() {
+	/*
+	if (Double.isNaN(spliterrval)) {
+	    System.err.println("BUG: cannot override state earlier saved, "
+				 + "invoke restoreState first");
+	    System.exit(1);
+	}
+	*/
+	randstate = random.getstate();
+	spliterrval= splitErrorValue;
+    }
+
+    public void restoreState() {
+	if (Double.isNaN(spliterrval)) {
+	    System.err.println("BUG: there is no state saved, cannot restore.");
+	    System.exit(1);
+	}
+	random.setstate(randstate);
+	splitErrorValue=spliterrval;
     }
 
     // help methods for output of params
