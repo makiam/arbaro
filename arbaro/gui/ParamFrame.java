@@ -29,6 +29,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;    
 import javax.swing.event.*;
+import javax.swing.border.*;
 
 import java.util.TreeMap;
 import java.util.Iterator;
@@ -47,7 +48,15 @@ public class ParamFrame {
     Component lastFocused = null;
     boolean modified = false;
 
-    final static ImageIcon shapesIcon = createImageIcon("images/shapes.png","shapes");
+    // images
+    final static ImageIcon shapeIcon = createImageIcon("images/shape.png","Tree shape");
+    final static ImageIcon radiusIcon = createImageIcon("images/radius.png","Trunk radius");
+    final static ImageIcon leavesIcon = createImageIcon("images/leaves.png","Leaves");
+    final static ImageIcon pruneIcon = createImageIcon("images/pruning.png","Pruning/Envelope");
+    final static ImageIcon substemIcon = createImageIcon("images/substem.png","Branching");
+    final static ImageIcon curveIcon = createImageIcon("images/curve.png","Curvature");
+    final static ImageIcon scaleIcon = createImageIcon("images/scale.png","Scale");
+    final static ImageIcon taperIcon = createImageIcon("images/taper.png","Taper");
 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path,
@@ -95,13 +104,35 @@ public class ParamFrame {
 	JPanel panel1 = new JPanel();
 	panel1.setLayout(new GridLayout(2,3,20,20));
 	panel1.setBorder(BorderFactory.createEmptyBorder(10,30,30,30));
-	addParamGroupWidget("SHAPE","Tree shape",AbstractParam.GENERAL,panel1);
-	addParamGroupWidget("TRUNK","Trunk radius",AbstractParam.GENERAL,panel1);
-	addParamGroupWidget("LEAVES","Leaves",AbstractParam.GENERAL,panel1);
-	addParamGroupWidget("LEAVESADD","Additional leaf parameters",AbstractParam.GENERAL,panel1);
-	addParamGroupWidget("PRUNING","Pruning",AbstractParam.GENERAL,panel1);
-	addParamGroupWidget("MISC","Miscellaneous parameters",AbstractParam.GENERAL,panel1);
 
+	// image area
+	JLabel imagelabel = new JLabel("", shapeIcon, JLabel.CENTER);
+	imagelabel.setBorder(BorderFactory.createTitledBorder(
+			     BorderFactory.createEmptyBorder(5,10,5,10),"Tree shape",
+			     TitledBorder.CENTER,TitledBorder.TOP));
+	imagelabel.setOpaque(true);
+	imagelabel.setForeground(Color.WHITE);
+
+	// param groups
+	panel1.add(new ParamGroup(this,"SHAPE","Tree shape",
+				  AbstractParam.GENERAL,imagelabel,shapeIcon));
+	panel1.add(new ParamGroup(this,"TRUNK","Trunk radius",
+				  AbstractParam.GENERAL,imagelabel,radiusIcon));
+	JPanel leavespanel = new JPanel();
+	leavespanel.setLayout(new GridLayout(2,1));
+	leavespanel.add(new ParamGroup(this,"LEAVES","Leaves",
+				       AbstractParam.GENERAL,imagelabel,leavesIcon));
+	leavespanel.add(new ParamGroup(this,"LEAVESADD","Additional leaf parameters",
+				       AbstractParam.GENERAL,imagelabel,leavesIcon));
+	panel1.add(leavespanel);
+	panel1.add(new ParamGroup(this,"PRUNING","Pruning/Envelope",
+				  AbstractParam.GENERAL,imagelabel,pruneIcon));
+	panel1.add(new ParamGroup(this,"MISC","Miscellaneous parameters",
+				  AbstractParam.GENERAL,imagelabel,curveIcon));
+	
+	panel1.add(imagelabel);
+
+	// Species input
 	JPanel speciesPanel = new JPanel();
 	speciesPanel.setBorder(BorderFactory.createEmptyBorder(20,30,10,10));
 	speciesPanel.setLayout(new BoxLayout(speciesPanel,BoxLayout.X_AXIS));
@@ -127,17 +158,29 @@ public class ParamFrame {
 	    JPanel panel = new JPanel();
 	    panel.setLayout(new GridLayout(2,3,20,20));
 	    panel.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
+
 	    tabs.addTab("Level "+i, null, panel, "Parameters for branching level "+i);
-	
-	    addParamGroupWidget("LENTAPER","Length and tapering",i,panel);
-	    addParamGroupWidget("CURVATURE","Curvature",i,panel);
-	    addParamGroupWidget("SPLITTING","Splitting",i,panel);
-	    addParamGroupWidget("BRANCHING","Branching",i,panel);
-	    addParamGroupWidget("ADDBRANCH","Branch distribution",i,panel);
+
+	    // image area
+	    imagelabel = new JLabel("", curveIcon, JLabel.CENTER);
+	    imagelabel.setBorder(BorderFactory.createTitledBorder(
+			     BorderFactory.createEmptyBorder(5,10,5,10),"Curvature",
+			     TitledBorder.CENTER,TitledBorder.TOP));
+	    imagelabel.setOpaque(true);
+	    imagelabel.setForeground(Color.WHITE);
+
+	    // param groups
+	    panel.add(new ParamGroup(this,"LENTAPER","Length and tapering",
+				     i,imagelabel,taperIcon));
+	    panel.add(new ParamGroup(this,"CURVATURE","Curvature",
+				     i,imagelabel,curveIcon));
+	    panel.add(new ParamGroup(this,"SPLITTING","Splitting",
+				     i,imagelabel,curveIcon));
+	    panel.add(new ParamGroup(this,"BRANCHING","Branching",
+				     i,imagelabel,substemIcon));
+	    panel.add(new ParamGroup(this,"ADDBRANCH","Branch distribution",
+				     i,imagelabel,scaleIcon));
 	    
-	    JLabel imagelabel = new JLabel("the shapes 0 to 7", shapesIcon, JLabel.CENTER);
-	    imagelabel.setVerticalTextPosition(JLabel.BOTTOM);
-	    imagelabel.setHorizontalTextPosition(JLabel.CENTER);
 	    panel.add(imagelabel);
 	}
 
@@ -227,47 +270,52 @@ public class ParamFrame {
 	frame.setJMenuBar(menubar);
     }
 
-    void addParamGroupWidget(String group, String groupName, int level, JPanel parent) {
-	TreeMap params = new TreeMap(tree.getParamGroup(level,group));
-	
-	JPanel panel = new JPanel();
-	panel.setBorder(BorderFactory.createCompoundBorder(
+    class ParamGroup extends JPanel {
+	JLabel imagelabel;
+	ImageIcon image;
+
+	ParamGroup(ParamFrame parent, String group, String groupName, int level, 
+		   JLabel imglabel, ImageIcon img) {
+	    super();
+	    image = img;
+	    imagelabel = imglabel;
+
+	    // find params for this group and create labels and input fields
+	    TreeMap params = new TreeMap(tree.getParamGroup(level,group));
+	    setBorder(BorderFactory.createCompoundBorder(
                       BorderFactory.createTitledBorder(groupName),
                       BorderFactory.createEmptyBorder(5,10,5,10)));
-	
+	    setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
-	//panel.setLayout(new GridLayout(params.size(),2,10,2));
-	panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+	    FocusListener groupListener = new FocusAdapter() {
+		    public void focusGained(FocusEvent e) {
+			imagelabel.setIcon(image);
+			((TitledBorder)imagelabel.getBorder()).setTitle(image.getDescription());
+			imagelabel.repaint();
+		    }
+		};
+	    for (Iterator e=params.values().iterator();e.hasNext();) {
+		AbstractParam p = (AbstractParam)e.next();
 
-	for (Iterator e=params.values().iterator();e.hasNext();) {
-	    AbstractParam p = (AbstractParam)e.next();
-
-	    JPanel panl = new JPanel();
-	    panl.setLayout(new BoxLayout(panl,BoxLayout.X_AXIS));
-	    panl.add(new JLabel(p.getName()));
-	    panl.add(Box.createHorizontalGlue());
-
-	    if (p.getName().equals("Shape")) {
-		panl.add(Box.createRigidArea(new Dimension(7,0)));
-		panl.add(new ShapeBox(this,p));
-	    } else {
-		panl.add(new ParamField(this,6,p));
+		JPanel panl = new JPanel();
+		panl.setLayout(new BoxLayout(panl,BoxLayout.X_AXIS));
+		panl.add(new JLabel(p.getName()));
+		panl.add(Box.createHorizontalGlue());
+		if (p.getName().equals("Shape")) {
+		    // create combo box for Shape param
+		    panl.add(Box.createRigidArea(new Dimension(7,0)));
+		    panl.add(new ShapeBox(parent,p));
+		} else {
+		    // create text field
+		    ParamField pfield = new ParamField(parent,6,p);
+		    pfield.addFocusListener(groupListener);
+		    panl.add(pfield);
+		}
+		add(panl);
 	    }
-	    panel.add(panl);
+
 	}
-
-	/*
-	JPanel panel1 = new JPanel();
-	panel1.setBorder(BorderFactory.createCompoundBorder(
-                      BorderFactory.createTitledBorder(groupName),
-                      BorderFactory.createEmptyBorder(5,10,5,10)));
-	panel1.add(panel);
-	parent.add(panel1);
-	*/
-
-	parent.add(panel);
-	//panel1.setAlignmentX(Component.LEFT_ALIGNMENT);
-    }
+    };
 
     void setModified(boolean mod) {
 	modified = mod;
