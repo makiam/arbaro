@@ -93,9 +93,7 @@ public class PovMeshOutput extends Output {
     	if (leafCount>0) {
     		w.println("#declare " + pov_prefix() + "leaves = mesh2 {");
     		w.println("     vertex_vectors { "+lmesh.getShapeVertexCount()*leafCount);
-    		for (int t=0; t<tree.trunks.size(); t++) {
-    			leaves_points((Stem)tree.trunks.elementAt(t));
-    		}
+		leaves_points();
     		w.println("     }");
     		/* FIXME: add this if needed
     		 w.println("     normal_vectors { "+mesh.getShapeVertexCount()*leafCount);
@@ -105,9 +103,7 @@ public class PovMeshOutput extends Output {
     		leafFaceOffset=0;
     		
     		w.println("     face_indices { "+lmesh.getShapeFaceCount()*leafCount);
-    		for (int t=0; t<tree.trunks.size(); t++) {
-    			leaves_faces((Stem)tree.trunks.elementAt(t));
-    		}
+		leaves_faces();
     		w.println("     }");
     		w.println("}");
     	} else {
@@ -123,7 +119,7 @@ public class PovMeshOutput extends Output {
      * @param mesh the mesh object
      * @throws Exception
      */
-    private void leaves_points(Stem s) throws Exception {
+    private void leaves_points() throws Exception {
     	Enumeration leaves = tree.allLeaves();
     	String indent = "    ";
     	
@@ -133,47 +129,8 @@ public class PovMeshOutput extends Output {
     		//tree.incPovProgress(s.substems.size());
 			leafmesh_points(indent,l.transf);
     	}
-    	
-//    	if (tree.params.verbose) {
-//    		if (s.stemlevel<=1 && s.clone_index.size()==0) System.err.print(".");
-//    	}
-//    	
-//    	String indent = "    ";
-//    	
-//    	// output leaves points
-//    	if (s.stemlevel==tree.params.Levels-1) {
-//    		w.println( "/* " + s.tree_position() + " */");
-//    		
-//    		for (int i=0; i<s.leaves.size(); i++) {
-//    			leafmesh_points(indent,((Leaf)s.leaves.elementAt(i)).transf);
-//    		}
-//    		
-//    		if (s.clones != null) {
-//    			for (int i=0; i<s.clones.size(); i++) {
-//    				leaves_points((Stem)s.clones.elementAt(i));
-//    			}
-//    		}
-//    		
-//    	}
-//    	
-//    	// recursive call to substems
-//    	else {
-//    		// FIXME? more correct it would be inc by 1 in the for block,
-//    		// but this would need more calls to synchronized incProgress
-//    		// if this work ok, don't change this
-//    		tree.incPovProgress(s.substems.size());
-//    		for (int i=0; i<s.substems.size(); i++) {
-//    			leaves_points((Stem)s.substems.elementAt(i));
-//    		}
-//    		if (s.clones != null) {
-//    			for (int i=0; i<s.clones.size(); i++) {
-//    				leaves_points((Stem)s.clones.elementAt(i));
-//    			}	  	
-//    		}
-//    	}
     }
-
-
+    	
     /**
      * Outputs Povray code points section of the mesh2 object for the leaves
      * 
@@ -181,7 +138,7 @@ public class PovMeshOutput extends Output {
      * @param mesh the mesh object
      * @throws Exception
      */
-    private void leaves_faces(Stem s) throws Exception {
+    private void leaves_faces() throws Exception {
     	Enumeration leaves = tree.allLeaves();
     	String indent = "    ";
     	
@@ -191,44 +148,6 @@ public class PovMeshOutput extends Output {
     		//tree.incPovProgress(s.substems.size());
 			leafmesh_faces(indent);
     	}
-    	
-//    	if (tree.params.verbose) {
-//    		if (s.stemlevel<=1 && s.clone_index.size()==0) System.err.print(".");
-//    	}
-//    	
-//    	String indent = "    ";
-//    	
-//    	// output leaves points
-//    	if (s.stemlevel==tree.params.Levels-1) {
-//    		w.println( "/* " + s.tree_position() + " */");
-//    		
-//    		for (int i=0; i<s.leaves.size(); i++) {
-//    			leafmesh_faces(indent);
-//    		}
-//    		
-//    		if (s.clones != null) {
-//    			for (int i=0; i<s.clones.size(); i++) {
-//    				leaves_faces((Stem)s.clones.elementAt(i));
-//    			}
-//    		}
-//    		
-//    	}
-//    	
-//    	// recursive call to substems
-//    	else {
-//    		// FIXME? more correct it would be inc by 1 in the for block,
-//    		// but this would need more calls to synchronized incProgress
-//    		// if this work ok, don't change this
-//    		tree.incPovProgress(s.substems.size());
-//    		for (int i=0; i<s.substems.size(); i++) {
-//    			leaves_faces((Stem)s.substems.elementAt(i));
-//    		}
-//    		if (s.clones != null) {
-//    			for (int i=0; i<s.clones.size(); i++) {
-//    				leaves_faces((Stem)s.clones.elementAt(i));
-//    			}	  	
-//    		}
-//    	}
     }
 
 
@@ -239,7 +158,7 @@ public class PovMeshOutput extends Output {
      * @param mesh the mesh object
      * @throws Exception
      */
-    private void leaves_normals(Stem s) throws Exception {
+    private void leaves_normals() throws Exception {
     	Enumeration leaves = tree.allLeaves();
     	String indent = "    ";
     	
@@ -249,44 +168,6 @@ public class PovMeshOutput extends Output {
     		//tree.incPovProgress(s.substems.size());
 			leafmesh_normals(indent,l.transf);
     	}
-    	
-//    	if (tree.params.verbose) {
-//    		if (s.stemlevel<=1 && s.clone_index.size()==0) System.err.print(".");
-//    	}
-//    	
-//    	String indent = "    ";
-//    	
-//    	// output leaves points
-//    	if (s.stemlevel==tree.params.Levels-1) {
-//    		w.println( "/* " + s.tree_position() + " */");
-//    		
-//    		for (int i=0; i<s.leaves.size(); i++) {
-//    			leafmesh_normals(indent,((Leaf)s.leaves.elementAt(i)).transf);
-//    		}
-//    		
-//    		if (s.clones != null) {
-//    			for (int i=0; i<s.clones.size(); i++) {
-//    				leaves_normals((Stem)s.clones.elementAt(i));
-//    			}
-//    		}
-//    		
-//    	}
-//    	
-//    	// recursive call to substems
-//    	else {
-//    		// FIXME? more correct it would be inc by 1 in the for block,
-//    		// but this would need more calls to synchronized incProgress
-//    		// if this work ok, don't change this
-//    		tree.incPovProgress(s.substems.size());
-//    		for (int i=0; i<s.substems.size(); i++) {
-//    			leaves_normals((Stem)s.substems.elementAt(i));
-//    		}
-//    		if (s.clones != null) {
-//    			for (int i=0; i<s.clones.size(); i++) {
-//    				leaves_normals((Stem)s.clones.elementAt(i));
-//    			}	  	
-//    		}
-//    	}
     }
 
     void leafmesh_points(String indent, Transformation transf) {

@@ -323,14 +323,15 @@ public class PovConeOutput extends Output {
     	NumberFormat fmt = FloatFormat.getInstance();
     	Matrix matrix = trf.matrix();
     	Vector vector = trf.vector();
-    	return "matrix <" + fmt.format(matrix.get(trf.X,trf.X)) + "," 
-    	    + fmt.format(matrix.get(trf.X,trf.Z)) + "," 
-    	    + fmt.format(matrix.get(trf.X,trf.Y)) + ","
+    	return "matrix <" 
+	    + fmt.format(matrix.get(trf.X,trf.X)) + "," 
     	    + fmt.format(matrix.get(trf.Z,trf.X)) + "," 
+    	    + fmt.format(matrix.get(trf.Y,trf.X)) + ","
+    	    + fmt.format(matrix.get(trf.X,trf.Z)) + "," 
     	    + fmt.format(matrix.get(trf.Z,trf.Z)) + "," 
-    	    + fmt.format(matrix.get(trf.Z,trf.Y)) + ","
-    	    + fmt.format(matrix.get(trf.Y,trf.X)) + "," 
-    	    + fmt.format(matrix.get(trf.Y,trf.Z)) + "," 
+    	    + fmt.format(matrix.get(trf.Y,trf.Z)) + ","
+    	    + fmt.format(matrix.get(trf.X,trf.Y)) + "," 
+    	    + fmt.format(matrix.get(trf.Z,trf.Y)) + "," 
     	    + fmt.format(matrix.get(trf.Y,trf.Y)) + ","
     	    + fmt.format(vector.getX())   + "," 
     	    + fmt.format(vector.getZ())   + "," 

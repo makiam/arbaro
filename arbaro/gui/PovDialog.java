@@ -221,7 +221,8 @@ public class PovDialog {
 	primitives.setActionCommand("primitives");
 	meshes = new JRadioButton("Meshes");
 	meshes.setActionCommand("meshes");
-	meshes.setSelected(true);
+	if (tree.params.output==Params.CONES) primitives.setSelected(true);
+	else meshes.setSelected(true);
 	ActionListener alisten = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    if (e.getActionCommand().equals("meshes")) {
