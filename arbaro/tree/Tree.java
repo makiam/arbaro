@@ -26,11 +26,10 @@
 package net.sourceforge.arbaro.tree;
 
 import java.io.PrintWriter;
+import java.io.InputStream;
 
 import java.text.NumberFormat;
-import net.sourceforge.arbaro.params.FloatFormat;
-
-import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.Transformation;
 
 public class Tree {
@@ -177,6 +176,18 @@ void Tree::dump() const {
 
     public java.util.Hashtable getParamGroup(int level, String group) {
 	return params.getParamGroup(level,group);
+    }
+
+    public void clearParams() {
+	params.clearParams();
+    }
+
+    public void readFromXML(InputStream is) throws ErrorParam {
+	params.readFromXML(is);
+    }
+
+    public void toXML(PrintWriter out) throws ErrorParam {
+	params.toXML(out);
     }
 
 };

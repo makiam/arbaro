@@ -40,29 +40,47 @@ public class IntParam extends AbstractParam {
 	value = Integer.MIN_VALUE;
     }
 
-    public int getDefaultValue() {
-	return deflt;
+    public String getDefaultValue() {
+	Integer i = new Integer(deflt);
+	return i.toString();
+    }
+
+    public void clear() {
+	value = Integer.MIN_VALUE;
     }
 
     public void setValue(String val) throws ErrorParam {
-	Integer i = new Integer(val);
+	int i;
+	try {
+	    i = Integer.parseInt(val);
+	} catch (NumberFormatException e) {
+	    throw new ErrorParam("Error setting value of "+name+". \""+val
+				 +"\" isn't a valid integer.");
+	}
 	
-	if (i.intValue()<min) {
+	if (i<min) {
 	    throw new ErrorParam("Value of "+name+" should be greater or equal to "+min);
 	}
 
-	if (i.intValue()>max) {
+	if (i>max) {
 	    throw new ErrorParam("Value of "+name+" should be greater or equal to "+max);
 	}
 	
-	value = i.intValue();
+	value = i;
+	fireStateChanged();
     }
 
-    public int getValue() {
+    public String getValue() {
+	Integer i = new Integer(value);
+	return i.toString();
+    }
+
+    public int intValue() {
 	if (value==Integer.MIN_VALUE) {
 	    warn(name+" not given, using default value("+deflt+")");
 	    // set value to default, t.e. don't warn again
 	    value=deflt;
+	    fireStateChanged();
 	}
 	return value;
     }

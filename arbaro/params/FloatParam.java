@@ -41,29 +41,49 @@ public class FloatParam extends AbstractParam {
 	value = Double.NaN;
     }
 
-    public double getDefaultValue() {
-	return deflt;
+    public String getDefaultValue() {
+	Double d = new Double(deflt);
+	return d.toString();
+    }
+
+    public void clear() {
+	value = Double.NaN;
     }
 
     public void setValue(String val) throws ErrorParam {
-	Double d = new Double(val);
-	if (d.doubleValue()<min) {
+	double d;
+	try {
+	    d = Double.parseDouble(val);
+	} catch (NumberFormatException e) {
+	    throw new ErrorParam("Error setting value of "+name+". \""+val+"\" isn't a valid number.");
+	}
+	    
+	if (d<min) {
 	    throw new ErrorParam("Value of "+name+" should be greater then or equal to "+min);
 	}
-	if (d.doubleValue()>max) {
+	if (d>max) {
 	    throw new ErrorParam("Value of "+name+" should be less then or equal to "+max);
 	}
-	value = d.doubleValue();
+	value = d;
+	fireStateChanged();
     }
 
-    public double getValue() {
+    public String getValue() {
+	Double d = new Double(value);
+	return d.toString();
+    }
+
+    public double doubleValue() {
 	if (Double.isNaN(value)) {
 	    warn(name+" not given, using default value("+deflt+")");
 	    // set value to default, t.e. don't warn again
 	    value=deflt;
+	    fireStateChanged();
 	}
 	return value;
     }
 };
+
+
 
 

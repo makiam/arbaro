@@ -183,7 +183,7 @@ public class LevelParams {
 	name = "" + level + name.substring(1);
 	IntParam par = (IntParam)paramDB.get(name);
 	if (par != null) {
-	    return par.getValue();
+	    return par.intValue();
 	} else {
 	    throw new ErrorParam("bug: param "+name+" not found!");
 	}   
@@ -193,7 +193,7 @@ public class LevelParams {
 	name = "" + level + name.substring(1);
 	FloatParam par = (FloatParam)paramDB.get(name);
 	if (par != null) {
-	    return par.getValue();
+	    return par.doubleValue();
 	} else {
 	    throw new ErrorParam("bug: param "+name+" not found!");
 	}   

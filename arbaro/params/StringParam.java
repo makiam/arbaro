@@ -40,8 +40,13 @@ public class StringParam extends AbstractParam {
 	return deflt;
     }
 
+    public void clear() {
+	value = "";
+    }
+
     public void setValue(String val) {
 	value = val;
+	fireStateChanged();
     }
 
     public String getValue() {
@@ -49,6 +54,7 @@ public class StringParam extends AbstractParam {
 	    warn(name+" not given, using default value("+deflt+")");
 	    // set value to default, t.e. don't warn again
 	    value=deflt;
+	    fireStateChanged();
 	}
 	return value;
     }

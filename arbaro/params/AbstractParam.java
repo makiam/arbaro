@@ -26,6 +26,8 @@
 
 package net.sourceforge.arbaro.params;
 
+import javax.swing.event.*;
+
 public abstract class AbstractParam {
     public static final int GENERAL = -999; // no level - general params
     String name;
@@ -33,6 +35,8 @@ public abstract class AbstractParam {
     int level;
     String short_desc;
     String long_desc;
+    protected ChangeEvent changeEvent = null;
+    protected EventListenerList listenerList = new EventListenerList();
 
     public AbstractParam(String nam, String grp, int lev, String sh, String lng) {
 	name = nam;
@@ -43,6 +47,9 @@ public abstract class AbstractParam {
     }
 
     public abstract void setValue(String val) throws ErrorParam;
+    public abstract String getValue();
+    public abstract String getDefaultValue();
+    public abstract void clear();
 
     protected void warn(String warning) {
 	System.err.println("WARNING: "+warning);
@@ -58,6 +65,34 @@ public abstract class AbstractParam {
 
     public int getLevel() {
 	return level;
+    }
+
+    public String getShortDesc() {
+	return short_desc;
+    }
+
+    public String getLongDesc() {
+	return long_desc;
+    }
+
+    public void addChangeListener(ChangeListener l) {
+	listenerList.add(ChangeListener.class, l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+	listenerList.remove(ChangeListener.class, l);
+    }
+
+    protected void fireStateChanged() {
+	Object [] listeners = listenerList.getListenerList();
+	for (int i = listeners.length -2; i>=0; i-=2) {
+	    if (listeners[i] == ChangeListener.class) {
+		if (changeEvent == null) {
+		    changeEvent = new ChangeEvent(this);
+		}
+		((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+	    }
+	}
     }
 }
 

@@ -43,11 +43,7 @@ class ErrorNotYetImplemented extends ArbaroError{
 	super(errmsg);
     } 
 };
-class ErrorParam extends ArbaroError{
-    public ErrorParam(String msg) {
-	super(msg);
-    }
-};
+
 
 public class Stem {
     // A helper class for making 3d trees, this class makes a stem

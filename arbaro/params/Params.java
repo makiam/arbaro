@@ -313,12 +313,17 @@ public class Params {
 	w.flush();
     }
 
+    public void clearParams() {
+	for (Enumeration e = paramDB.elements(); e.hasMoreElements();) {
+	    ((AbstractParam)e.nextElement()).clear();
+	}
+    }
 
     // help method for loading params
     private int int_param(String name) throws ErrorParam {
 	IntParam par = (IntParam)paramDB.get(name);
 	if (par != null) {
-	    return par.getValue();
+	    return par.intValue();
 	} else {
 	    throw new ErrorParam("bug: param "+name+" not found!");
 	}
@@ -327,7 +332,7 @@ public class Params {
     private double dbl_param(String name) throws ErrorParam {
 	FloatParam par = (FloatParam)paramDB.get(name);
 	if (par != null) {
-	    return par.getValue();
+	    return par.doubleValue();
 	} else {
 	    throw new ErrorParam("bug: param "+name+" not found!");
 	}   
@@ -854,7 +859,7 @@ void Tree::setParams(Paramset &paramset) {
 		 "CURVATURE","curving angle upper stem half","");
 
 	flt4_par("nDownAngle",-179.9999999,179.999999,0,30,30,30,
-		 "Branching","angle from parent","");
+		 "BRANCHING","angle from parent","");
 	
 	flt4_par("nDownAngleV",-179.9999999,179.9999999,0,0,0,0,
 		 "BRANCHING","down angle variation","");
