@@ -27,6 +27,9 @@
 package net.sourceforge.arbaro.mesh;
 
 import java.lang.Math;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+
 import net.sourceforge.arbaro.tree.Stem;
 
 /**
@@ -40,12 +43,91 @@ import net.sourceforge.arbaro.tree.Stem;
 public class MeshPart extends java.util.Vector {
 	Stem stem;
 	boolean useNormals;
+	boolean useQuads;
 	
-	public MeshPart(Stem aStem, boolean normals) { 
+	private class VertexEnumerator implements Enumeration {
+		private Enumeration sections;
+		private Enumeration sectionVertices;
+		private boolean UVVertices;
+		
+		public VertexEnumerator(boolean uv) {
+			UVVertices = uv;
+			sections = elements();
+			
+			// ignore root point
+			sections.nextElement();
+			sectionVertices = ((MeshSection)sections.nextElement()).allVertices(UVVertices);
+		}
+		
+		public boolean hasMoreElements() {
+			if (! sectionVertices.hasMoreElements() && sections.hasMoreElements()) {
+				sectionVertices = ((MeshSection)sections.nextElement()).allVertices(UVVertices);
+			}
+			return sectionVertices.hasMoreElements();
+		}
+		
+		public Object nextElement() {
+			if (! sectionVertices.hasMoreElements() && sections.hasMoreElements()) {
+				sectionVertices = ((MeshSection)sections.nextElement()).allVertices(UVVertices);
+			}
+			return sectionVertices.nextElement();
+		}
+	}
+
+	private class FaceEnumerator implements Enumeration {
+		private Enumeration sections;
+		private Enumeration sectionFaces;
+		private MeshSection section;
+		private boolean UVFaces;
+		private boolean useQuads;
+		private int startIndex;
+		private int sectionSize;
+		
+		public FaceEnumerator(int startInx, boolean uv, boolean quads) {
+			UVFaces = uv;
+			startIndex = startInx;
+			useQuads = quads;
+			sections = elements();
+			
+			// ignore root point
+			sections.nextElement();
+			nextSection(true);
+		}
+		
+		private void nextSection(boolean firstSection) {
+			if (! firstSection) {
+				if (UVFaces) 
+					startIndex += section.size()==1? 1 : section.size()+1;
+				else
+					startIndex += section.size();
+			}
+
+			section = (MeshSection)sections.nextElement(); 
+			sectionFaces = section.allFaces(startIndex,UVFaces,useQuads);
+		}
+		
+		public boolean hasMoreElements() {
+			if (! sectionFaces.hasMoreElements() && sections.hasMoreElements()) {
+				nextSection(false);
+			}
+			return sectionFaces.hasMoreElements();
+		}
+		
+		public Object nextElement() {
+			if (! sectionFaces.hasMoreElements() && sections.hasMoreElements()) {
+				nextSection(false);
+			}
+			return sectionFaces.nextElement();
+		}
+	}
+	
+	
+	public MeshPart(Stem aStem, boolean normals, boolean quads) { 
 		// FIXME normals not yet used,
 		// other mesh output format needed if theire are
 		// less normals then vertices
 		useNormals = normals;
+		useQuads = quads;
 		stem = aStem;
 	}
 	
@@ -72,11 +154,20 @@ public class MeshPart extends java.util.Vector {
 		if (size() > 0) {
 			// connect section with last of sections
 			((MeshSection)lastElement()).next = section;
-			section.previos = (MeshSection)lastElement();
+			section.previous = (MeshSection)lastElement();
 		}
 		
 		addElement(section);
 	}
+	
+	public Enumeration allVertices(boolean UVVertices) {
+		return new VertexEnumerator(UVVertices);
+	}
+	
+	public Enumeration allFaces(int startIndex, boolean UVFaces) {
+		return new FaceEnumerator(startIndex,UVFaces,useQuads);
+	}
+	
 	
 	/**
 	 * Sets the normals in all mesh sections
@@ -121,7 +212,7 @@ public class MeshPart extends java.util.Vector {
 	public int vertexCount() {
 		int cnt=0;
 		
-		for (int i = 0; i<size(); i++) {
+		for (int i = 1; i<size(); i++) {
 			cnt += ((MeshSection)elementAt(i)).size();
 		}
 		return cnt;
@@ -135,7 +226,7 @@ public class MeshPart extends java.util.Vector {
 	public int uvCount() {
 		int cnt=0;
 		
-		for (int i = 0; i<size(); i++) {
+		for (int i = 1; i<size(); i++) {
 			cnt += ((MeshSection)elementAt(i)).size()==1 ?
 					1 : ((MeshSection)elementAt(i)).size()+1;
 		}
@@ -151,7 +242,7 @@ public class MeshPart extends java.util.Vector {
 	 */
 	public int faceCount()  {
 		int cnt = 0;
-		for (int i=0; i<size()-1; i++) {
+		for (int i=1; i<size()-1; i++) {
 			int c_i = ((MeshSection)elementAt(i)).size();
 			int c_i1 = ((MeshSection)elementAt(i+1)).size();
 			
@@ -184,15 +275,27 @@ public class MeshPart extends java.util.Vector {
 			return faces;
 		}
 		
-		if (section.size() == 1) {
+		// if it's the first section (root vertex of the stem)
+		// make triangles to fill the base section
+		if (section.isFirst()) {
+			for (int i=1; i<next.size()-1; i++) {
+				faces.addElement(new Face(inx,inx+i,inx+i+1));
+			}
+		}
+
+		// if the section has only one vertex, draw triangles
+		// to every point of the next secion
+		else if (section.size() == 1) {
 			for (int i=0; i<next.size(); i++) {
 				faces.addElement(new Face(inx,inx+1+i,inx+1+(i+1)%next.size()));
 			}
+			
 		} else if (next.size() == 1) {
 			long ninx = inx+section.size();
 			for (int i=0; i<section.size(); i++) {
 				faces.addElement(new Face(inx+i,ninx,inx+(i+1)%section.size()));
 			}
+			
 		} else { // section and next must have same point_cnt>1!!!
 			long ninx = inx+section.size();
 			if (section.size() != next.size()) {
@@ -200,11 +303,17 @@ public class MeshPart extends java.util.Vector {
 						+ "differ ("+inx+","+ninx+")");
 			}
 			for (int i=0; i<section.size(); i++) {
-				faces.addElement(new Face(inx+i,ninx+i,inx+(i+1)%section.size()));
-				faces.addElement(new Face(inx+(i+1)%section.size(),ninx+i,
+				if (useQuads) {
+					faces.addElement(new Face(inx+i,ninx+i,
+							ninx+(i+1)%next.size(),inx+(i+1)%section.size()));
+				} else {
+					faces.addElement(new Face(inx+i,ninx+i,inx+(i+1)%section.size()));
+					faces.addElement(new Face(inx+(i+1)%section.size(),ninx+i,
 						ninx+(i+1)%next.size()));
+				}
 			}
 		}
+		
 		return faces;
 	}
 	
@@ -228,7 +337,18 @@ public class MeshPart extends java.util.Vector {
 			return faces;
 		}
 		
-		if (section.size() == 1) {
+		// if it's the first section (root vertex of the stem)
+		// make triangles to fill the base section
+		if (section.isFirst()) {
+			for (int i=1; i<next.size()-1; i++) {
+				faces.addElement(new VFace(
+							next.pointAt(0),
+							next.pointAt(i),
+							next.pointAt(i+1)));
+			}
+		}		
+		
+		else if (section.size() == 1) {
 			for (int i=0; i<next.size(); i++) {
 				faces.addElement(new VFace(
 							section.pointAt(0),
@@ -275,7 +395,7 @@ public class MeshPart extends java.util.Vector {
 	 * @return
 	 * @throws ErrorMesh
 	 */
-	public java.util.Vector uvFaces(long inx, MeshSection section) throws ErrorMesh {
+	public java.util.Vector uvFaces(long inx, MeshSection section, Mesh mesh) throws ErrorMesh {
 		MeshSection next = section.next;
 		java.util.Vector faces = new java.util.Vector();
 		
@@ -286,27 +406,72 @@ public class MeshPart extends java.util.Vector {
 			return faces;
 		}
 		
-		if (section.size() == 1) {
-			for (int i=0; i<next.size(); i++) {
-				faces.addElement(new Face(inx,inx+1+i,inx+1+(i+1)));
+
+		// if it's a clone calculate a vertex offset
+		// finding the corresponding segment in the parent stem's mesh
+		int uvVertexOffset=0; 
+		if (stem.isClone()) {
+			MeshPart mp = ((MeshPart)mesh.elementAt(mesh.firstMeshPart[stem.stemlevel]));
+			for (MeshSection ms=((MeshSection)mp.elementAt(1)); // ignore root vertex
+				ms.next.segment.index < section.segment.index;
+				ms = ms.next) {
+				
+				uvVertexOffset += ms.size()==1? 1 : ms.size()+1;
 			}
-		} else if (next.size() == 1) {
-			long ninx = inx+section.size()+1;
+			
+		}
+
+		long ninx; // start index of next section
+
+		
+		// first section of clone starts at the bottom of the texture
+		// but all following are raised to the corresponding segment
+		// of the parent stem
+		if (section.size()>1) {
+			ninx = inx+section.size()+1+uvVertexOffset;
+		} else {
+			ninx = 1+uvVertexOffset;
+		}
+		if (section.isFirst()) {
+			inx += uvVertexOffset;
+		} 
+
+		// if it's the first section (root vertex of the stem)
+		// make triangles to fill the base section
+		if (section.isFirst()) {
+			for (int i=1; i<next.size()-1; i++) {
+				faces.addElement(new Face(inx,inx+i,inx+i+1));
+			}
+		}
+		
+		else if (section.size() == 1) {
+			for (int i=0; i<next.size(); i++) {
+				faces.addElement(new Face(inx,inx+ninx+i,inx+ninx+(i+1)));
+			}
+		} 
+		
+		else if (next.size() == 1) {
 			for (int i=0; i<section.size(); i++) {
 				faces.addElement(new Face(inx+i,ninx,inx+(i+1)));
 			}
-		} else { // section and next must have same point_cnt>1!!!
-			long ninx = inx+section.size()+1;
+		} 
+		
+		else { // section and next must have same point_cnt>1!!!
 			if (section.size() != next.size()) {
-				throw new ErrorMesh("Error: vertice numbers of two sections "
+				throw new ErrorMesh("Error: vertex numbers of two sections "
 						+ "differ ("+inx+","+ninx+")");
 			}
 			for (int i=0; i<section.size(); i++) {
-				faces.addElement(new Face(inx+i,ninx+i,inx+(i+1)));
-				faces.addElement(new Face(inx+(i+1),ninx+i,
-						ninx+(i+1)));
+				if (useQuads) {
+					faces.addElement(new Face(inx+i,ninx+i,ninx+(i+1),inx+(i+1)));
+				} else {
+					faces.addElement(new Face(inx+i,ninx+i,inx+(i+1)));
+					faces.addElement(new Face(inx+(i+1),ninx+i,
+							ninx+(i+1)));
+				}
 			}
 		}
+		
 		return faces;
 	}
 

@@ -70,7 +70,7 @@ public class DXFOutput extends Output {
 	private void writeStems(String layer) throws Exception {
 		// FIXME: optimize speed, maybe using enumerations
 
-		Mesh mesh = tree.createStemMesh();
+		Mesh mesh = tree.createStemMesh(false);
 		progress.beginPhase("Writing stem mesh",mesh.size());
 
 		for (int i=0; i<mesh.size(); i++) {
@@ -95,7 +95,7 @@ public class DXFOutput extends Output {
 	
 	private void writeLeafs(String layer) {
 		// FIXME: optimize speed, maybe using enumerations
-		LeafMesh leafMesh = tree.createLeafMesh();
+		LeafMesh leafMesh = tree.createLeafMesh(false);
 		VFace vFace = new VFace(new Vector(),new Vector(),new Vector());
 		
 		progress.beginPhase("Writing leaf mesh",tree.getLeafCount());

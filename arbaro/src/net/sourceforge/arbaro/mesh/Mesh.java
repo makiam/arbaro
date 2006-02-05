@@ -26,6 +26,8 @@
 
 package net.sourceforge.arbaro.mesh;
 
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 /**
  * A class for creation, handling and output of a mesh object.
@@ -48,6 +50,148 @@ public class Mesh extends java.util.Vector {
 	final boolean debugMesh = false;
 	public int[] firstMeshPart; // first mesh part of each level 
 		
+	
+	private class VertexEnumerator implements Enumeration {
+		private Enumeration parts;
+		private Enumeration partVertices;
+		
+		public VertexEnumerator() {
+			parts = elements();
+			
+			partVertices = ((MeshPart)parts.nextElement()).allVertices(false);
+		}
+		
+		public boolean hasMoreElements() {
+			if (! partVertices.hasMoreElements() && parts.hasMoreElements()) {
+				partVertices = ((MeshPart)parts.nextElement()).allVertices(false);
+			}
+			return partVertices.hasMoreElements();
+		}
+		
+		public Object nextElement() {
+			if (! partVertices.hasMoreElements() && parts.hasMoreElements()) {
+				partVertices = ((MeshPart)parts.nextElement()).allVertices(false);
+			}
+			return partVertices.nextElement();
+		}
+	}
+
+	private class UVVertexEnumerator implements Enumeration {
+		private int level;
+		private Enumeration partVertices;
+		
+		public UVVertexEnumerator() {
+			level=0;
+			partVertices = ((MeshPart)elementAt(firstMeshPart[level])).allVertices(true);
+		}
+		
+		public boolean hasMoreElements() {
+			if (! partVertices.hasMoreElements() && ++level<firstMeshPart.length && firstMeshPart[level]>0) {
+				partVertices = ((MeshPart)elementAt(firstMeshPart[level])).allVertices(true);
+			}
+			return partVertices.hasMoreElements();
+		}
+		
+		public Object nextElement() {
+			if (! partVertices.hasMoreElements() && ++level<firstMeshPart.length && firstMeshPart[level]>0) {
+				partVertices = ((MeshPart)elementAt(firstMeshPart[level])).allVertices(true);
+			}
+			return partVertices.nextElement();
+		}
+	}
+	
+	
+	private class PartEnumerator implements Enumeration {
+		private int level;
+		private Enumeration parts;
+		private MeshPart part;
+		
+		public PartEnumerator(int stemLevel) {
+			level = stemLevel;
+			parts = elements();
+			nextPart();
+		}
+		
+		private void nextPart() {
+			if (parts.hasMoreElements()) {
+				part = (MeshPart)parts.nextElement();
+				if (level>=0) {
+					while (part.stem.stemlevel != level) {
+						if (parts.hasMoreElements()) 
+							part = (MeshPart)parts.nextElement();
+						else {
+							part = null;
+							return;
+						}
+					}
+				}
+			}
+			else part = null;
+		}
+		
+		public boolean hasMoreElements() {
+			return part!=null;
+		}
+		
+		public Object nextElement() {
+			if (part != null) {
+				MeshPart result = part;
+				nextPart();
+				return result;
+			} else 
+				throw new NoSuchElementException();
+		}
+	}
+
+	private class FaceEnumerator implements Enumeration {
+		//private boolean UVFaces;
+		private Enumeration parts;
+		private Enumeration partFaces;
+		private MeshPart part;
+		private boolean UVFaces;
+		private int startIndex;
+		private int level;
+		
+		public FaceEnumerator(int startInx, boolean uv, int stemLevel) {
+			UVFaces=uv;
+			startIndex=startInx;
+			level=stemLevel;
+			parts = allParts(level);
+			
+			nextPart(true);
+		}
+		
+		private void nextPart(boolean firstPart) {
+			if (UVFaces) {
+				part = (MeshPart)parts.nextElement();
+//				startIndex += part.uvCount();
+				startIndex = firstUVIndex(part.getStem().stemlevel);
+			} else {
+				if (! firstPart) startIndex += part.vertexCount();
+				part = (MeshPart)parts.nextElement();
+			}
+			partFaces = part.allFaces(startIndex,UVFaces);
+			
+//			System.err.println("next part "+part.stem.getTreePosition());
+		}
+		
+		public boolean hasMoreElements() {
+			if (! partFaces.hasMoreElements() && parts.hasMoreElements()) {
+				nextPart(false);
+			}
+			return partFaces.hasMoreElements();
+		}
+		
+		public Object nextElement() {
+			if (! partFaces.hasMoreElements() && parts.hasMoreElements()) {
+				nextPart(false);
+			}
+			return partFaces.nextElement();
+		}
+
+	}	
+	
+	
 	public Mesh(int levels) { 
 		firstMeshPart = new int[levels];
 		for (int i=0; i<levels; i++) {
@@ -65,6 +209,22 @@ public class Mesh extends java.util.Vector {
 		if (firstMeshPart[meshpart.stem.stemlevel]<0) 
 			firstMeshPart[meshpart.stem.stemlevel] = size()-1;
 	}
+	
+	public Enumeration allVertices(boolean UVVertices) {
+		if (UVVertices)
+			return new UVVertexEnumerator();
+		else
+			return new VertexEnumerator();
+	}
+	
+	public Enumeration allFaces(int startIndex, boolean UVFaces, int stemLevel) {
+		return new FaceEnumerator(startIndex,UVFaces,stemLevel);
+	}	
+
+	public Enumeration allParts(int stemLevel) {
+		return new PartEnumerator(stemLevel);
+	}	
+		
 	
 	/**
 	 * Returns the total number of vertices in the mesh.

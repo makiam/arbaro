@@ -38,7 +38,7 @@ public class Segment {
 	
 	Params par;
 	public LevelParams lpar;
-	int index;
+	public int index;
 	Transformation transf;
 	double rad1;
 	public double rad2;
@@ -275,12 +275,12 @@ public class Segment {
 		
 		// if radius = 0 create only one point
 		if (rad<0.000001) {
-			MeshSection section = new MeshSection(1,vMap);
+			MeshSection section = new MeshSection(1,vMap,this);
 			section.addPoint(trf.apply(new Vector(0,0,0)),0.5);
 			meshpart.addSection(section);
 		} else { //create pt_cnt points
 			int pt_cnt = lpar.mesh_points;
-			MeshSection section = new MeshSection(pt_cnt,vMap);
+			MeshSection section = new MeshSection(pt_cnt,vMap,this);
 			//stem.DBG("MESH+LOBES: lobes: %d, depth: %f\n"%(self.tree.Lobes, self.tree.LobeDepth))
 			
 			for (int i=0; i<pt_cnt; i++) {

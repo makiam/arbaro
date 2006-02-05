@@ -271,12 +271,12 @@ public class Tree {
 		progress.endPhase();
 	}
 	
-	public Mesh createStemMesh() throws Exception {
+	public Mesh createStemMesh(boolean useQuads) throws Exception {
 		progress.beginPhase("Creating mesh",getStemCount());
 		
 		Mesh mesh = new Mesh(params.Levels);
 		for (int t=0; t<trunks.size(); t++) {
-			((Stem)trunks.elementAt(t)).addToMesh(mesh);
+			((Stem)trunks.elementAt(t)).addToMesh(mesh,true,useQuads);
 		}
 		getProgress().incProgress(trunks.size());
 		
@@ -284,10 +284,27 @@ public class Tree {
 		return mesh;
 	}
 	
-	public LeafMesh createLeafMesh() {
+	public Mesh createStemMeshByLevel(boolean useQuads) throws Exception {
+		progress.beginPhase("Creating mesh",getStemCount());
+		
+		Mesh mesh = new Mesh(params.Levels);
+		
+		for (int level=0; level < params.Levels; level++) {
+			Enumeration stems = allStems(level);
+			while (stems.hasMoreElements()) {
+				((Stem)stems.nextElement()).addToMesh(mesh,false,useQuads);
+				getProgress().incProgress(1);
+			}
+		}
+		
+		progress.endPhase();
+		return mesh;
+	}
+	
+	public LeafMesh createLeafMesh(boolean useQuads) {
 		double leafLength = params.LeafScale/Math.sqrt(params.LeafQuality);
 		double leafWidth = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
-		return new LeafMesh(params.LeafShape,leafLength,leafWidth,params.LeafStemLen);
+		return new LeafMesh(params.LeafShape,leafLength,leafWidth,params.LeafStemLen,useQuads);
 	}
 	
 	public void minMaxTest(Vector pt) {

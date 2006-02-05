@@ -45,7 +45,7 @@ public class PovMeshOutput extends Output {
 	Mesh mesh;
 	LeafMesh leafMesh;
 	Progress progress;
-	long leafFaceOffset;
+	long leafVertexOffset;
 	long stemsProgressCount=0;
 	long leavesProgressCount=0;
 	
@@ -118,7 +118,7 @@ public class PovMeshOutput extends Output {
 		//    	double leafWidth = tree.params.LeafScale*tree.params.LeafScaleX/Math.sqrt(tree.params.LeafQuality);
 		//    	LeafMesh mesh = new LeafMesh(tree.params.LeafShape,leafLength,leafWidth,tree.params.LeafStemLen);
 		
-		leafMesh = tree.createLeafMesh();
+		leafMesh = tree.createLeafMesh(false);
 
 		int passes = 2; 
 		if (outputLeafNormals) passes++;
@@ -159,7 +159,7 @@ public class PovMeshOutput extends Output {
 			}
 			
 			
-			leafFaceOffset=0;
+			leafVertexOffset=0;
 			
 			w.println("     face_indices { "+leafMesh.getShapeFaceCount()*leafCount);
 			writeLeavesFaces();
@@ -228,9 +228,9 @@ public class PovMeshOutput extends Output {
 			
 			for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
 				Face face = leafMesh.shapeFaceAt(i);
-				w.print("<" + (leafFaceOffset+face.points[0]) + "," 
-						+ (leafFaceOffset+face.points[1]) + "," 
-						+ (leafFaceOffset+face.points[2]) + ">");
+				w.print("<" + (leafVertexOffset+face.points[0]) + "," 
+						+ (leafVertexOffset+face.points[1]) + "," 
+						+ (leafVertexOffset+face.points[2]) + ">");
 				if (i<leafMesh.getShapeFaceCount()-1) {
 					w.print(",");
 				}
@@ -243,7 +243,7 @@ public class PovMeshOutput extends Output {
 			w.println();
 			
 			// increment face offset
-			leafFaceOffset += leafMesh.getShapeVertexCount();
+			leafVertexOffset += leafMesh.getShapeVertexCount();
 			
 			incLeavesProgressCount();
 		}
@@ -329,15 +329,17 @@ public class PovMeshOutput extends Output {
 		// for every level
 		outputStemNormals = true;
 		
-		mesh = tree.createStemMesh();
+		mesh = tree.createStemMesh(false);
 		long vertex_cnt = mesh.vertexCount();
 		long face_cnt = mesh.faceCount();
 		long uv_cnt = mesh.uvCount();
+
+		long elements = vertex_cnt+face_cnt;
 		
-		int passes = 2; // vectors and faces
-		if (outputStemNormals) passes++;
-		if (outputStemUVs) passes=passes++; // for the faces
-		progress.beginPhase("Writing stem mesh",mesh.size()*passes);
+//		int passes = 2; // vectors and faces
+		if (outputStemNormals) elements += vertex_cnt; //passes++;
+		if (outputStemUVs) elements += face_cnt; // passes=passes++; // for the faces
+		progress.beginPhase("Writing stem mesh",elements/*mesh.size()*passes*/);
 		
 		w.println("#declare " + povrayDeclarationPrefix() + "stems = "); 
 		w.println(indent + "mesh2 {");
@@ -345,54 +347,38 @@ public class PovMeshOutput extends Output {
 		
 		// output section points
 		w.println(indent+"  vertex_vectors { " + vertex_cnt);
-		for (int i=0; i<mesh.size(); i++) {
-			writeStemPoints((MeshPart)mesh.elementAt(i),indent);
-			w.println();
-			
-			incStemsProgressCount();
-		}
+		writeStemPoints(indent);
 		w.println(indent + "  }");
 		
 		
 		// output normals
 		if (outputStemNormals) {
 			w.println(indent + "  normal_vectors { " + vertex_cnt); 
-			
-			for (int i=0; i<mesh.size(); i++) try { 
-				writeStemNormals((MeshPart)mesh.elementAt(i),indent);
-				w.println();
-				
-				incStemsProgressCount();
-				
-			} catch (Exception e) {
-				throw new ErrorMesh("Error in MeshPart "+i+": "+e); //.getMessage());
-			}	    
+			writeStemNormals(indent);
 			w.println(indent+"  }");
 		}
 		
 		// output uv vectors
 		if (outputStemUVs) {
 			w.println(indent + "  uv_vectors {  " + uv_cnt);
-			for (int i=0; i<mesh.firstMeshPart.length; i++) { 
-				writeStemUVs((MeshPart)mesh.elementAt(mesh.firstMeshPart[i]),indent);
-				w.println();
-				
-				// incStemsProgressCount();
-			}	
+//			for (int i=0; i<mesh.firstMeshPart.length; i++) {
+//				if (mesh.firstMeshPart[i]>=0) {
+//					writeStemUVs((MeshPart)mesh.elementAt(mesh.firstMeshPart[i]),indent);
+					writeStemUVs(indent);
+					w.println();
+//				}
+				//FIXME incStemsProgressCount();
+//			}	
 			w.println(indent+"  }");
 		}
 		
 		// output mesh triangles
 		w.println(indent + "  face_indices { " + face_cnt);
-		long offset = 0;
-		for (int i=0; i<mesh.size(); i++) { 
-			writeStemFaces((MeshPart)mesh.elementAt(i),offset,indent);
-			offset += ((MeshPart)mesh.elementAt(i)).vertexCount();
+			writeStemFaces(false,indent);
 			w.println();
 			
-			incStemsProgressCount();
+//FIXME			incStemsProgressCount();
 			
-		}
 		w.println(indent + "  }");
 		
 
@@ -400,16 +386,14 @@ public class PovMeshOutput extends Output {
 		if (outputStemUVs) {
 			/*offset = 0;*/
 			w.println(indent + "  uv_indices {  " + face_cnt);
-			for (int i=0; i<mesh.size(); i++) { 
-				writeStemUVFaces((MeshPart)mesh.elementAt(i),/*offset,*/indent);
-				offset += ((MeshPart)mesh.elementAt(i)).uvCount();
-				w.println();
-				
-				incStemsProgressCount();
-			}	
-			w.println(indent+"  }");
-		}
-		
+			writeStemFaces(true,indent);
+			w.println();
+			
+			//				incStemsProgressCount();
+			w.println(indent+"/* */  }");
+		}	
+	
+	
 		
 		// use less memory
 		// w.println(indent+"  hierarchy off");
@@ -438,136 +422,93 @@ public class PovMeshOutput extends Output {
 	}
 	
 	
-	private void writeStemPoints(MeshPart mp, String indent) {
-		w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
-		for (int i=0; i<mp.size(); i++) {
-			w.print(indent + "  /*" + i + "*/ ");
-//			writeSectionPoints((MeshSection)mp.elementAt(i),indent);
+	private void writeStemPoints(String indent) {
+		// w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
 
-			MeshSection ms = (MeshSection)mp.elementAt(i);
-			for (int j=0; j<ms.size(); j++) {
-				writeVector(((Vertex)ms.elementAt(j)).point);
-				if (ms.next != null || j<ms.size()-1) {
-					w.print(",");
-				}
-				if (j % 3 == 2) {
-					// new line
-					w.println();
-					w.print(indent+"          ");
-				} 
+		int i = 0;
+		for (Enumeration vertices = mesh.allVertices(false);
+			vertices.hasMoreElements();) {
+			
+			Vertex vertex = (Vertex)vertices.nextElement();
+			writeVector(vertex.point);
+			if (vertices.hasMoreElements()) {
+				w.print(",");
 			}
-
-			w.println();
+			if (++i % 6 == 2) {
+				// new line
+				w.println();
+			} 
+			
+			incStemsProgressCount();
 		}
+		
+		w.println();
 	}	
 	
-	public void writeStemFaces(MeshPart mp, long firstPt, String indent) 
+	public void writeStemFaces(boolean uv, String indent) 
 	throws ErrorMesh {
-		
-		if (mp.faceCount() == 0) {
-			// stem radius to small, this error should be gone
-			// after not making stems with too small length or radius
-			System.err.println("WARNING: no faces in mesh part of stem "+
-					mp.getTreePosition() + " - stem radius too small");
-			return;
-		}
-		
-		w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
-		for (int i=0; i<mp.size()-1; i++) { 
-			java.util.Vector faces = mp.faces(firstPt,(MeshSection)mp.elementAt(i));
-			firstPt += ((MeshSection)mp.elementAt(i)).size();
-			w.print(indent + "  /*" + i + "*/ ");
-			for (int j=0; j<faces.size(); j++) {
-				w.print("<" + ((Face)faces.elementAt(j)).points[0] + "," 
-						+ ((Face)faces.elementAt(j)).points[1] + "," 
-						+ ((Face)faces.elementAt(j)).points[2] + ">");
-				if ((i<mp.size()-2) || (j<faces.size()-1)) {
-					w.print(",");
-				}
-				if (j % 6 == 4) {
-					// new line
-					w.println();
-					w.print(indent + "          ");
-				}
+
+		int j=0;
+		for (Enumeration faces=mesh.allFaces(0,uv,-1 /* all levels */);
+			faces.hasMoreElements();) {
+			
+			Face face = (Face)faces.nextElement();
+			w.print("<" + face.points[0] + "," 
+					+ face.points[1] + "," 
+					+ face.points[2] + ">");
+			if (faces.hasMoreElements()) w.print(",");
+			
+			if (j++ % 6 == 4) {
+				// new line
+				w.println();
+				// w.print(indent + "          ");
 			}
-			w.println();
+
+			incStemsProgressCount();
+				
 		}
-		
-		//? return firstPt;
 	}
 	
-	private void writeStemNormals(MeshPart mp, String indent) 
+	private void writeStemNormals(String indent) 
 	throws ErrorMesh {
 		
-		mp.setNormals();
-		
-		w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
-		for (int i=0; i<mp.size(); i++) try { 
-			w.print(indent + "  /*" + i + "*/");
+		int i = 0;
+
+		try {
+			for (Enumeration parts=mesh.elements(); 
+				parts.hasMoreElements();) {
+					((MeshPart)parts.nextElement()).setNormals();
+			}
+			// w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
 			
-			MeshSection ms = (MeshSection)mp.elementAt(i);
-//			writeSectionNormals((MeshSection)mp.elementAt(i),indent);
-			for (int j=0; j<ms.size(); j++) {
-				writeVector(((Vertex)ms.elementAt(j)).normal);
+			for (Enumeration vertices = mesh.allVertices(false);
+			vertices.hasMoreElements();) {
 				
-				if (ms.next != null|| j<ms.size()-1) {
+				Vertex vertex = (Vertex)vertices.nextElement();
+				writeVector(vertex.normal);
+				if (vertices.hasMoreElements()) {
 					w.print(",");
 				}
-				if (j % 3 == 2) {
+				if (++i % 6 == 2) {
 					// new line
 					w.println();
-					w.print(indent+"          ");
-				} 
+				}
+
+				incStemsProgressCount();
+				
 			}
 			
-			
 			w.println();
+			
 		} catch (Exception e) {
 			// e.printStackTrace(System.err);
 			throw new ErrorMesh("Error in MeshSection "+i+": "+e); //.getMessage());
 		}	    
 	}
 	
-	public void writeStemUVFaces(MeshPart mp, /*long firstPt,*/ String indent) 
-	throws ErrorMesh {
-		
-		if (mp.faceCount() == 0) {
-			// stem radius to small, this error should be gone
-			// after not making stems with too small length or radius
-			System.err.println("WARNING: no faces in mesh part of stem "+
-					mp.getTreePosition() + " - stem radius too small");
-			return;
-		}
-		
-		int firstPt = mesh.firstUVIndex(mp.getStem().stemlevel);
-		
-		w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
-		for (int i=0; i<mp.size()-1; i++) {
-			MeshSection ms = (MeshSection)mp.elementAt(i);
-			java.util.Vector faces = mp.uvFaces(firstPt,ms);
-			firstPt += ms.size()==1? 1 : ms.size()+1;
-			w.print(indent + "  /*" + i + "*/ ");
-			for (int j=0; j<faces.size(); j++) {
-				w.print("<" + ((Face)faces.elementAt(j)).points[0] + "," 
-						+ ((Face)faces.elementAt(j)).points[1] + "," 
-						+ ((Face)faces.elementAt(j)).points[2] + ">");
-				if ((i<mp.size()-2) || (j<faces.size()-1)) {
-					w.print(",");
-				}
-				if (j % 6 == 4) {
-					// new line
-					w.println();
-					w.print(indent + "          ");
-				}
-			}
-			w.println();
-		}
-		
-		//? return firstPt;
-	}
 
-
-	private void writeStemUVs(MeshPart mp, String indent) 
+	
+	private void writeStemUVs(/*MeshPart mp,*/ String indent) 
 	{
 		// it is enough to create one
 		// set of uv-Vectors for each stem level,
@@ -575,32 +516,27 @@ public class PovMeshOutput extends Output {
 		// similar - only the base radius is different,
 		// so there is a small irregularity at the base
 		// of the uv-map, but stem base is hidden in the parent stem
-		w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
-		for (int i=0; i<mp.size(); i++) { 
-			w.print(indent + "  /*" + i + "*/");
-			MeshSection ms = ((MeshSection)mp.elementAt(i));
-
-			if (ms.size()==1) {
-				writeUVVector(ms.uvAt(0));
-				if (ms.next != null) w.print(",");
-			} else {
-				for (int j=0; j<ms.size()+1; j++) {
-					writeUVVector(ms.uvAt(j));
-					if (ms.next != null || j<ms.size()-1) {
-						w.print(",");
-					}
-					if (j % 6 == 2) {
-						// new line
-						w.println();
-						w.print(indent+"          ");
-					} 
-				}
+		
+		int j=0;
+		for (Enumeration vertices=mesh.allVertices(true);
+		vertices.hasMoreElements();) {
+			
+			UVVector vertex = (UVVector)vertices.nextElement();
+			writeUVVector(vertex);
+			if (vertices.hasMoreElements()) {
+				w.print(",");
 			}
 			
-			w.println();
+			if (j++ % 6 == 2) {
+				// new line
+				w.println();
+				//				w.print(indent+"          ");
+			} 
 		}
+		
+		
+		w.println();
 	}
-	
 
 	
 //	public void writeSectionPoints(MeshSection ms, String indent) {

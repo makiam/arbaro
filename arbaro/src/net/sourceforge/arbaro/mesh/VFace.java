@@ -17,9 +17,9 @@ import net.sourceforge.arbaro.transformation.Vector;
 public final class VFace {
 	public Vector [] points;
     public VFace(Vector u, Vector v, Vector w) {
-	points = new Vector[3];
-	points[0]=u;
-	points[1]=v;
-	points[2]=w;
+    	points = new Vector[3];
+    	points[0]=u;
+    	points[1]=v;
+    	points[2]=w;
     }
 }

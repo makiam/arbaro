@@ -188,7 +188,7 @@ public class Stem {
 	boolean pruneTest; // flag for pruning cycles
 	
 	int index; // substem number
-	public java.util.Vector cloneIndex; // clone number (Integers)
+	java.util.Vector cloneIndex; // clone number (Integers)
 	
 	
 	private class AllStemsEnumerator implements Enumeration {
@@ -1226,7 +1226,7 @@ public class Stem {
 	 * @param mesh the mesh object
 	 * @throws Exception
 	 */
-	void addToMesh(Mesh mesh) throws Exception {
+	void addToMesh(Mesh mesh, boolean withSubstems, boolean useQuads) throws Exception {
 		
 		if (par.verbose) {
 			if (stemlevel<=1 && cloneIndex.size()==0) System.err.print(".");
@@ -1236,25 +1236,27 @@ public class Stem {
 		
 		// create mesh part for myself
 		if (segments.size()>0) {
-			MeshPart meshpart = new MeshPart(this,stemlevel<=par.smooth_mesh_level);
+			MeshPart meshpart = new MeshPart(this,stemlevel<=par.smooth_mesh_level, useQuads);
 			for (int i=0; i<segments.size(); i++) {
 				((Segment)segments.elementAt(i)).addToMeshpart(meshpart);
 			}
 			mesh.addMeshpart(meshpart);
 		}
 		
-		// add clones to the mesh
-		if (clones != null) {
-			for (int i=0; i<clones.size(); i++) {
-				((Stem)clones.elementAt(i)).addToMesh(mesh);
+		if (withSubstems) {
+			// add clones to the mesh
+			if (clones != null) {
+				for (int i=0; i<clones.size(); i++) {
+					((Stem)clones.elementAt(i)).addToMesh(mesh,withSubstems, useQuads);
+				}
 			}
-		}
-		
-		if (substems != null) {
-			tree.getProgress().incProgress(substems.size());
 			
-			for (int i=0; i<substems.size(); i++) {
-				((Stem)substems.elementAt(i)).addToMesh(mesh);
+			if (substems != null) {
+				tree.getProgress().incProgress(substems.size());
+				
+				for (int i=0; i<substems.size(); i++) {
+					((Stem)substems.elementAt(i)).addToMesh(mesh,withSubstems, useQuads);
+				}
 			}
 		}
 	}
@@ -1305,6 +1307,10 @@ public class Stem {
 		}
 		
 		return sum;
+	}
+	
+	public boolean isClone(){
+		return cloneIndex.size()>0;
 	}
 	
 	public void minMaxTest(Vector pt) {

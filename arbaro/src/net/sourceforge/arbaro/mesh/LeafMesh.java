@@ -42,11 +42,13 @@ abstract class LeafShape {
 	double length=1;
 	double width=1;
 	double stemLen=0.5;
+	boolean useQuads;
 	
-	LeafShape(double len, double wid, double stem_len) {
+	LeafShape(double len, double wid, double stem_len, boolean quads) {
 		length = len;
 		width = wid;
 		stemLen = stem_len;
+		useQuads = quads;
 	}
 	
 	void setPoint(int i, double x, double y, double z) {
@@ -78,11 +80,15 @@ abstract class LeafShape {
  */
 class DiscShape extends LeafShape {
 	
-	public DiscShape(int facecount, double len, double wid, double stem_len) {
-		super(len,wid,stem_len);
+	public DiscShape(int triangleCount, double len, double wid, double stem_len, boolean quads) {
+		super(len,wid,stem_len,quads);
 		
-		vertices = new Vertex[facecount+2];
-		faces = new Face[facecount];
+		vertices = new Vertex[triangleCount+2];
+		if (quads) {
+			faces = new Face[triangleCount / 2 + triangleCount % 2];
+		} else {
+			faces = new Face[triangleCount];
+		}
 		
 		setCirclePoints();
 		setFaces();
@@ -125,12 +131,24 @@ class DiscShape extends LeafShape {
 		// add triangles with an edge on alternating sides
 		// of the leaf
 		for (int i=0; i<faces.length; i++) {
-			if (i % 2 == 0) {
-				faces[i] = new Face(left,left+1,right);
-				left++;
+			if (useQuads) {
+				if (left+1<right-1) {
+					faces[i] = new Face(left,left+1,right-1,right);
+					left++; right--;
+				} else {
+					// last face is a triangle for odd vertex numbers
+					faces[i] = new Face(left,left+1,right);
+					left++;
+				}
+				
 			} else {
-				faces[i] = new Face(left,right-1,right);
-				right--;
+				if (i % 2 == 0) {
+					faces[i] = new Face(left,left+1,right);
+					left++;
+				} else {
+					faces[i] = new Face(left,right-1,right);
+					right--;
+				}
 			}
 		}
 	}
@@ -145,7 +163,7 @@ class SphereShape extends LeafShape {
 	// use ikosaeder as a "sphere"
 	
 	public SphereShape(double len, double wid, double stem_len) {
-		super(len,wid,stem_len);
+		super(len,wid,stem_len,false);
 		
 		vertices = new Vertex[12];
 		faces = new Face[20];
@@ -191,7 +209,7 @@ public class LeafMesh {
 	LeafShape shape;
 	long faceOffset;
 	
-	public LeafMesh(String leafShape, double length, double width, double stemLen) {
+	public LeafMesh(String leafShape, double length, double width, double stemLen, boolean useQuads) {
 		Pattern pattern = Pattern.compile("disc(\\d*)");
 		Matcher m = pattern.matcher(leafShape);
 		// disc shape
@@ -202,7 +220,7 @@ public class LeafMesh {
 			if (! m.group(1).equals("")) {
 				facecnt = Integer.parseInt(m.group(1));
 			}
-			shape = new DiscShape(facecnt,length,width,stemLen);
+			shape = new DiscShape(facecnt,length,width,stemLen,useQuads);
 		} else if (leafShape.equals("sphere")) {
 			shape = new SphereShape(length,width,stemLen);
 		} else
@@ -213,7 +231,7 @@ public class LeafMesh {
 			// FIXME: given "disc" without a number, the face count could 
 			// be dependent from the smooth value
 			int facecnt = 6;
-			shape = new DiscShape(facecnt,length,width,stemLen);
+			shape = new DiscShape(facecnt,length,width,stemLen,useQuads);
 		}
 	}
 	

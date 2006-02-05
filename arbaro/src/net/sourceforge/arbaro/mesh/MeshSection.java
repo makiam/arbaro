@@ -26,9 +26,13 @@
 package net.sourceforge.arbaro.mesh;
 
 import java.text.NumberFormat;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.params.FloatFormat;
 import net.sourceforge.arbaro.transformation.Vector;
+import net.sourceforge.arbaro.tree.Segment;
+import net.sourceforge.arbaro.tree.Stem;
 
 /**
  * A class holding a section of a mesh.
@@ -38,16 +42,122 @@ import net.sourceforge.arbaro.transformation.Vector;
  * 
  * @author wdiestel
  */
+/**
+ * @author wdiestel
+ *
+ * TODO To change the template for this generated type comment go to
+ * Window - Preferences - Java - Code Style - Code Templates
+ */
 public class MeshSection extends java.util.Vector {
 	
-	public MeshSection previos;
+	public MeshSection previous;
 	public MeshSection next;
 	public double mapV; // v-coordinate of uv-map
-	/*Stem stem;*/
+	public Segment segment;
 	
-	public MeshSection(/*Stem st,*/ int ptcnt, double v) {
+	private class UVVertexEnumerator implements Enumeration {
+		private int i;
+		
+		public UVVertexEnumerator() {
+			i=0;
+		}
+		
+		public boolean hasMoreElements() {
+			return (i==0 && size()==1) || (i<=size() && size()>1);
+		}
+		
+		public Object nextElement() {
+			if (i<size())
+				return ((Vertex)elementAt(i++)).uv;
+			else if (i==size() && size()>1) {
+				i++;
+				return new UVVector(1.0,mapV);
+			} else 
+				throw new NoSuchElementException();
+		}
+	}
+	
+	private class FaceEnumerator implements Enumeration {
+		private int i;
+		private int ni;
+		private int cnt_i;
+		private int cnt_ni;
+		private int inx;
+		private int ninx;
+		private boolean quads;
+		private boolean uv;
+		private Face face;
+
+		public FaceEnumerator(int startIndex, boolean UVFaces, boolean useQuads) {
+			if (next==null) return;
+			
+			i=0;
+			ni=0;
+			inx=startIndex;
+			if (UVFaces) 
+				ninx = inx + (size()==1? 1 : size()+1);
+			else
+				ninx=inx+size();
+			quads = useQuads;
+			uv = UVFaces;
+			
+			if (uv) {
+				cnt_i = size()+1;
+				cnt_ni = next.size()+1;
+			} else {
+				cnt_i = size();
+				cnt_ni = next.size();
+			}
+
+			if (size() == 1 && next.size() == 1) {
+				// normaly this shouldn't occur, only for very small radius?
+				// I should warn about this
+				System.err.println("WARNING: two adjacent mesh sections with only one point.");
+			}
+			
+//			System.err.println("new section enum");
+		}
+		
+		public boolean hasMoreElements() {
+			return ! (next==null || 
+					(size()==1 &&  ni >= next.size()) ||
+					(next.size()==1 && i >= size()) ||
+					(ni >= next.size() && i >= size()));
+		}
+		
+		public Object nextElement() {
+//			System.err.println("section enum "+i+"/"+cnt_i+"--"+ni+"/"+cnt_ni);
+			
+			if (! hasMoreElements())
+				throw new NoSuchElementException();
+			
+			if (quads && size()>1 && next.size()==size()) {
+				face = new Face(inx+i,
+						ninx+ni,
+						ninx+(++ni)%cnt_ni,
+						inx+(++i)%cnt_i);
+			} else {
+				if (i<=ni || next.size()==1) {
+					face = new Face(inx+i,
+							ninx+ni,
+							inx+(++i)%cnt_i);
+				} else {
+					face = new Face(
+							inx+i%cnt_i,
+							ninx+ni,
+							ninx+(++ni)%cnt_ni);
+				}
+			}
+			
+			return face;
+		}
+	}
+
+	
+	public MeshSection(/*Stem st,*/ int ptcnt, double v, Segment seg) {
 		super(ptcnt);
 		mapV = v;
+		segment = seg; 
 		/*stem = st;*/
 	}
 	
@@ -56,8 +166,8 @@ public class MeshSection extends java.util.Vector {
 	 * 
 	 * @param pt
 	 */
-	public void addPoint(Vector pt, double uMap) {
-		addElement(new Vertex(pt,null,new UVVector(uMap,mapV)));
+	public void addPoint(Vector pt, double mapU) {
+		addElement(new Vertex(pt,null,new UVVector(mapU,mapV)));
 	} 
 	
 	/**
@@ -68,6 +178,17 @@ public class MeshSection extends java.util.Vector {
 	 */
 	public Vector pointAt(int i) {
 		return ((Vertex)elementAt(i)).point;
+	}
+	
+	public Enumeration allVertices(boolean UVVertices) {
+		if (UVVertices)
+			return new UVVertexEnumerator();
+		else
+			return elements();
+	}
+	
+	public Enumeration allFaces(int startIndex, boolean UVFaces, boolean useQuads) {
+		return new FaceEnumerator(startIndex, UVFaces, useQuads);
 	}
 	
 	/**
@@ -81,6 +202,25 @@ public class MeshSection extends java.util.Vector {
 			return ((Vertex)elementAt(i)).uv;
 		else
 			return new UVVector(1.0,mapV);
+	}
+	
+	public boolean isFirst() {
+		return (previous==null);
+	}
+	
+	public boolean isLast() {
+		return (next==null);
+	}
+	
+	/**
+	 * Returns the number of faces between this section and the next one.
+	 * 
+	 * @return
+	 */
+	public int faceCount(boolean useQuads) {
+		if (size() == 1) return next.size();
+		else if (next.size()==1 || useQuads) return size();
+		else return size()*2; // two triangles per vertice (quad)
 	}
 	
 	
@@ -154,7 +294,7 @@ public class MeshSection extends java.util.Vector {
 	 * @return
 	 */
 	public Vector down(int i) {
-		return ((Vertex)(previos.elementAt(i%previos.size()))).point;
+		return ((Vertex)(previous.elementAt(i%previous.size()))).point;
 	}	  	  
 	
 	/**

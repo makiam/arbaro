@@ -29,8 +29,8 @@ public final class OBJOutput extends Output {
 	Mesh mesh;
 	LeafMesh leafMesh;
 	long smoothingGroup;
-	long faceOffset;
-	long uvFaceOffset;
+	int vertexOffset;
+	int uvVertexOffset;
 	public boolean outputLeafUVs=true;
 	public boolean outputStemUVs=true;
 	
@@ -69,8 +69,8 @@ public final class OBJOutput extends Output {
 			+tree.getLeafCount())*(outputNormals? 2 : 1); 
 
 		try {
-			mesh = tree.createStemMesh();
-			leafMesh = tree.createLeafMesh();
+			mesh = tree.createStemMeshByLevel(true /*useQuads*/);
+			leafMesh = tree.createLeafMesh(true /*useQuads*/);
 
 			// vertices
 			progress.beginPhase("Writing vertices",objCount);
@@ -107,45 +107,26 @@ public final class OBJOutput extends Output {
 	
 		if (type == "vt") { 
 			// texture vectors
-			for (int i=0; i<mesh.firstMeshPart.length; i++) { 
-				
-				MeshPart mp = (MeshPart)mesh.elementAt(mesh.firstMeshPart[i]);
-				
-				for (int j=0; j<mp.size(); j++) { 
-					
-					MeshSection ms = ((MeshSection)mp.elementAt(j));
-					
-					if (ms.size()==1) {
-						writeUVVertex(ms.uvAt(0));
-					} else {
-						for (int k=0; k<ms.size()+1; k++) {
-							writeUVVertex(ms.uvAt(k));
-						}
-					}
-				}
-				// incStemsProgressCount();
-			}	
-			
+			for (Enumeration vertices = mesh.allVertices(true);
+			vertices.hasMoreElements();) {
+				UVVector vertex = (UVVector)vertices.nextElement();
+				writeUVVertex(vertex);
+			}
+			// incStemsProgressCount();
 		} else {
 			// vertex and normal vectors
-			for (int i=0; i<mesh.size(); i++) {
-				
-				MeshPart mp =(MeshPart)mesh.elementAt(i);
-				for (int j=0; j<mp.size(); j++) {
+			for (Enumeration vertices = mesh.allVertices(false);
+				vertices.hasMoreElements();) {
+					Vertex vertex = (Vertex)vertices.nextElement();
 					
-					MeshSection ms = (MeshSection)mp.elementAt(j);
-					for (int k=0; k<ms.size(); k++) {
-						
-						if (type=="v") {
-							writeVertex(((Vertex)ms.elementAt(k)).point,"v");
-						} else {
-							writeVertex(((Vertex)ms.elementAt(k)).normal,"vn");
-						}
+					if (type=="v") {
+						writeVertex(vertex.point,"v");
+					} else {
+						writeVertex(vertex.normal,"vn");
 					}
-				}
-				
-				incVertexProgressCount();
 			}
+				
+			incVertexProgressCount();
 		}
 
 	}
@@ -185,60 +166,44 @@ public final class OBJOutput extends Output {
 	
 	private void writeStemFaces() throws Exception {
 		// output mesh triangles
-		faceOffset = 1;
+		vertexOffset = 1;
 		boolean separate_trunk = false;
 		
-		if (((FloatParam)tree.getParam("0SegSplits")).doubleValue()>0 ||
-			((IntParam)tree.getParam("0BaseSplits")).intValue()>0) {
-
-//			 FIXME: It would be desirable to put the trunk into
-//			a separate group for splitting stems too, but than
-//	        the mesh must be ordered by stemlevel
-//			
-//			another problem is, that the uv coordinates of 
-//			clones shouldn't start from below of the texture
-
-			w.println("g stems");
-			separate_trunk=false;
-		} else {
-			w.println("g trunk");
-			separate_trunk=true;
-		}
+		for (int stemLevel = 0; stemLevel<tree.params.Levels; stemLevel++) {
 		
-		for (int i=0; i<mesh.size(); i++) { 
+			// => start a new group
+			w.println("g "+
+					(stemLevel==0 ? "trunk" : "stems_"+stemLevel));
+			w.println("usemtl "+
+					(stemLevel==0 ? "trunk" : "stems_"+stemLevel));
+			
+			for (Enumeration parts=mesh.allParts(stemLevel);
+				parts.hasMoreElements();) { 
 
-			MeshPart mp = (MeshPart)mesh.elementAt(i);
-			if (separate_trunk && mp.getStem().stemlevel>0) {
-				separate_trunk=false;
-				w.println("g stems");
-			}
-			
-			uvFaceOffset = 1 + mesh.firstUVIndex(mp.getStem().stemlevel);
-			
-			w.println("s "+smoothingGroup++);
-			for (int j=0; j<mp.size()-1; j++) {
+				MeshPart mp = (MeshPart)parts.nextElement();
+				uvVertexOffset = 1 + mesh.firstUVIndex(mp.getStem().stemlevel);
+				w.println("s "+smoothingGroup++);
 				
-				MeshSection ms = (MeshSection)mp.elementAt(j);
-				java.util.Vector faces = mp.faces(faceOffset,ms);
-				java.util.Vector uvFaces = mp.uvFaces(uvFaceOffset,ms);
-				faceOffset += ms.size();
-				uvFaceOffset += ms.size()==1? 1 : ms.size()+1;
-
-				for (int k=0; k<faces.size(); k++) {
-					writeFace((Face)faces.elementAt(k),0,
-							(Face)uvFaces.elementAt(k),0,outputStemUVs,outputNormals);
+				Enumeration faces=mp.allFaces(vertexOffset,false);
+				Enumeration uvFaces=mp.allFaces(uvVertexOffset,true);
+				
+				while (faces.hasMoreElements()) {
+					Face face = (Face)faces.nextElement();
+					Face uvFace = (Face)uvFaces.nextElement();
+					writeFace(face,0,uvFace,0,outputStemUVs,outputNormals);
 				}
+				
+				vertexOffset += mp.vertexCount();
+				
+				// FIXME: only needed for last stem before leaves
+				uvVertexOffset += mp.uvCount();
+				
+				
+				//			offset += ((MeshPart)mesh.elementAt(i)).vertexCount();
+				
+				incFaceProgressCount();
 			}
-			
-			faceOffset +=((MeshSection)mp.elementAt(mp.size()-1)).size();
-			
-//			offset += ((MeshPart)mesh.elementAt(i)).vertexCount();
-			
-			incFaceProgressCount();
-			
 		}
-		
-		
 	}
 	
 	private void writeLeafFaces() {
@@ -250,7 +215,8 @@ public final class OBJOutput extends Output {
 		if (leaves.hasMoreElements()) {
 			
 			w.println("g leaves");
-			uvFaceOffset++;
+			w.println("usemtl leaves");
+//			uvVertexOffset++;
 		
 			while (leaves.hasMoreElements()) {
 				// only leaf number is needed here
@@ -260,13 +226,13 @@ public final class OBJOutput extends Output {
 				for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
 					Face face = leafMesh.shapeFaceAt(i);
 					writeFace(
-							face,faceOffset,
-							face,uvFaceOffset,
+							face,vertexOffset,
+							face,uvVertexOffset,
 							outputLeafUVs,outputNormals);
 				}
 				
 				// increment face offset
-				faceOffset += leafMesh.getShapeVertexCount();
+				vertexOffset += leafMesh.getShapeVertexCount();
 				
 				incFaceProgressCount();
 			}
@@ -291,14 +257,14 @@ public final class OBJOutput extends Output {
 	private void writeFace(Face f, long offset, Face uv, long uvOffset, boolean writeUVs, boolean writeNormals) {
 		w.print("f "); 
 				
-		for (int i=0; i<3; i++) {
+		for (int i=0; i<f.points.length; i++) {
 			w.print(offset+f.points[i]);
 			if (writeUVs || writeNormals) {
 				w.print("/");
 				if (writeUVs) w.print(uvOffset+uv.points[i]);
 				if (writeNormals) w.print("/"+offset+f.points[i]);
 			}
-			if (i<2) w.print(" ");
+			if (i<f.points.length-1) w.print(" ");
 			else w.println();
 		}
 	}

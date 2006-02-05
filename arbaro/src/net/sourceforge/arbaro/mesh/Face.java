@@ -32,10 +32,19 @@ package net.sourceforge.arbaro.mesh;
 
 public final class Face {
     public long [] points;
+
     public Face(long i, long j, long k) {
-	points = new long[3];
-	points[0]=i;
-	points[1]=j;
-	points[2]=k;
+    	points = new long[3];
+    	points[0]=i;
+    	points[1]=j;
+    	points[2]=k;
+    }
+    
+    public Face(long i, long j, long k, long m) {
+		points = new long[4];
+		points[0]=i;
+		points[1]=j;
+		points[2]=k;
+		points[3]=m;
     }
 }
