@@ -98,7 +98,6 @@ public class Leaf {
 		double fbend = Vector.atan2(Math.sqrt(norm.getX()*norm.getX() + norm.getY()*norm.getY()),
 				norm.getZ());
 		
-		double orientation = Vector.atan2(norm.getY(),norm.getX());
 		bend_angle = par.LeafBend*fbend;
 		
 		transf = transf.rotx(bend_angle); 
@@ -106,6 +105,7 @@ public class Leaf {
 //		this is from the paper, but is equivalent with
 //      local x-rotation (upper code line)
 //		
+//		double orientation = Vector.atan2(norm.getY(),norm.getX());
 //		transf = transf
 //			.rotaxis(-orientation,Vector.Z_AXIS)
 //			.rotx(bend_angle)

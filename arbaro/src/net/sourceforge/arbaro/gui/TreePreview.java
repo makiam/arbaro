@@ -3,7 +3,7 @@
 //#    $Id$ 
 //#        - an image for previewing parts of the tree
 //#
-//#    Copyright (C) 2003  Wolfram Diestel
+//#    Copyright (C) 2003-2006  Wolfram Diestel
 //#
 //#    This program is free software; you can redistribute it and/or modify
 //#    it under the terms of the GNU General Public License as published by
@@ -196,7 +196,7 @@ public class TreePreview extends JComponent {
 		double scale;
 		double x;
 		double y;
-		double abs;
+		//double abs;
 		final int margin=5;
 	
 		int showLevel = previewTree.getShowLevel();

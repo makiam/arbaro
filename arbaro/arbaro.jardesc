@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jardesc>
+    <jar path="/home/wolfram/workspace/arbaro/arbaro.jar"/>
+    <options overwrite="false" compress="true" exportErrors="true" exportWarnings="true" saveDescription="true" descriptionLocation="/Arbaro/arbaro.jardesc" useSourceFolders="false" buildIfNeeded="true" includeDirectoryEntries="false"/>
+    <manifest manifestVersion="1.0" usesManifest="true" reuseManifest="false" saveManifest="false" generateManifest="false" manifestLocation="/Arbaro/src/Manifest_gui">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportOutputFolder="false" exportJavaFiles="false">
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.transformation"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.tree"/>
+        <file path="/Arbaro/src/Manifest_gui"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.gui.images.actions"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.gui"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro{arbaro_gui.java"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.output"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.gui.images"/>
+    </selectedElements>
+</jardesc>

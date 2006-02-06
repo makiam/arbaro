@@ -194,7 +194,7 @@ public class Stem {
 	private class AllStemsEnumerator implements Enumeration {
 		private Enumeration subst;
 		private Enumeration clon;
-		private int level;
+		//private int level;
 		
 		//	    private class SubstemEnumerator extends StemEnumerator {
 		//	    	public SubstemEnumerator(int level) {
@@ -514,7 +514,7 @@ public class Stem {
 		lpar.saveState();
 		double splitcorr = splitCorrection;
 		double origlen = length;
-		double seglen = segmentLength;
+		//double seglen = segmentLength;
 		
 		// start pruning
 		pruneTest = true;
@@ -1232,7 +1232,7 @@ public class Stem {
 			if (stemlevel<=1 && cloneIndex.size()==0) System.err.print(".");
 		}
 		
-		String indent = "    ";
+		//String indent = "    ";
 		
 		// create mesh part for myself
 		if (segments.size()>0) {

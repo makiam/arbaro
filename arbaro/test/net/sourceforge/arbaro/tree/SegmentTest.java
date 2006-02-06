@@ -7,8 +7,8 @@
 package net.sourceforge.arbaro.tree;
 
 import junit.framework.TestCase;
-import net.sourceforge.arbaro.tree.*;
-import net.sourceforge.arbaro.params.*;
+//import net.sourceforge.arbaro.tree.*;
+//import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.*;
 
 /**
@@ -56,8 +56,8 @@ public class SegmentTest extends TestCase {
 	}
 
 	public void testMake() {
-		Params params = new Params();
-		LevelParams lparams = params.levelParams[0];
+		//Params params = new Params();
+		//LevelParams lparams = params.levelParams[0];
 		Segment segment = new Segment(
 				aTestStem,
 				0, // first segment

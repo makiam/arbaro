@@ -127,7 +127,7 @@ class DiscShape extends LeafShape {
 	void setFaces() {
 		int left = 0;
 		int right = vertices.length-1;
-		boolean alternate = false;
+		//boolean alternate = false;
 		// add triangles with an edge on alternating sides
 		// of the leaf
 		for (int i=0; i<faces.length; i++) {

@@ -28,7 +28,7 @@ package net.sourceforge.arbaro.mesh;
 
 import java.lang.Math;
 import java.util.Enumeration;
-import java.util.NoSuchElementException;
+//import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.tree.Stem;
 
