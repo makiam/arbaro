@@ -1,6 +1,6 @@
 //#**************************************************************************
 //#
-//#    $Id$  
+//#    $Id:PovMeshExporter.java 77 2006-11-05 11:46:01 +0000 (So, 05 Nov 2006) wolfram $  
 //#      - Output class for writing Povray mesh2 objects
 //#          
 //#
@@ -41,13 +41,13 @@ import net.sourceforge.arbaro.params.FloatFormat;
  *
  */
 
-public class PovMeshExporter extends Exporter {
+public class POVMeshExporter extends Exporter {
 	Mesh mesh;
 	LeafMesh leafMesh;
 	Progress progress;
 	long leafVertexOffset;
 	long stemsProgressCount=0;
-	long leavesProgressCount=0;
+	//long leavesProgressCount=0;
 	
 	boolean outputStemNormals=true;
 	boolean outputLeafNormals=false;
@@ -56,8 +56,8 @@ public class PovMeshExporter extends Exporter {
 	
 	static final NumberFormat fmt = FloatFormat.getInstance();
 	
-	public PovMeshExporter(Tree aTree, PrintWriter pw, Progress prg) {
-		super(aTree,pw,prg);
+	public POVMeshExporter(Tree tree, PrintWriter pw) {
+		super(tree,pw,tree.getProgress());
 	}
 	
 	public void write() throws ErrorOutput {
@@ -96,12 +96,14 @@ public class PovMeshExporter extends Exporter {
 		}
 	}
 	
+	/*
 	private void incLeavesProgressCount() {
 		if (leavesProgressCount++ % 500 == 0) {
 			progress.incProgress(500);
 			if (tree.params.verbose) System.err.print(".");
 		}
 	}
+	*/
 	
 	/**
 	 * Returns a prefix for the Povray objects names,
@@ -130,7 +132,8 @@ public class PovMeshExporter extends Exporter {
 		if (leafCount>0) {
 			w.println("#declare " + povrayDeclarationPrefix() + "leaves = mesh2 {");
 			w.println("     vertex_vectors { "+leafMesh.getShapeVertexCount()*leafCount);
-			writeLeavesPoints();
+			//writeLeavesPoints();
+			tree.traverseTree(new POVMeshLeafVertexExporter(w,leafMesh,leafVertexOffset));
 			w.println("     }");
 
 			if (outputLeafNormals) {
@@ -162,12 +165,14 @@ public class PovMeshExporter extends Exporter {
 			leafVertexOffset=0;
 			
 			w.println("     face_indices { "+leafMesh.getShapeFaceCount()*leafCount);
-			writeLeavesFaces();
+			//writeLeavesFaces();
+			tree.traverseTree(new POVMeshLeafFaceExporter(w,leafMesh,leafVertexOffset));
 			w.println("     }");
 
 			if (outputLeafUVs && leafMesh.isFlat()) {
 				w.println("     uv_indices { "+leafMesh.getShapeFaceCount()*leafCount);
-				writeLeavesUVFaces();
+//				writeLeavesUVFaces();
+				tree.traverseTree(new POVMeshLeafUVFaceExporter(w,leafMesh,leafVertexOffset));
 				w.println("     }");
 			}
 			
@@ -187,6 +192,7 @@ public class PovMeshExporter extends Exporter {
 	 * @param mesh the mesh object
 	 * @throws Exception
 	 */
+	/*
 	private void writeLeavesPoints() throws Exception {
 		Enumeration leaves = tree.allLeaves();
 		String indent = "    ";
@@ -210,6 +216,7 @@ public class PovMeshExporter extends Exporter {
 			incLeavesProgressCount();
 		}
 	}
+	*/
 	
 	/**
 	 * Outputs Povray code points section of the mesh2 object for the leaves
@@ -218,6 +225,7 @@ public class PovMeshExporter extends Exporter {
 	 * @param mesh the mesh object
 	 * @throws Exception
 	 */
+	/*
 	private void writeLeavesFaces() throws Exception {
 		Enumeration leaves = tree.allLeaves();
 		String indent = "    ";
@@ -248,7 +256,7 @@ public class PovMeshExporter extends Exporter {
 			incLeavesProgressCount();
 		}
 	}
-	
+	*/
 
 	/**
 	 * Outputs Povray code uv indices section of the mesh2 object for the leaves
@@ -257,6 +265,7 @@ public class PovMeshExporter extends Exporter {
 	 * @param mesh the mesh object
 	 * @throws Exception
 	 */
+	/*
 	private void writeLeavesUVFaces() throws Exception {
 		Enumeration leaves = tree.allLeaves();
 		String indent = "    ";
@@ -267,9 +276,9 @@ public class PovMeshExporter extends Exporter {
 			
 			for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
 				Face face = leafMesh.shapeFaceAt(i);
-				w.print("<" + (/*leafFaceOffset+*/face.points[0]) + "," 
-						+ (/*leafFaceOffset+*/face.points[1]) + "," 
-						+ (/*leafFaceOffset+*/face.points[2]) + ">");
+				w.print("<" + (*//*leafFaceOffset+*//*face.points[0]) + "," 
+						+ (*//*leafFaceOffset+*//*face.points[1]) + "," 
+						+ (*//*leafFaceOffset+*//*face.points[2]) + ">");
 				if (i<leafMesh.getShapeFaceCount()-1) {
 					w.print(",");
 				}
@@ -287,7 +296,7 @@ public class PovMeshExporter extends Exporter {
 			incLeavesProgressCount();
 		}
 	}
-	
+	*/
 	
 	/**
 	 * Outputs Povray code normals section of the mesh2 object for the leaves
@@ -296,6 +305,7 @@ public class PovMeshExporter extends Exporter {
 	 * @param mesh the mesh object
 	 * @throws Exception
 	 */
+	/*
 	private void writeLeavesNormals() throws Exception {
 		Enumeration leaves = tree.allLeaves();
 		String indent = "    ";
@@ -321,6 +331,7 @@ public class PovMeshExporter extends Exporter {
 			"3 instead of 2 in progress.beginPhase");
 		}
 	}
+	*/
 	
 	private void writeStems() throws Exception {
 		String indent="  ";
@@ -544,7 +555,6 @@ public class PovMeshExporter extends Exporter {
 	
 //	public void writeSectionNormals(MeshSection ms, String indent) {
 //	}
-	
 	private void writeVector(Vector v) {
 		// FIXME: why I cannot get a FloatFormat instance
 		// when creating the class?

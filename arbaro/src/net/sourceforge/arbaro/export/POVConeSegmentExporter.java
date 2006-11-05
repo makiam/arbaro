@@ -13,7 +13,7 @@ import net.sourceforge.arbaro.tree.*;
  * @author wolfram
  *
  */
-public class POVConeSegmentExporter implements StemTraversal {
+public class POVConeSegmentExporter extends DefaultStemTraversal {
 	PrintWriter w;
 	/**
 	 * 
@@ -61,27 +61,6 @@ public class POVConeSegmentExporter implements StemTraversal {
 					+ fmt.format(s.rad2-0.0001) + " }");
 		}
 	
-		return true;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.StemTraversal#enterStem(net.sourceforge.arbaro.tree.Stem)
-	 */
-	public boolean enterStem(Stem stem) throws TraversalException {
-		return true;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.StemTraversal#leaveSegment(net.sourceforge.arbaro.tree.Segment)
-	 */
-	public boolean leaveSegment(Segment segment) throws TraversalException {
-		return true;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.StemTraversal#leaveStem(net.sourceforge.arbaro.tree.Stem)
-	 */
-	public boolean leaveStem(Stem stem) throws TraversalException {
 		return true;
 	}
 

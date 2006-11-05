@@ -3,8 +3,6 @@
  */
 package net.sourceforge.arbaro.tree;
 
-import java.util.Enumeration;
-
 import net.sourceforge.arbaro.mesh.MeshPart;
 import net.sourceforge.arbaro.mesh.MeshSection;
 import net.sourceforge.arbaro.transformation.*;

@@ -114,10 +114,11 @@ public class TreePreview extends JComponent {
 				g.fillRect(0,0,getWidth(),getHeight()-1);
 			//g.drawRect(10,10,getWidth()-20,getHeight()-20);
 			initTransform(g);
-			if (draft) drawStems(g);
+			if (draft) previewTree.traverseTree(new StemDrawer(g)); //drawStems(g);
 			else {
 				drawMesh(g);
-				drawLeaves(g);
+				//drawLeaves(g);
+				previewTree.traverseTree(new LeafDrawer(g));
 			}
 
 			// DEBUG
@@ -189,8 +190,8 @@ public class TreePreview extends JComponent {
 	private void initTransform(Graphics g) throws Exception {
 		// Perform transformation
 		transform = new AffineTransform();
-		double dw;
-		double minw;
+		double dw=1;
+		double minw=0;
 		double dh=0;
 		double minh=0;
 		double scale;
@@ -200,6 +201,29 @@ public class TreePreview extends JComponent {
 		final int margin=5;
 	
 		int showLevel = previewTree.getShowLevel();
+		
+		class FindAStem extends DefaultTreeTraversal {
+			Stem found = null;
+			int level;
+			
+			public FindAStem(int level) {
+				this.level=level;
+			}
+			public Stem getFound() { return found; }
+			public boolean enterStem(Stem stem) {
+				if (found == null && stem.stemlevel < level)
+					return true; // look further
+				else if (found != null || stem.stemlevel > level)
+					return false; // found a stem or too deep
+				else if (stem.stemlevel == level)
+					found = stem;
+				
+				return true;
+			}
+			public boolean leaveTree(Tree tree) {
+				return (found != null);
+			}
+		}
 		
 		if (showLevel < 1) {
 			setOrigin(new Vector());
@@ -221,30 +245,35 @@ public class TreePreview extends JComponent {
 		} else {
 				
 			// find stem which to show
-			Enumeration e = previewTree.allStems(showLevel-1);
-			
+/*			Enumeration e = previewTree.allStems(showLevel-1);
 			if (! e.hasMoreElements()) throw new Exception("Stem not found");
-				
 			Stem stem = (Stem)e.nextElement();
+			*/
+			Stem aStem = null;
+			FindAStem stemFinder = new FindAStem(showLevel-1);
+			if (previewTree.traverseTree(stemFinder)) {
+				aStem = stemFinder.getFound();
+			}
 
-			Vector diag = stem.getMaxPoint().sub(stem.getMinPoint());
-			Vector orig = stem.getTransformation().getT();
-			setOrigin(new Vector(orig.getX(),orig.getY(),0));
-			Vector max = stem.getMaxPoint();
-			Vector min = stem.getMinPoint();
-			
-			// get greatest distance from orig
-			x = Math.max(Math.abs(min.getX()-orig.getX()),
-						Math.abs(max.getX()-orig.getX()));
-			y = Math.max(Math.abs(min.getY()-orig.getY()),
-						Math.abs(max.getY()-orig.getY()));
-
-			dw = Math.sqrt(x*x+y*y)*2;
-			minw = -dw/2;
-			
-			dh = diag.getZ();
-			minh = min.getZ();
-			
+			if (aStem != null) {
+				Vector diag = aStem.getMaxPoint().sub(aStem.getMinPoint());
+				Vector orig = aStem.getTransformation().getT();
+				setOrigin(new Vector(orig.getX(),orig.getY(),0));
+				Vector max = aStem.getMaxPoint();
+				Vector min = aStem.getMinPoint();
+				
+				// get greatest distance from orig
+				x = Math.max(Math.abs(min.getX()-orig.getX()),
+							Math.abs(max.getX()-orig.getX()));
+				y = Math.max(Math.abs(min.getY()-orig.getY()),
+							Math.abs(max.getY()-orig.getY()));
+	
+				dw = Math.sqrt(x*x+y*y)*2;
+				minw = -dw/2;
+				
+				dh = diag.getZ();
+				minh = min.getZ();
+			}
 			//DEBUG
 //			System.err.println("O: "+ orig +" min: "+min+" max: "+max);
 //			System.err.println("maxX: "+x+" maxY: "+y);
@@ -335,7 +364,54 @@ public class TreePreview extends JComponent {
 		}
 	}
 	
-	private void drawLeaves(Graphics g) {
+	private class LeafDrawer implements TreeTraversal {
+		LeafMesh m;
+		Graphics g;
+		
+		public LeafDrawer(Graphics g) {
+			this.g = g;
+			g.setColor(leafColor);
+		}
+		public boolean enterTree(Tree tree) {
+			m = tree.createLeafMesh(false);
+			return true;
+		}
+		public boolean leaveTree(Tree tree) {
+			return true;
+		}
+		public boolean enterStem(Stem stem) {
+			return true;
+		}
+		public boolean leaveStem(Stem stem) {
+			return true;
+		}
+		public boolean visitLeaf(Leaf l) {
+			if (m.isFlat()) {
+				Vector p = l.transf.apply(m.shapeVertexAt(m.getShapeVertexCount()-1).point);
+			
+				for (int i=0; i<m.getShapeVertexCount(); i++) {
+					Vector q = l.transf.apply(m.shapeVertexAt(i).point);
+					drawLine(g,p,q);
+					p=q;
+				}
+			} else {
+				for (int i=0; i<m.getShapeFaceCount(); i++) {
+					Face f = m.shapeFaceAt(i);
+					Vector p = l.transf.apply(m.shapeVertexAt((int)f.points[0]).point);
+					Vector q = l.transf.apply(m.shapeVertexAt((int)f.points[1]).point);
+					Vector r = l.transf.apply(m.shapeVertexAt((int)f.points[2]).point);
+					drawLine(g,p,q);
+					drawLine(g,p,r);
+					drawLine(g,r,q);
+				}
+				
+			}
+			return true;
+		}
+	}
+	
+/*
+ 	private void drawLeaves(Graphics g) {
 		LeafMesh m = previewTree.createLeafMesh(false);
 		Enumeration leaves = previewTree.allLeaves();
 		
@@ -365,6 +441,7 @@ public class TreePreview extends JComponent {
 			}
 		}
 	}
+*/
 	
 	private void drawLine(Graphics g,Vector p, Vector q) {
 		// FIXME: maybe eliminate class instantiations
@@ -389,6 +466,46 @@ public class TreePreview extends JComponent {
 		g.drawLine(ifrom.x,ifrom.y,ito.x,ito.y);
 	}
 	
+	private class StemDrawer implements TreeTraversal {
+		Graphics g;
+
+		public StemDrawer(Graphics g) {
+			this.g = g;
+			g.setColor(otherLevelColor);
+		}
+		public boolean enterTree(Tree tree) {
+			return true;
+		}
+		public boolean leaveTree(Tree tree) {
+			return true;
+		}
+		public boolean enterStem(Stem stem) throws TraversalException {
+			stem.traverseStem(
+					new StemTraversal() {
+						public boolean enterStem(Stem stem) { return true; }
+						public boolean leaveStem(Stem stem) { return true; }
+						public boolean enterSegment(Segment seg) throws TraversalException {
+							// FIXME: maybe draw rectangles instead of thin lines
+							//drawStripe(g,seg.posFrom(),seg.rad1,seg.postTo(),seg.rad2());
+							drawLine(g,seg.posFrom(),seg.posTo());
+							return true; 
+						}
+						public boolean leaveSegment(Segment seg) { return true; }
+						public boolean visitSubsegment(Subsegment ss) { return true; }
+					}
+					);
+
+			return true;
+		}
+		public boolean leaveStem(Stem stem) {
+			return true;
+		}
+		public boolean visitLeaf(Leaf l) {
+			return true;
+		}
+	}
+	
+	/*
 	private void drawStems(Graphics g) {
 		g.setColor(otherLevelColor);
 		for (Enumeration stems=previewTree.allStems(-1); stems.hasMoreElements();) {
@@ -404,6 +521,7 @@ public class TreePreview extends JComponent {
 			drawLine(g,seg.posFrom(),seg.posTo());
 		}
 	}
+	*/
 	
 //	int xInt(double x) {
 //		return (int)Math.round(xoff+xscale*x);

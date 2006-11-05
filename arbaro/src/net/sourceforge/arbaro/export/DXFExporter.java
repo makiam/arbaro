@@ -1,6 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$ 
+//  #    $Id:DXFExporter.java 77 2006-11-05 11:46:01 +0000 (So, 05 Nov 2006) wolfram $ 
 //  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
@@ -26,12 +26,12 @@ package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
-import java.util.Enumeration;
+//import java.util.Enumeration;
 
 import net.sourceforge.arbaro.mesh.VFace;
 import net.sourceforge.arbaro.mesh.*;
 import net.sourceforge.arbaro.params.FloatFormat;
-import net.sourceforge.arbaro.tree.Leaf;
+//import net.sourceforge.arbaro.tree.Leaf;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.transformation.*;
 
@@ -43,7 +43,7 @@ import net.sourceforge.arbaro.transformation.*;
  */
 public class DXFExporter extends Exporter {
 	long stemsProgressCount=0;
-	long leavesProgressCount=0;
+	//long leavesProgressCount=0;
 	NumberFormat frm = FloatFormat.getInstance();
 
 	/**
@@ -60,13 +60,14 @@ public class DXFExporter extends Exporter {
 			if (tree.params.verbose) System.err.print(".");
 		}
 	}
-	
+	/*
 	private void incLeavesProgressCount() {
 		if (leavesProgressCount++ % 500 == 0) {
 			progress.incProgress(500);
 			if (tree.params.verbose) System.err.print(".");
 		}
 	}
+	*/
 
 	
 	public void write() throws ErrorOutput {
@@ -111,31 +112,34 @@ public class DXFExporter extends Exporter {
 		progress.endPhase();
 	}
 	
-	private void writeLeafs(String layer) {
+	private void writeLeafs(String layer) throws Exception {
 		// FIXME: optimize speed, maybe using enumerations
-		LeafMesh leafMesh = tree.createLeafMesh(false);
-		VFace vFace = new VFace(new Vector(),new Vector(),new Vector());
+//		LeafMesh leafMesh = tree.createLeafMesh(false);
+//		VFace vFace = new VFace(new Vector(),new Vector(),new Vector());
 		
 		progress.beginPhase("Writing leaf mesh",tree.getLeafCount());
-		
-		Enumeration leaves = tree.allLeaves();
-		
-		while (leaves.hasMoreElements()) {
-			Leaf l = (Leaf)leaves.nextElement();
-			
-			for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
 
-				Face face = leafMesh.shapeFaceAt(i);
-				for (int k=0; k<3; k++) {
-					vFace.points[k] = l.transf.apply(
-							leafMesh.shapeVertexAt((int)face.points[k]).point);
-				}
-				
-				writeFace(vFace,layer);
-			}
-			
-			incLeavesProgressCount();
-		}
+		DXFFaceExporter exporter = new DXFFaceExporter(w,layer);
+		tree.traverseTree(exporter);
+		
+//		Enumeration leaves = tree.allLeaves();
+//		
+//		while (leaves.hasMoreElements()) {
+//			Leaf l = (Leaf)leaves.nextElement();
+//			
+//			for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
+//
+//				Face face = leafMesh.shapeFaceAt(i);
+//				for (int k=0; k<3; k++) {
+//					vFace.points[k] = l.transf.apply(
+//							leafMesh.shapeVertexAt((int)face.points[k]).point);
+//				}
+//				
+//				writeFace(vFace,layer);
+//			}
+//			
+//			incLeavesProgressCount();
+//		}
 		
 		progress.endPhase();
 	}
@@ -202,6 +206,7 @@ public class DXFExporter extends Exporter {
 		wg(0,"ENDTAB");
 	}
 	
+	
 	private void writeBlocks() {
 		wg(0,"SECTION");
 		wg(2,"BLOCKS");
@@ -226,6 +231,7 @@ public class DXFExporter extends Exporter {
 		w.println(val);
 	}
 	
+	/*
 	private void writeFace(Vector u, Vector v, Vector w,
 			String layer) {
 		wg(0,"3DFACE");
@@ -236,6 +242,7 @@ public class DXFExporter extends Exporter {
 		writePoint(w,2);
 		writePoint(w,3); // repeat last point
 	}
+	*/
 
 	private void writeFace(VFace face,String layer) {
 		// FIXME: maybe could be faster when putting

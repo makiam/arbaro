@@ -27,11 +27,9 @@
 package net.sourceforge.arbaro.tree;
 
 import java.util.Enumeration;
-import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.params.*;
-import net.sourceforge.arbaro.mesh.*;
 
 class ArbaroError extends Exception {
 	public ArbaroError(String errmsg) {
@@ -50,19 +48,21 @@ class ErrorNotYetImplemented extends ArbaroError{
  * Enumeration class that returns a list of stems and all theire substems
  * and clones recursively.
  */
+/*
 class StemEnumerator implements Enumeration {
 	private Enumeration stems;
 	private Enumeration indepth;
 	private int level; // level<0 means enumeration of all stems of all levels
 	// level>=0 means enumeration of stems of the given level only
 	private int stemlevel;
-	
+*/	
 	/**
 	 * creates a new StemEnumerator instance
 	 * 
 	 * @param aLevel if given, than enumerate only stems of this level, if less than 0 enumerate stems of all levels
 	 * @param startEnum the initial list of stems to enumerate
 	 */
+/*
 	public StemEnumerator(int aLevel, Enumeration startEnum, int aStemLevel) {
 		stems = startEnum;
 		indepth = null;
@@ -89,10 +89,11 @@ class StemEnumerator implements Enumeration {
 			return false;
 		}
 	}
-	
+	*/
 	/**
 	 * Go through the stems enumeration and find a stem which has substems
 	 */
+/*
 	private void find_stem_with_substems() {
 		while ((indepth==null || !indepth.hasMoreElements()) &&
 				stems.hasMoreElements()) {
@@ -132,6 +133,7 @@ class StemEnumerator implements Enumeration {
 		}
 	}
 }
+*/
 
 /**
  * A helper class for making 3d trees, this class makes a stem
@@ -190,7 +192,7 @@ public class Stem {
 	int index; // substem number
 	java.util.Vector cloneIndex; // clone number (Integers)
 	
-	
+	/*
 	private class AllStemsEnumerator implements Enumeration {
 		private Enumeration subst;
 		private Enumeration clon;
@@ -270,7 +272,7 @@ public class Stem {
 			}
 		}
 	}
-	
+	*/
 	
 	/**
 	 * Returns an enumeration of the stem itself an all
@@ -280,6 +282,7 @@ public class Stem {
 	 * @param level
 	 * @return
 	 */
+	/*
 	public Enumeration allStems(int level) {
 		return new AllStemsEnumerator(level);
 	}
@@ -291,9 +294,11 @@ public class Stem {
 	 * 
 	 * @return
 	 */
+	/*
 	public Enumeration allLeaves() {
 		return new AllLeavesEnumerator();
 	}
+	*/
 	
 	/**
 	 * Returns an enumeration of the segments of the stem

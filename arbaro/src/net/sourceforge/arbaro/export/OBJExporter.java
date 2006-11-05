@@ -1,6 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$ 
+//  #    $Id:OBJExporter.java 77 2006-11-05 11:46:01 +0000 (So, 05 Nov 2006) wolfram $ 
 //  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
@@ -33,7 +33,7 @@ import net.sourceforge.arbaro.params.FloatFormat;
 //import net.sourceforge.arbaro.params.FloatParam;
 //import net.sourceforge.arbaro.params.IntParam;
 import net.sourceforge.arbaro.transformation.Vector;
-import net.sourceforge.arbaro.tree.Leaf;
+//import net.sourceforge.arbaro.tree.Leaf;
 import net.sourceforge.arbaro.tree.Tree;
 
 /**
@@ -61,8 +61,8 @@ public final class OBJExporter extends Exporter {
 	 * @param pw
 	 * @param p
 	 */
-	public OBJExporter(Tree aTree, PrintWriter pw, Progress p) {
-		super(aTree, pw, p);
+	public OBJExporter(Tree tree, PrintWriter pw) {
+		super(tree, pw, tree.getProgress());
 	}
 
 	private void incVertexProgressCount() {
@@ -110,7 +110,13 @@ public final class OBJExporter extends Exporter {
 			// faces
 			progress.beginPhase("Writing faces",objCount);
 			writeStemFaces();
-			writeLeafFaces();
+			//writeLeafFaces();
+			OBJLeafFaceExporter faceExporter = 
+				new OBJLeafFaceExporter(w, leafMesh,
+					vertexOffset, uvVertexOffset,smoothingGroup,
+					outputLeafUVs, outputStemUVs);
+			tree.traverseTree(faceExporter);
+			vertexOffset = faceExporter.leafVertexOffset;
 			progress.endPhase();
 			w.flush();
 			
@@ -149,7 +155,7 @@ public final class OBJExporter extends Exporter {
 
 	}
 	
-	private void writeLeafVertices(String type) {
+	private void writeLeafVertices(String type) throws Exception {
 		
 		if (type == "vt") { 
 			// texture vectors
@@ -160,6 +166,13 @@ public final class OBJExporter extends Exporter {
 			}
 			
 		} else {
+			
+			OBJLeafVertexExporter vertexExporter = 
+				new OBJLeafVertexExporter(w, leafMesh,
+					vertexOffset, type);
+			tree.traverseTree(vertexExporter);
+			vertexOffset = vertexExporter.leafVertexOffset;
+/*
 			// vertex and normal vectors
 			Enumeration leaves = tree.allLeaves();
 			
@@ -177,6 +190,7 @@ public final class OBJExporter extends Exporter {
 				
 				incVertexProgressCount();
 			}
+			*/
 		}
 	}
 	
@@ -223,7 +237,7 @@ public final class OBJExporter extends Exporter {
 			}
 		}
 	}
-	
+/*	
 	private void writeLeafFaces() {
 		
 //		long leafFaceOffset=0;
@@ -257,14 +271,14 @@ public final class OBJExporter extends Exporter {
 		}
 		
 	}
-	
+	*/
 	private void writeVertex(Vector v, String type) {
 		w.println(type+" "
 				+frm.format(v.getX())+" "
 				+frm.format(v.getZ())+" "
 				+frm.format(v.getY()));
 	}
-	
+
 	private void writeUVVertex(UVVector v) {
 		w.println("vt "
 				+frm.format(v.u)+" "
@@ -287,4 +301,5 @@ public final class OBJExporter extends Exporter {
 		}
 	}
 
+	
 }

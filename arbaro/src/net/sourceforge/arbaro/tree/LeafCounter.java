@@ -1,6 +1,6 @@
 package net.sourceforge.arbaro.tree;
 
-public class LeafCounter implements TreeTraversal {
+public class LeafCounter extends DefaultTreeTraversal {
 	long leafCount;
 	
 	public long getLeafCount() {
@@ -16,14 +16,6 @@ public class LeafCounter implements TreeTraversal {
 	public boolean enterTree(Tree tree) {
 		leafCount=0; // start counting leaves
 		return true;
-	}
-
-	public boolean leaveStem(Stem stem) {
-		return true; // successfully counted
-	}
-
-	public boolean leaveTree(Tree tree) {
-		return true; // successfully counted
 	}
 
 	public boolean visitLeaf(Leaf leaf) {

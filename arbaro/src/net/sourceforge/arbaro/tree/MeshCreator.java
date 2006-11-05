@@ -2,9 +2,6 @@ package net.sourceforge.arbaro.tree;
 
 import net.sourceforge.arbaro.export.Progress;
 import net.sourceforge.arbaro.mesh.*;
-import net.sourceforge.arbaro.params.*;
-//import java.util.Stack;
-import java.util.Enumeration;
 
 public class MeshCreator implements TreeTraversal {
 	Mesh mesh;

@@ -29,7 +29,6 @@ import java.io.PrintWriter;
 import java.io.InputStream;
 import java.lang.Math;
 import java.util.Enumeration;
-import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.*;
@@ -95,6 +94,7 @@ public class Tree {
 	
 	// FIXME: may be could use StemEnumerator as a base
 	// and overload only find_next_stem and getNext a little???
+/*	
 	private class LeafEnumerator implements Enumeration {
 		private Enumeration stems;
 		private Enumeration leaves;
@@ -136,6 +136,7 @@ public class Tree {
 	public Enumeration allLeaves() {
 		return new LeafEnumerator();
 	}
+	*/
 	
 	/**
 	 * Creates a new tree object 
@@ -276,13 +277,13 @@ public class Tree {
 		} else if (outputType == DXF) {
 			output = new DXFExporter(this,w,progress);
 		} else if (outputType == OBJ) {
-			output = new OBJExporter(this,w,progress);
+			output = new OBJExporter(this,w);
 			((OBJExporter)output).outputStemUVs = outputStemUVs;
 			((OBJExporter)output).outputLeafUVs = outputLeafUVs;
 		} else {
-			output = new PovMeshExporter(this,w,progress);
-			((PovMeshExporter)output).outputStemUVs = outputStemUVs;
-			((PovMeshExporter)output).outputLeafUVs = outputLeafUVs;
+			output = new POVMeshExporter(this,w);
+			((POVMeshExporter)output).outputStemUVs = outputStemUVs;
+			((POVMeshExporter)output).outputLeafUVs = outputLeafUVs;
 		}
 		output.write();
 		

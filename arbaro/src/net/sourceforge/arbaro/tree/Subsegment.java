@@ -26,8 +26,6 @@
 
 package net.sourceforge.arbaro.tree;
 
-import java.util.Enumeration;
-
 import net.sourceforge.arbaro.transformation.*;
 
 /**
