@@ -1226,6 +1226,8 @@ public class Stem {
 	 * @param mesh the mesh object
 	 * @throws Exception
 	 */
+	/*
+	// TODO should be obsolete, when TreeTraversals are working
 	void addToMesh(Mesh mesh, boolean withSubstems, boolean useQuads) throws Exception {
 		
 		if (par.verbose) {
@@ -1260,8 +1262,61 @@ public class Stem {
 			}
 		}
 	}
+	*/
+	
+	public boolean traverseTree(TreeTraversal traversal) throws TraversalException {
+	    if (traversal.enterStem(this))  // enter this tree?
+        {
+	    
+/*            if (segments != null) {
+            		Enumeration s = segments.elements();
+            		while (s.hasMoreElements())
+            			if (! ((Segment)s.nextElement()).accept(traversal))
+            				break;
+            }
+            */
+            
+            if (leaves != null) {
+            		Enumeration l = leaves.elements();
+            		while (l.hasMoreElements())
+            			if (! ((Leaf)l.nextElement()).accept(traversal))
+            				break;
+            }
+            
+            if (substems != null) {
+            		Enumeration s = substems.elements();
+            		while (s.hasMoreElements())
+            			if (! ((Stem)s.nextElement()).traverseTree(traversal))
+            				break;	
+            }
+            
+            if (clones != null) {
+            		Enumeration s = clones.elements();
+            		while (s.hasMoreElements())
+            			if (! ((Stem)s.nextElement()).traverseTree(traversal))
+            				break;
+            }
+        }
+
+        return traversal.leaveStem(this);
+	}
 	
 	
+	public boolean traverseStem(StemTraversal traversal) throws TraversalException {
+	    if (traversal.enterStem(this))  // enter this stem?
+        {
+	    
+            if (segments != null) {
+            		Enumeration s = segments.elements();
+            		while (s.hasMoreElements())
+            			if (! ((Segment)s.nextElement()).traverseStem(traversal))
+            				break;
+            }
+        }
+	    
+	    	return traversal.leaveStem(this);
+    	}
+    	
 	/**
 	 *  Returns the total number of all the substems and substems of substems a.s.o.
 	 *  of the current stem 
@@ -1279,6 +1334,7 @@ public class Stem {
 		return sum;
 	}
 	
+	// will be obsolet, when TreeTraversals are working
 	long leafCount() {
 		long sum = 0;
 		
@@ -1307,6 +1363,14 @@ public class Stem {
 		}
 		
 		return sum;
+	}
+	
+	// use with TreeTraversal
+	public long getLeafCount() {
+		if (leaves != null)
+			return leaves.size();
+		else
+			return 0;
 	}
 	
 	public boolean isClone(){

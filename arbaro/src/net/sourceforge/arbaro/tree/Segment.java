@@ -25,6 +25,8 @@
 
 package net.sourceforge.arbaro.tree;
 
+import java.util.Enumeration;
+
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.mesh.*;
 import net.sourceforge.arbaro.params.*;
@@ -261,6 +263,8 @@ public class Segment {
 	 * @param meshpart the mesh part where the points should be added
 	 * @param donttrf if true, the transformation is not applied to the section points
 	 */
+	/*
+	// TODO should be obsolete when Traversals are working
 	private void createSectionMeshpoints(Vector pos, double rad, MeshPart meshpart,
 			boolean donttrf, double vMap) {
 		//h = (self.index+where)*self.stem.segment_len
@@ -324,6 +328,7 @@ public class Segment {
 			meshpart.addSection(section);
 		}
 	}
+	*/
 	
 	/**
 	 * Adds the segments to a mesh part. For every subsegment one ore
@@ -331,6 +336,9 @@ public class Segment {
 	 * 
 	 * @param meshpart the mesh part, to wich the segment should be added
 	 */
+	
+/*	
+	// TODO should be obsolete when Traversals are working
 	public void addToMeshpart(MeshPart meshpart) {
 		// creates the part of the mesh for this segment
 		//pt_cnt = self.tree.meshpoints[self.stem.level]
@@ -370,6 +378,20 @@ public class Segment {
 			//DBG System.err.println("LAST StemSegm, setting normals to Z-dir");
 			((MeshSection)meshpart.lastElement()).setNormalsToVector(transf.getZ());
 		}
+	}
+	*/
+	
+	public boolean traverseStem(StemTraversal traversal) throws TraversalException {
+	    if (traversal.enterSegment(this))  // enter this tree?
+        {
+	    	
+	        Enumeration s = subsegments.elements();
+            while (s.hasMoreElements())
+               if (! ((Subsegment)s.nextElement()).traverseStem(traversal))
+                       break;	
+        }
+
+        return traversal.leaveSegment(this);
 	}
 };
 

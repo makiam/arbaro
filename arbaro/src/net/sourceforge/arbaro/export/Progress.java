@@ -24,7 +24,7 @@
 //#
 //#**************************************************************************/
 
-package net.sourceforge.arbaro.output;
+package net.sourceforge.arbaro.export;
 
 class ProgressError extends Exception{
 	public ProgressError(String msg) {

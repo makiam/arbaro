@@ -22,7 +22,7 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.output;
+package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
@@ -40,7 +40,7 @@ import net.sourceforge.arbaro.tree.Tree;
  * @author wdiestel
  *
  */
-public final class OBJOutput extends Output {
+public final class OBJExporter extends Exporter {
 	long vertexProgressCount=0;
 	long faceProgressCount=0;
 	NumberFormat frm = FloatFormat.getInstance();
@@ -61,7 +61,7 @@ public final class OBJOutput extends Output {
 	 * @param pw
 	 * @param p
 	 */
-	public OBJOutput(Tree aTree, PrintWriter pw, Progress p) {
+	public OBJExporter(Tree aTree, PrintWriter pw, Progress p) {
 		super(aTree, pw, p);
 	}
 

@@ -33,8 +33,8 @@ import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.export.*;
 import net.sourceforge.arbaro.mesh.*;
-import net.sourceforge.arbaro.output.*;
 
 /**
  * A class for creation of threedimensional tree objects.
@@ -86,6 +86,12 @@ public class Tree {
 				 maxPoint.getX()*maxPoint.getX()
 				+maxPoint.getY()*maxPoint.getY())); 
 	}
+
+	// TODO: use hierachical visitor pattern instead of enumerators
+	// Visitor methods: visit{Enter|Leave}(Tree), visit{Enter|Leave}(Stem), 
+	//    visit(Leaf)
+	// Some kinds of such visitors could be: StemCounter, LeafCounter,
+	// MeshCreator, POVExporter ...
 	
 	// FIXME: may be could use StemEnumerator as a base
 	// and overload only find_next_stem and getNext a little???
@@ -245,25 +251,38 @@ public class Tree {
 		return trf.rotxz(downangle,rotangle);
 	}
 	
+	public boolean traverseTree(TreeTraversal traversal)  throws TraversalException{
+	    if (traversal.enterTree(this))  // enter this tree?
+        {
+             Enumeration stems = trunks.elements();
+             while (stems.hasMoreElements())
+                if (! ((Stem)stems.nextElement()).traverseTree(traversal))
+                        break;
+        }
+
+        return traversal.leaveTree(this);
+	}
+
+	
 	public void output(PrintWriter w) throws Exception {
 		progress.beginPhase("output tree code",-1);
 		
 		// output povray code
 		if (params.verbose) System.err.print("writing tree code ");
 		
-		Output output;
+		Exporter output;
 		if (outputType == CONES) {
-			output = new PovConeOutput(this,w,progress);
+			output = new POVConeExporter(this,w);
 		} else if (outputType == DXF) {
-			output = new DXFOutput(this,w,progress);
+			output = new DXFExporter(this,w,progress);
 		} else if (outputType == OBJ) {
-			output = new OBJOutput(this,w,progress);
-			((OBJOutput)output).outputStemUVs = outputStemUVs;
-			((OBJOutput)output).outputLeafUVs = outputLeafUVs;
+			output = new OBJExporter(this,w,progress);
+			((OBJExporter)output).outputStemUVs = outputStemUVs;
+			((OBJExporter)output).outputLeafUVs = outputLeafUVs;
 		} else {
-			output = new PovMeshOutput(this,w,progress);
-			((PovMeshOutput)output).outputStemUVs = outputStemUVs;
-			((PovMeshOutput)output).outputLeafUVs = outputLeafUVs;
+			output = new PovMeshExporter(this,w,progress);
+			((PovMeshExporter)output).outputStemUVs = outputStemUVs;
+			((PovMeshExporter)output).outputLeafUVs = outputLeafUVs;
 		}
 		output.write();
 		
@@ -271,24 +290,30 @@ public class Tree {
 		progress.endPhase();
 	}
 	
+	// TODO should be moved to caller class, when TreeTraversals are working
 	public Mesh createStemMesh(boolean useQuads) throws Exception {
 		progress.beginPhase("Creating mesh",getStemCount());
 		
 		Mesh mesh = new Mesh(params.Levels);
-		for (int t=0; t<trunks.size(); t++) {
+/*		for (int t=0; t<trunks.size(); t++) {
 			((Stem)trunks.elementAt(t)).addToMesh(mesh,true,useQuads);
 		}
 		getProgress().incProgress(trunks.size());
+		*/
+		MeshCreator meshCreator = new MeshCreator(mesh, -1, useQuads, progress);
+		traverseTree(meshCreator);
 		
 		progress.endPhase();
 		return mesh;
 	}
-	
+
+	// TODO should be moved to caller class, when TreeTraversals are working
 	public Mesh createStemMeshByLevel(boolean useQuads) throws Exception {
 		progress.beginPhase("Creating mesh",getStemCount());
 		
 		Mesh mesh = new Mesh(params.Levels);
 		
+		/*
 		for (int level=0; level < params.Levels; level++) {
 			Enumeration stems = allStems(level);
 			while (stems.hasMoreElements()) {
@@ -296,7 +321,12 @@ public class Tree {
 				getProgress().incProgress(1);
 			}
 		}
-		
+		*/
+		for (int level=0; level < params.Levels; level++) {
+			MeshCreator meshCreator = new MeshCreator(mesh, level, useQuads, progress);
+			traverseTree(meshCreator);
+		}
+			
 		progress.endPhase();
 		return mesh;
 	}
@@ -319,7 +349,7 @@ public class Tree {
 	 * @param w
 	 */
 	public void outputScene(PrintWriter w) throws Exception {
-		Output output = new PovSceneOutput(this,w);
+		Exporter output = new PovSceneExporter(this,w);
 		output.write();
 	}
 	
@@ -423,6 +453,7 @@ public class Tree {
 //		params.Smooth = s;
 //	}
 	
+	// TODO will be obsolet, when TreeTraversals are working
 	public long getLeafCount() {
 		if (params.Leaves==0) return 0;
 		

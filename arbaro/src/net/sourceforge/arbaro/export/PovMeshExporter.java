@@ -24,7 +24,7 @@
 //#
 //#**************************************************************************/
 
-package net.sourceforge.arbaro.output;
+package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 import java.util.Enumeration;
@@ -41,7 +41,7 @@ import net.sourceforge.arbaro.params.FloatFormat;
  *
  */
 
-public class PovMeshOutput extends Output {
+public class PovMeshExporter extends Exporter {
 	Mesh mesh;
 	LeafMesh leafMesh;
 	Progress progress;
@@ -56,7 +56,7 @@ public class PovMeshOutput extends Output {
 	
 	static final NumberFormat fmt = FloatFormat.getInstance();
 	
-	public PovMeshOutput(Tree aTree, PrintWriter pw, Progress prg) {
+	public PovMeshExporter(Tree aTree, PrintWriter pw, Progress prg) {
 		super(aTree,pw,prg);
 	}
 	

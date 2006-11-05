@@ -24,9 +24,9 @@
 //#
 //#**************************************************************************/
 
-package net.sourceforge.arbaro.output;
+package net.sourceforge.arbaro.export;
 
-// explaining of §D graphic formats at
+// explaining of ï¿½D graphic formats at
 // http://www.dcs.ed.ac.uk/home/mxr/gfx/3d-hi.html
 
 import java.io.PrintWriter;
@@ -44,15 +44,15 @@ class ErrorOutput extends Exception {
  * @author Wolfram Diestel
  *
  */
-public abstract class Output {
+public abstract class Exporter {
 	protected Tree tree;
 	protected PrintWriter w;
 	protected Progress progress;
 	
-	public Output(Tree aTree, PrintWriter pw, Progress p) {
-		tree = aTree;
-		w = pw;
-		progress = p;
+	public Exporter(Tree tree, PrintWriter printwriter, Progress progress) {
+		this.tree = tree;
+		this.w = printwriter;
+		this.progress = progress;
 	}
 	
 	public abstract void write() throws ErrorOutput;

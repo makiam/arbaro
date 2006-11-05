@@ -22,7 +22,7 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.output;
+package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
@@ -41,7 +41,7 @@ import net.sourceforge.arbaro.transformation.*;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class DXFOutput extends Output {
+public class DXFExporter extends Exporter {
 	long stemsProgressCount=0;
 	long leavesProgressCount=0;
 	NumberFormat frm = FloatFormat.getInstance();
@@ -50,7 +50,7 @@ public class DXFOutput extends Output {
 	 * @param aTree
 	 * @param pw
 	 */
-	public DXFOutput(Tree aTree, PrintWriter pw, Progress prg) {
+	public DXFExporter(Tree aTree, PrintWriter pw, Progress prg) {
 		super(aTree, pw, prg);
 	}
 

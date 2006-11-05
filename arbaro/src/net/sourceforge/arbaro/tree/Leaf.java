@@ -25,6 +25,7 @@
 package net.sourceforge.arbaro.tree;
 
 import java.lang.Math;
+import java.util.Enumeration;
 
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.params.*;
@@ -119,6 +120,10 @@ public class Leaf {
 	 */
 	public void make() {
 		setLeafOrientation();
+	}
+	
+	public boolean accept(TreeTraversal traversal) throws TraversalException{
+	    return traversal.visitLeaf(this);
 	}
 };
 

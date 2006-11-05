@@ -24,7 +24,7 @@
 //#
 //#**************************************************************************/
 
-package net.sourceforge.arbaro.output;
+package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 
@@ -36,14 +36,14 @@ import net.sourceforge.arbaro.tree.Tree;
  * 
  * @author wolfram
  */
-public class PovSceneOutput extends Output {
+public class PovSceneExporter extends Exporter {
 
 	/**
 	 * @param aTree
 	 * @param pw
 	 */
-	public PovSceneOutput(Tree aTree, PrintWriter pw) {
-		super(aTree, pw, null);
+	public PovSceneExporter(Tree tree, PrintWriter pw) {
+		super(tree, pw, null);
 	}
 
     /**

@@ -24,7 +24,7 @@
 //#
 //#**************************************************************************/
 
-package net.sourceforge.arbaro.output;
+package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
@@ -37,7 +37,7 @@ import net.sourceforge.arbaro.transformation.*;
 /**
  * @author Wolfram Diestel
  */
-public class PovConeOutput extends Output {
+public class PovConeOutput extends Exporter {
 	
 	private Progress progress;
 	private long stemsProgressCount=0;
@@ -47,8 +47,8 @@ public class PovConeOutput extends Output {
 	 * @param aTree
 	 * @param pw
 	 */
-	public PovConeOutput(Tree aTree, PrintWriter pw, Progress prg) {
-		super(aTree, pw, prg);
+	public PovConeOutput(Tree tree, PrintWriter pw, Progress progress) {
+		super(tree, pw, progress);
 	}
 	
 	public void write() throws ErrorOutput {

@@ -26,6 +26,8 @@
 
 package net.sourceforge.arbaro.tree;
 
+import java.util.Enumeration;
+
 import net.sourceforge.arbaro.transformation.*;
 
 /**
@@ -45,5 +47,9 @@ public class Subsegment {
 		pos = p;
 		rad = r;
 		height = h;
+	}
+	
+	public boolean traverseStem(StemTraversal traversal) throws TraversalException {
+	    return traversal.visitSubsegment(this);
 	}
 }
