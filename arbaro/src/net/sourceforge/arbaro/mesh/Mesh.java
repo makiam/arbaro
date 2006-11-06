@@ -151,12 +151,14 @@ public class Mesh extends java.util.Vector {
 		private boolean UVFaces;
 		private int startIndex;
 		private int level;
+		private Mesh mesh;
 		
-		public FaceEnumerator(int startInx, boolean uv, int stemLevel) {
+		public FaceEnumerator(Mesh mesh, int startInx, boolean uv, int stemLevel) {
 			UVFaces=uv;
 			startIndex=startInx;
 			level=stemLevel;
 			parts = allParts(level);
+			this.mesh = mesh;
 			
 			nextPart(true);
 		}
@@ -170,7 +172,7 @@ public class Mesh extends java.util.Vector {
 				if (! firstPart) startIndex += part.vertexCount();
 				part = (MeshPart)parts.nextElement();
 			}
-			partFaces = part.allFaces(startIndex,UVFaces);
+			partFaces = part.allFaces(mesh,startIndex,UVFaces);
 			
 //			System.err.println("next part "+part.stem.getTreePosition());
 		}
@@ -218,7 +220,7 @@ public class Mesh extends java.util.Vector {
 	}
 	
 	public Enumeration allFaces(int startIndex, boolean UVFaces, int stemLevel) {
-		return new FaceEnumerator(startIndex,UVFaces,stemLevel);
+		return new FaceEnumerator(this,startIndex,UVFaces,stemLevel);
 	}	
 
 	public Enumeration allParts(int stemLevel) {

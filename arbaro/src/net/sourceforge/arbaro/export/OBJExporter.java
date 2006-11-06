@@ -409,8 +409,8 @@ public final class OBJExporter extends Exporter {
 				uvVertexOffset = 1 + mesh.firstUVIndex(mp.getStem().stemlevel);
 				w.println("s "+smoothingGroup++);
 				
-				Enumeration faces=mp.allFaces(vertexOffset,false);
-				Enumeration uvFaces=mp.allFaces(uvVertexOffset,true);
+				Enumeration faces=mp.allFaces(mesh,vertexOffset,false);
+				Enumeration uvFaces=mp.allFaces(mesh,uvVertexOffset,true);
 				
 				while (faces.hasMoreElements()) {
 					Face face = (Face)faces.nextElement();

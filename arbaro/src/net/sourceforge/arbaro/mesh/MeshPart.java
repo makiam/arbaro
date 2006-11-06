@@ -83,14 +83,30 @@ public class MeshPart extends java.util.Vector {
 		private int startIndex;
 		private int sectionSize;
 		
-		public FaceEnumerator(int startInx, boolean uv, boolean quads) {
+		public FaceEnumerator(Mesh mesh, int startInx, boolean uv, boolean quads) {
 			UVFaces = uv;
 			startIndex = startInx;
 			useQuads = quads;
 			sections = elements();
 			
 			// ignore root point
-			sections.nextElement();
+			MeshSection sec = (MeshSection)sections.nextElement();
+			
+			// if it's a clone calculate a vertex offset
+			// finding the corresponding segment in the parent stem's mesh
+			int uvVertexOffset=0; 
+			if (uv && stem.isClone()) {
+				MeshPart mp = ((MeshPart)mesh.elementAt(mesh.firstMeshPart[stem.stemlevel]));
+				for (MeshSection ms=((MeshSection)mp.elementAt(1)); // ignore root vertex
+					ms.next.segment.index < sec.segment.index;
+					ms = ms.next) {
+					
+					uvVertexOffset += ms.size()==1? 1 : ms.size()+1;
+				}
+				
+				startIndex += uvVertexOffset;
+			}
+			
 			nextSection(true);
 		}
 		
@@ -101,7 +117,7 @@ public class MeshPart extends java.util.Vector {
 				else
 					startIndex += section.size();
 			}
-
+			
 			section = (MeshSection)sections.nextElement(); 
 			sectionFaces = section.allFaces(startIndex,UVFaces,useQuads);
 		}
@@ -164,8 +180,8 @@ public class MeshPart extends java.util.Vector {
 		return new VertexEnumerator(UVVertices);
 	}
 	
-	public Enumeration allFaces(int startIndex, boolean UVFaces) {
-		return new FaceEnumerator(startIndex,UVFaces,useQuads);
+	public Enumeration allFaces(Mesh mesh, int startIndex, boolean UVFaces) {
+		return new FaceEnumerator(mesh,startIndex,UVFaces,useQuads);
 	}
 	
 	

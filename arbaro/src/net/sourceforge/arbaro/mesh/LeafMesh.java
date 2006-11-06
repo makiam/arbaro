@@ -155,6 +155,39 @@ class DiscShape extends LeafShape {
 };
 
 /**
+ * An oval leaf shape having the outline of an averag leaf.
+ * 
+ * @author wdiestel
+ */
+class SquareShape extends LeafShape {
+	
+	public SquareShape(double len, double wid, double stem_len, boolean quads) {
+		super(len,wid,stem_len,quads);
+		
+		vertices = new Vertex[4];
+		if (quads) {
+			faces = new Face[1];
+		} else {
+			faces = new Face[2];
+		}
+		
+		setPoint(0, -0.5, 0, 0);
+		setPoint(1, -0.5, 0, 1);
+		setPoint(2, 0.5, 0, 1);
+		setPoint(3, 0.5, 0, 0);
+
+		if (useQuads) {
+			faces[0] = new Face(0,3,2,1);
+		} else {
+			faces[0] = new Face(0,2,1);
+			faces[1] = new Face(0,3,2);
+		}
+	}
+	
+};
+
+
+/**
  * A spherical leaf shape. It is aproximated by an ikosaeder.
  * 
  * @author wdiestel
@@ -221,6 +254,8 @@ public class LeafMesh {
 				facecnt = Integer.parseInt(m.group(1));
 			}
 			shape = new DiscShape(facecnt,length,width,stemLen,useQuads);
+		} else if (leafShape.equals("square")) {
+			shape = new SquareShape(length,width,stemLen,useQuads);
 		} else if (leafShape.equals("sphere")) {
 			shape = new SphereShape(length,width,stemLen);
 		} else

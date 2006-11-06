@@ -30,7 +30,7 @@ package net.sourceforge.arbaro.params;
  */
 public final class LeafShapeParam extends StringParam {
 	
-	final static String[] items = {"disc","disc1","disc2","disc3","disc4","disc5","disc6","disc7","disc8","disc9","sphere"}; 
+	final static String[] items = {"disc","disc1","disc2","disc3","disc4","disc5","disc6","disc7","disc8","disc9","square","sphere"}; 
 
 	/**
 	 * @param nam

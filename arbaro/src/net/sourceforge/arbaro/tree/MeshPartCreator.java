@@ -167,7 +167,7 @@ public class MeshPartCreator implements StemTraversal {
 		
 		try {
 			double vLength = stem.getLength()+stem.stemRadius(0)+stem.stemRadius(stem.length);
-			double vBase = + stem.stemRadius(0);
+			//double vBase = + stem.stemRadius(0);
 			
 			// if first segment, create lower meshpoints
 			if (meshPart.size() == 0) {
@@ -179,7 +179,7 @@ public class MeshPartCreator implements StemTraversal {
 				// more points around the stem origin
 				createSectionMeshpoints(ss.pos,ss.rad,
 						segment.isFirstStemSegment() && segment.lpar.level==0,
-						vBase/vLength);
+						0 /* vBase/vLength */);
 
 				firstSubsegment=false;
 
@@ -192,7 +192,7 @@ public class MeshPartCreator implements StemTraversal {
 				} else {
 					// create meshpoints on top of each subsegment
 					createSectionMeshpoints(ss.pos,ss.rad,false,
-						(vBase+segment.index*segment.length+ss.height)/vLength);
+						(/*vBase+*/segment.index*segment.length+ss.height)/vLength);
 				}
 			}
 			
