@@ -52,30 +52,6 @@ public class TreeTest extends TestCase {
 	public void testGetWidth() {
 	}
 
-	public void testAllStems() {
-		Tree tree=aTestTree;
-		long count=0;
-		for (Enumeration stems = tree.allStems(-1);
-			stems.hasMoreElements();) {
-				count++;
-				stems.nextElement();
-		}
-		assertTrue(count>0);
-		assertEquals(count,tree.getStemCount());
-	}
-
-	public void testAllLeaves() {
-		Tree tree=aTestTree;
-		long count=0;
-		for (Enumeration leaves = tree.allLeaves();
-			leaves.hasMoreElements();) {
-			count++;
-			leaves.nextElement();
-		}
-		assertTrue(count>0);
-		assertEquals(count,tree.getLeafCount());
-	}
-
 	/*
 	 * Class under test for void Tree()
 	 */
@@ -98,17 +74,36 @@ public class TreeTest extends TestCase {
 	public void testClear() throws Exception {
 		Tree tree=makeTestTree();
 		
-		assertTrue(tree.allStems(-1).hasMoreElements());
+		assertTrue(tree.getStemCount()>0);
 		tree.clear();
-		assertFalse(tree.allStems(-1).hasMoreElements());
+		assertFalse(tree.getStemCount()>0);
 	}
 
 	public void testMake() throws Exception {
 		Tree tree=makeTestTree();
-		assertTrue(tree.allStems(-1).hasMoreElements());
+		assertTrue(tree.getStemCount()>0);
 	}
 
 	public void testTrunkDirection() {
+	}
+	
+	public void testTraverseTree() throws Exception{
+		// test some Treetraversals here
+		Tree tree=makeTestTree();
+		
+		// test LeafCounter
+		LeafCounter leafCounter = new LeafCounter();
+		assertTrue(leafCounter.getLeafCount()==0);
+		tree.traverseTree(leafCounter);
+		assertTrue(leafCounter.getLeafCount()>0);
+		assertEquals(tree.getLeafCount(),leafCounter.getLeafCount());
+
+		// test StemCounter
+		StemCounter stemCounter = new StemCounter();
+		assertTrue(stemCounter.getStemCount()==0);
+		tree.traverseTree(stemCounter);
+		assertTrue(stemCounter.getStemCount()>0);
+		assertEquals(tree.getStemCount(),stemCounter.getStemCount());
 	}
 
 	public void testOutput() {
