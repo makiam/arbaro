@@ -36,6 +36,239 @@ import net.sourceforge.arbaro.transformation.Vector;
 import net.sourceforge.arbaro.params.FloatFormat;
 
 
+
+/**
+ * Base class for special face exporters
+ * 
+ * @author wolfram
+ *
+ */
+class POVMeshLeafExporter extends DefaultTreeTraversal {
+		Progress progress;
+		LeafMesh leafMesh;
+		long leafVertexOffset;
+		PrintWriter w;
+		long leavesProgressCount=0;
+		Tree tree;
+	
+		static final NumberFormat fmt = FloatFormat.getInstance();
+
+		/**
+		 * 
+		 */
+		public POVMeshLeafExporter(PrintWriter pw, LeafMesh leafMesh,
+				long leafVertexOffset) {
+			super();
+			this.w = pw;
+			this.leafMesh = leafMesh;
+			this.leafVertexOffset = leafVertexOffset;
+		}
+
+		public boolean enterTree(Tree tree) {
+			progress = tree.getProgress();
+			this.tree = tree;
+			return true;
+		}
+		
+		void incLeavesProgressCount() {
+			if (leavesProgressCount++ % 500 == 0) {
+				progress.incProgress(500);
+				if (tree.params.verbose) System.err.print(".");
+			}
+		}
+		
+		void writeVector(Vector v) {
+			w.print("<"+fmt.format(v.getX())+","
+			+fmt.format(v.getZ())+","
+			+fmt.format(v.getY())+">");
+		}
+		
+}
+
+/**
+ * @author wolfram
+ *
+ */
+class POVMeshLeafFaceExporter extends POVMeshLeafExporter {
+
+	public POVMeshLeafFaceExporter(PrintWriter pw, LeafMesh leafMesh,
+			long leafVertexOffset) {
+		super(pw,leafMesh,leafVertexOffset);
+	}
+	
+	public boolean visitLeaf(Leaf l) {
+		String indent = "    ";
+		
+		for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
+			Face face = leafMesh.shapeFaceAt(i);
+			w.print("<" + (leafVertexOffset+face.points[0]) + "," 
+					+ (leafVertexOffset+face.points[1]) + "," 
+					+ (leafVertexOffset+face.points[2]) + ">");
+			if (i<leafMesh.getShapeFaceCount()-1) {
+				w.print(",");
+			}
+			if (i % 6 == 4) {
+				// new line
+				w.println();
+				w.print(indent + "          ");
+			}
+		}
+		w.println();
+		
+		// increment face offset
+		leafVertexOffset += leafMesh.getShapeVertexCount();
+		
+		incLeavesProgressCount();
+		
+		return true;
+	}
+
+	
+
+	
+}
+
+
+/**
+ * @author wolfram
+ *
+ */
+class POVMeshLeafNormalExporter extends POVMeshLeafExporter {
+
+	/**
+	 * @param pw
+	 * @param leafMesh
+	 * @param leafVertexOffset
+	 */
+	public POVMeshLeafNormalExporter(PrintWriter pw, LeafMesh leafMesh,
+			long leafVertexOffset) {
+		super(pw, leafMesh, leafVertexOffset);
+		// TODO Auto-generated constructor stub
+	}
+
+	public boolean visitLeaf(Leaf l) throws TraversalException {
+		String indent = "    ";
+		
+		try {
+			for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
+				writeVector(l.transf.apply(leafMesh.shapeVertexAt(i).normal));
+				
+				if (i<leafMesh.getShapeVertexCount()-1) {
+					w.print(",");
+				}
+				if (i % 3 == 2) {
+					// new line
+					w.println();
+					w.print(indent+"          ");
+				} 
+			}
+			
+			incLeavesProgressCount();
+
+			throw new Exception("Not implemented: if using normals for leaves use factor "+
+			"3 instead of 2 in progress.beginPhase");
+			
+		} catch (Exception e) {
+			throw new TraversalException(e.toString());
+		}
+
+		//return true;
+
+	}
+
+}
+
+
+/**
+ * @author wolfram
+ *
+ */
+class POVMeshLeafUVFaceExporter extends POVMeshLeafExporter {
+
+	/**
+	 * @param pw
+	 * @param leafMesh
+	 * @param leafVertexOffset
+	 */
+	public POVMeshLeafUVFaceExporter(PrintWriter pw, LeafMesh leafMesh,
+			long leafVertexOffset) {
+		super(pw, leafMesh, leafVertexOffset);
+		// TODO Auto-generated constructor stub
+	}
+
+	public boolean visitLeaf(Leaf l) {
+		String indent = "    ";
+		
+		for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
+			Face face = leafMesh.shapeFaceAt(i);
+			w.print("<" + (/*leafFaceOffset+*/face.points[0]) + "," 
+					+ (/*leafFaceOffset+*/face.points[1]) + "," 
+					+ (/*leafFaceOffset+*/face.points[2]) + ">");
+			if (i<leafMesh.getShapeFaceCount()-1) {
+				w.print(",");
+			}
+			if (i % 6 == 4) {
+				// new line
+				w.println();
+				w.print(indent + "          ");
+			}
+		}
+		w.println();
+			
+		// increment face offset
+		//leafFaceOffset += leafMesh.getShapeVertexCount();
+		
+		incLeavesProgressCount();
+		
+		return true;
+	}
+
+}
+
+
+/**
+ * @author wolfram
+ *
+ */
+class POVMeshLeafVertexExporter extends POVMeshLeafExporter {
+
+	/**
+	 * @param pw
+	 * @param leafMesh
+	 * @param leafVertexOffset
+	 */
+	public POVMeshLeafVertexExporter(PrintWriter pw, LeafMesh leafMesh,
+			long leafVertexOffset) {
+		super(pw, leafMesh, leafVertexOffset);
+		// TODO Auto-generated constructor stub
+	}
+	
+	public boolean visitLeaf(Leaf l) {
+		String indent = "    ";
+	
+		for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
+			writeVector(l.transf.apply(leafMesh.shapeVertexAt(i).point));
+			
+			if (i<leafMesh.getShapeVertexCount()-1) {
+				w.print(",");
+			}
+			if (i % 3 == 2) {
+				// new line
+				w.println();
+				w.print(indent+"          ");
+			} 
+		}
+		
+		incLeavesProgressCount();
+		
+		return true;
+	}
+
+
+}
+
+
+
 /**
  * @author Wolfram Diestel
  *
@@ -556,9 +789,6 @@ public class POVMeshExporter extends Exporter {
 //	public void writeSectionNormals(MeshSection ms, String indent) {
 //	}
 	private void writeVector(Vector v) {
-		// FIXME: why I cannot get a FloatFormat instance
-		// when creating the class?
-		// NumberFormat fmt = FloatFormat.getInstance();
 		w.print("<"+fmt.format(v.getX())+","
 		+fmt.format(v.getZ())+","
 		+fmt.format(v.getY())+">");

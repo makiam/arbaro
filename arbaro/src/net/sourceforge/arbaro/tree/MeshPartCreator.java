@@ -18,6 +18,7 @@ public class MeshPartCreator implements StemTraversal {
 	boolean useQuads;
 	Stem stem;
 	Segment segment;
+	boolean firstSubsegment;
 	
 	/**
 	 * 
@@ -38,6 +39,7 @@ public class MeshPartCreator implements StemTraversal {
 		//segment.addToMeshpart(meshPart);
 
 		this.segment = segment;
+		firstSubsegment = true; // ignore first subsegment of each segment, but the first
 		return true;
 
 	}
@@ -178,11 +180,21 @@ public class MeshPartCreator implements StemTraversal {
 				createSectionMeshpoints(ss.pos,ss.rad,
 						segment.isFirstStemSegment() && segment.lpar.level==0,
 						vBase/vLength);
-			}
-			
-			// create meshpoints on top of each subsegment
-			createSectionMeshpoints(ss.pos,ss.rad,false,
+
+				firstSubsegment=false;
+
+			} else {
+				
+				if (firstSubsegment) {
+					// first subsgement, ignore it,
+					// but process all following
+					firstSubsegment=false;
+				} else {
+					// create meshpoints on top of each subsegment
+					createSectionMeshpoints(ss.pos,ss.rad,false,
 						(vBase+segment.index*segment.length+ss.height)/vLength);
+				}
+			}
 			
 			return true;
 			

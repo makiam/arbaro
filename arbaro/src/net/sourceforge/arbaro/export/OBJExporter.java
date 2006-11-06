@@ -34,7 +34,200 @@ import net.sourceforge.arbaro.params.FloatFormat;
 //import net.sourceforge.arbaro.params.IntParam;
 import net.sourceforge.arbaro.transformation.Vector;
 //import net.sourceforge.arbaro.tree.Leaf;
+import net.sourceforge.arbaro.tree.DefaultTreeTraversal;
+import net.sourceforge.arbaro.tree.Leaf;
 import net.sourceforge.arbaro.tree.Tree;
+
+
+
+/**
+ * @author wolfram
+ *
+ */
+
+class OBJLeafExporter extends DefaultTreeTraversal {
+	Progress progress;
+	LeafMesh leafMesh;
+	public int leafVertexOffset;
+	PrintWriter w;
+	long leavesProgressCount=0;
+	Tree tree;
+
+	static final NumberFormat fmt = FloatFormat.getInstance();
+
+	/**
+	 * 
+	 */
+	public OBJLeafExporter(PrintWriter pw, LeafMesh leafMesh,
+			int leafVertexOffset) {
+		super();
+		this.w = pw;
+		this.leafMesh = leafMesh;
+		this.leafVertexOffset = leafVertexOffset;
+	}
+
+	public boolean enterTree(Tree tree) {
+		progress = tree.getProgress();
+		this.tree = tree;
+		return true;
+	}
+	
+	/*
+	void incLeavesProgressCount() {
+		if (leavesProgressCount++ % 500 == 0) {
+			progress.incProgress(500);
+			if (tree.params.verbose) System.err.print(".");
+		}
+	}
+	
+	void writeVector(Vector v) {
+		// FIXME: why I cannot get a FloatFormat instance
+		// when creating the class?
+		// NumberFormat fmt = FloatFormat.getInstance();
+		w.print("<"+fmt.format(v.getX())+","
+		+fmt.format(v.getZ())+","
+		+fmt.format(v.getY())+">");
+	}
+*/
+}
+
+/**
+ * @author wolfram
+ *
+ */
+class OBJLeafFaceExporter extends OBJLeafExporter {
+	boolean firstLeaf;
+	long faceProgressCount=0;
+	
+	long smoothingGroup;
+	int uvVertexOffset;
+	boolean outputLeafUVs=true;
+	boolean outputStemUVs=true;
+
+//	instead of Arbaro's normals use smoothing to interpolate normals
+//  this should be give the same result	
+	boolean outputNormals = false;
+
+	/**
+	 * @param pw
+	 * @param leafMesh
+	 * @param leafVertexOffset
+	 */
+	public OBJLeafFaceExporter(PrintWriter pw, LeafMesh leafMesh,
+			int leafVertexOffset, int uvVertexOffset,
+			long smoothingGroup,	
+			boolean outputLeafUVs, boolean outputStemUVs) {
+		super(pw, leafMesh, leafVertexOffset);
+		
+		firstLeaf = true;
+		this.smoothingGroup = smoothingGroup;
+		this.uvVertexOffset = uvVertexOffset;
+		this.outputLeafUVs = outputLeafUVs;
+		this.outputStemUVs = outputStemUVs;
+	}
+	
+	
+	public boolean visitLeaf(Leaf l) {
+		if (firstLeaf) {
+			
+			w.println("g leaves");
+			w.println("usemtl leaves");
+	//		uvVertexOffset++;
+			
+			firstLeaf = false;
+		}
+	
+		w.println("s "+smoothingGroup++);
+		for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
+			Face face = leafMesh.shapeFaceAt(i);
+			writeFace(
+					face,leafVertexOffset,
+					face,uvVertexOffset,
+					outputLeafUVs,outputNormals);
+		}
+		
+		// increment face offset
+		leafVertexOffset += leafMesh.getShapeVertexCount();
+		
+		incFaceProgressCount();
+		
+		return true;
+	}
+
+	private void incFaceProgressCount() {
+		if (faceProgressCount++ % 500 == 0) {
+			progress.incProgress(500);
+			if (tree.params.verbose) System.err.print(".");
+		}
+	}
+	
+	private void writeFace(Face f, long offset, Face uv, long uvOffset, boolean writeUVs, boolean writeNormals) {
+		w.print("f "); 
+				
+		for (int i=0; i<f.points.length; i++) {
+			w.print(offset+f.points[i]);
+			if (writeUVs || writeNormals) {
+				w.print("/");
+				if (writeUVs) w.print(uvOffset+uv.points[i]);
+				if (writeNormals) w.print("/"+offset+f.points[i]);
+			}
+			if (i<f.points.length-1) w.print(" ");
+			else w.println();
+		}
+	}
+}
+
+
+/**
+ * @author wolfram
+ *
+ */
+class OBJLeafVertexExporter extends OBJLeafExporter {
+	String type;
+	long vertexProgressCount=0;
+	
+	/**
+	 * @param pw
+	 * @param leafMesh
+	 * @param leafVertexOffset
+	 */
+	public OBJLeafVertexExporter(PrintWriter pw, LeafMesh leafMesh,
+			int leafVertexOffset, String type) {
+		super(pw, leafMesh, leafVertexOffset);
+		this.type=type;
+	}
+
+	public boolean visitLeaf(Leaf l) {
+		for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
+			
+			if (type=="v") {
+				writeVertex(l.transf.apply(leafMesh.shapeVertexAt(i).point),type);
+			} else {
+				writeVertex(l.transf.apply(leafMesh.shapeVertexAt(i).normal),type);
+			}
+		}
+		
+		incVertexProgressCount();
+		
+		return true;
+	}
+	
+	private void incVertexProgressCount() {
+		if (vertexProgressCount++ % 100 == 0) {
+			progress.incProgress(100);
+			if (tree.params.verbose) System.err.print(".");
+		}
+	}
+	
+	private void writeVertex(Vector v, String type) {
+		w.println(type+" "
+				+fmt.format(v.getX())+" "
+				+fmt.format(v.getZ())+" "
+				+fmt.format(v.getY()));
+	}
+	
+}
+
 
 /**
  * @author wdiestel
