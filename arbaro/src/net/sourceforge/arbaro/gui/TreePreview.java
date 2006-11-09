@@ -286,7 +286,8 @@ public class TreePreview extends JComponent {
 			// how much to scale for fitting into view?
 			scale = Math.min((getHeight()-2*margin)/dh,(getWidth()-2*margin)/dw);
 			
-			System.err.println("scale: "+scale);
+			if (previewTree.params.debug)
+				System.err.println("scale: "+scale);
 
 			// shift to mid point of the view
 			transform.translate(getWidth()/2,getHeight()/2);					
@@ -312,10 +313,12 @@ public class TreePreview extends JComponent {
 		// DEBUG
 		Point p = new Point();
 		transform.transform(new Point2D.Double(0.0,0.0),p);
-		System.err.println("width: "+minw+"+"+dw);
-		System.err.println("height: "+minh+"+"+dh);
-		System.err.println("Origin at: "+p);
-		System.err.println("view: "+getWidth()+"x"+getHeight());
+		if (previewTree.params.debug) {
+			System.err.println("width: "+minw+"+"+dw);
+			System.err.println("height: "+minh+"+"+dh);
+			System.err.println("Origin at: "+p);
+			System.err.println("view: "+getWidth()+"x"+getHeight());
+		}
 	}
 	
 	

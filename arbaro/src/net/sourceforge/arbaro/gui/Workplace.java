@@ -104,6 +104,7 @@ public final class Workplace {
 	boolean modified;
 	
 	static final Color bgClr = new Color(242,242,229);
+	static final Color Silver = new Color(142,142,129);
 	    
 	ParamValueTable valueEditor;
 	ParamGroupsView groupsView;
@@ -276,10 +277,15 @@ public final class Workplace {
 
 		/////////////////// right pane with previews
 		JPanel rightPane = new JPanel();
+		rightPane.setOpaque(true);
+		//rightPane.setBackground(Silver);
+		
 		//rightPane.setBackground(Color.LIGHT_GRAY);
 		GridBagLayout grid = new GridBagLayout();
 		GridBagConstraints constraints = new GridBagConstraints();
 		rightPane.setLayout(grid);
+		
+		constraints.insets = new Insets(1,1,0,0);
 
 		// big front view
 		JPanel frontViewWS = createFrontView();
@@ -297,8 +303,9 @@ public final class Workplace {
 		
 		// small top view
 		topView = new TreePreview(previewTree,TreePreview.PERSPECTIVE_TOP);
-		topView.setOpaque(true);
+		topView.setOpaque(true); 
 		topView.setBackground(bgClr);
+		
 		constraints.gridx = 2;
 		constraints.gridy = 0;
 		constraints.gridwidth = 1;
@@ -318,7 +325,7 @@ public final class Workplace {
 //				TitledBorder.CENTER,TitledBorder.BOTTOM));
 //
 		imageLabel.setOpaque(true);
-    	imageLabel.setBackground(bgClr);
+		imageLabel.setBackground(bgClr);
     	
 		constraints.weighty=0.2;
 		constraints.gridx = 2;
