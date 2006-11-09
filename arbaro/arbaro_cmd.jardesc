@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jardesc>
-    <jar path="/home/wolfram/workspace/arbaro/arbaro_cmd.jar"/>
-    <options overwrite="false" compress="true" exportErrors="true" exportWarnings="true" saveDescription="true" descriptionLocation="/Arbaro/arbaro_cmd.jardesc" useSourceFolders="false" buildIfNeeded="true" includeDirectoryEntries="false"/>
+    <jar path="/home/wolfram/workspace.alt/Arbaro/arbaro_cmd.jar"/>
+    <options overwrite="false" compress="true" exportErrors="true" exportWarnings="true" saveDescription="true" descriptionLocation="/Arbaro/arbaro_cmd.jardesc" useSourceFolders="false" buildIfNeeded="true" includeDirectoryEntries="false" storeRefactorings="false"/>
+    <storedRefactorings structuralOnly="false" deprecationInfo="true"/>
+    <selectedProjects/>
     <manifest manifestVersion="1.0" usesManifest="true" reuseManifest="false" saveManifest="false" generateManifest="false" manifestLocation="/Arbaro/src/Manifest">
         <sealing sealJar="false">
             <packagesToSeal/>
@@ -10,30 +12,17 @@
     </manifest>
     <selectedElements exportClassFiles="true" exportOutputFolder="false" exportJavaFiles="false">
         <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.transformation"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh{LeafMesh.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh{Face.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{LevelParams.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{FloatParam.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{AbstractParam.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{IntParam.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{StringParam.java"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.export{PovSceneExporter.java"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.export{DXFExporter.java"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.export{OBJExporter.java"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.export{POVConeExporter.java"/>
         <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.tree"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{Random.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh{Vertex.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{ShapeParam.java"/>
-        <folder path="/Arbaro/src/net/sourceforge/arbaro/mesh/doc-files"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.output"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh{ErrorMesh.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{FloatFormat.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh{Mesh.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh{MeshPart.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh{VFace.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh{UVVector.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{Params.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{LeafShapeParam.java"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.export{Progress.java"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.export{Exporter.java"/>
         <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro{arbaro.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.params{ErrorParam.java"/>
-        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.mesh{MeshSection.java"/>
+        <javaElement handleIdentifier="=Arbaro/src&lt;net.sourceforge.arbaro.export{POVMeshExporter.java"/>
         <file path="/Arbaro/src/Manifest"/>
     </selectedElements>
 </jardesc>
