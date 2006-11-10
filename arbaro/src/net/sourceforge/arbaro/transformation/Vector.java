@@ -1,9 +1,6 @@
 // #**************************************************************************
 // #
-// #    $Id$  - Transformation class 
-// #                        for rotating and translating point in space
-// #
-// #    Copyright (C) 2003  Wolfram Diestel
+// #    Copyright (C) 2003-2006  Wolfram Diestel
 // #
 // #    This program is free software; you can redistribute it and/or modify
 // #    it under the terms of the GNU General Public License as published by

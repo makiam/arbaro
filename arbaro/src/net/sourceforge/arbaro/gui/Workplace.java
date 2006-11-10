@@ -1,7 +1,5 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$ 
-//  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
@@ -61,6 +59,8 @@ import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.tree.Tree;
 
 /**
+ * The main window of Arbaro GUI
+ * 
  * @author wdiestel
  *
  * TODO:
@@ -68,12 +68,6 @@ import net.sourceforge.arbaro.tree.Tree;
  *  - zoom function for previews
  *  - show long parameter descriptions when mouse _moves_ to helpInfo,
  *    smaller window, smaller font?
- *  - make and show preview trees in theire own thread and show
- *    hourglass somewhere in the bottom when making a new preview tree
- *  - make new explaining pictures
- *  - show table header for column resizing
- *  - make new program icon
- *  - nicer programm info dialog
  *  - option for showing the whole tree in a (preview) window?
  * 
  *  MORE FEATURES:
@@ -216,7 +210,7 @@ public final class Workplace {
 					// param changed
 					frame.setTitle("Arbaro ["+tree.getParam("Species").toString()+"]");
 					
-				} catch (ErrorParam err) {
+				} catch (ParamError err) {
 					System.err.println(err);
 					valueEditor.showError(err);
 				} catch (Exception err) {
@@ -528,7 +522,7 @@ public final class Workplace {
 			// draw new tree
 			try {
 				previewTree.remake();
-			} catch (ErrorParam err) {
+			} catch (ParamError err) {
 				setModified(false);
 				JOptionPane.showMessageDialog(frame,err.getMessage(),
 						"Parameter Error",
@@ -571,7 +565,7 @@ public final class Workplace {
 					// draw opened tree
 					previewTree.remake();
 					
-				} catch (ErrorParam err) {
+				} catch (ParamError err) {
 					setModified(false);
 					JOptionPane.showMessageDialog(frame,err.getMessage(),
 							"Parameter Error",
@@ -626,7 +620,7 @@ public final class Workplace {
 			tree.toXML(out);
 			setModified(false);
 			return true;
-		} catch (ErrorParam err) {
+		} catch (ParamError err) {
 			JOptionPane.showMessageDialog(frame,err.getMessage(),
 					"Parameter Error",
 					JOptionPane.ERROR_MESSAGE);

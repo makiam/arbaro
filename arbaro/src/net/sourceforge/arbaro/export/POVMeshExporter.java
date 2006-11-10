@@ -1,10 +1,6 @@
 //#**************************************************************************
 //#
-//#    $Id:PovMeshExporter.java 77 2006-11-05 11:46:01 +0000 (So, 05 Nov 2006) wolfram $  
-//#      - Output class for writing Povray mesh2 objects
-//#          
-//#
-//#    Copyright (C) 2004  Wolfram Diestel
+//#    Copyright (C) 2004-2006  Wolfram Diestel
 //#
 //#    This program is free software; you can redistribute it and/or modify
 //#    it under the terms of the GNU General Public License as published by
@@ -37,12 +33,6 @@ import net.sourceforge.arbaro.params.FloatFormat;
 
 
 
-/**
- * Base class for special face exporters
- * 
- * @author wolfram
- *
- */
 class POVMeshLeafExporter extends DefaultTreeTraversal {
 		Progress progress;
 		LeafMesh leafMesh;
@@ -270,10 +260,11 @@ class POVMeshLeafVertexExporter extends POVMeshLeafExporter {
 
 
 /**
- * @author Wolfram Diestel
+ * Exports a tree mesh as Povray include file with mesh2 objects
+ * 
+ * @author wolfram
  *
  */
-
 public class POVMeshExporter extends Exporter {
 	Mesh mesh;
 	LeafMesh leafMesh;
@@ -293,7 +284,7 @@ public class POVMeshExporter extends Exporter {
 		super(tree,pw,tree.getProgress());
 	}
 	
-	public void write() throws ErrorOutput {
+	public void write() throws ExportError {
 		try {
 			// NumberFormat frm = FloatFormat.getInstance();
 			progress = tree.getProgress();
@@ -317,7 +308,7 @@ public class POVMeshExporter extends Exporter {
 		}
 		catch (Exception e) {
 			System.err.println(e);
-			throw new ErrorOutput(e.getMessage());
+			throw new ExportError(e.getMessage());
 			//e.printStackTrace(System.err);
 		}
 	}
@@ -690,7 +681,7 @@ public class POVMeshExporter extends Exporter {
 	}	
 	
 	public void writeStemFaces(boolean uv, String indent) 
-	throws ErrorMesh {
+	throws MeshError {
 
 		int j=0;
 		for (Enumeration faces=mesh.allFaces(0,uv,-1 /* all levels */);
@@ -714,7 +705,7 @@ public class POVMeshExporter extends Exporter {
 	}
 	
 	private void writeStemNormals(String indent) 
-	throws ErrorMesh {
+	throws MeshError {
 		
 		int i = 0;
 
@@ -746,7 +737,7 @@ public class POVMeshExporter extends Exporter {
 			
 		} catch (Exception e) {
 			// e.printStackTrace(System.err);
-			throw new ErrorMesh("Error in MeshSection "+i+": "+e); //.getMessage());
+			throw new MeshError("Error in MeshSection "+i+": "+e); //.getMessage());
 		}	    
 	}
 	

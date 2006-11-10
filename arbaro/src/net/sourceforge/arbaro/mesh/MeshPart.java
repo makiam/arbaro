@@ -1,10 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  
-//  #        - a class to hold a piece of the mesh
-//  #               and output it's vertices, faces and normals as povray code
-//  #
-//  #    Copyright (C) 2003  Wolfram Diestel
+//  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
 //  #    it under the terms of the GNU General Public License as published by
@@ -278,9 +274,9 @@ public class MeshPart extends java.util.Vector {
 	 * @param inx
 	 * @param section
 	 * @return
-	 * @throws ErrorMesh
+	 * @throws MeshError
 	 */
-	public java.util.Vector faces(long inx, MeshSection section) throws ErrorMesh {
+	public java.util.Vector faces(long inx, MeshSection section) throws MeshError {
 		MeshSection next = section.next;
 		java.util.Vector faces = new java.util.Vector();
 		
@@ -315,7 +311,7 @@ public class MeshPart extends java.util.Vector {
 		} else { // section and next must have same point_cnt>1!!!
 			long ninx = inx+section.size();
 			if (section.size() != next.size()) {
-				throw new ErrorMesh("Error: vertice numbers of two sections "
+				throw new MeshError("Error: vertice numbers of two sections "
 						+ "differ ("+inx+","+ninx+")");
 			}
 			for (int i=0; i<section.size(); i++) {
@@ -340,9 +336,9 @@ public class MeshPart extends java.util.Vector {
 	 * 
 	 * @param section
 	 * @return
-	 * @throws ErrorMesh
+	 * @throws MeshError
 	 */
-	public java.util.Vector vFaces(MeshSection section) throws ErrorMesh {
+	public java.util.Vector vFaces(MeshSection section) throws MeshError {
 		MeshSection next = section.next;
 		java.util.Vector faces = new java.util.Vector();
 		
@@ -383,7 +379,7 @@ public class MeshPart extends java.util.Vector {
 			}
 		} else { // section and next must have same point_cnt>1!!!
 			if (section.size() != next.size()) {
-				throw new ErrorMesh("Error: vertice numbers of two sections "
+				throw new MeshError("Error: vertice numbers of two sections "
 						+ "differ ("+section.size()+","+next.size()+")");
 			}
 			for (int i=0; i<section.size(); i++) {
@@ -409,9 +405,9 @@ public class MeshPart extends java.util.Vector {
 	 * @param inx
 	 * @param section
 	 * @return
-	 * @throws ErrorMesh
+	 * @throws MeshError
 	 */
-	public java.util.Vector uvFaces(long inx, MeshSection section, Mesh mesh) throws ErrorMesh {
+	public java.util.Vector uvFaces(long inx, MeshSection section, Mesh mesh) throws MeshError {
 		MeshSection next = section.next;
 		java.util.Vector faces = new java.util.Vector();
 		
@@ -474,7 +470,7 @@ public class MeshPart extends java.util.Vector {
 		
 		else { // section and next must have same point_cnt>1!!!
 			if (section.size() != next.size()) {
-				throw new ErrorMesh("Error: vertex numbers of two sections "
+				throw new MeshError("Error: vertex numbers of two sections "
 						+ "differ ("+inx+","+ninx+")");
 			}
 			for (int i=0; i<section.size(); i++) {

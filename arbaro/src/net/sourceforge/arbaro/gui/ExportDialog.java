@@ -1,8 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id: PovDialog.java,v 1.5 2004/07/19 19:59:20 wolfram Exp $  - the tree creation and render dialog
-//  #
-//  #    Copyright (C) 2003  Wolfram Diestel
+//  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
 //  #    it under the terms of the GNU General Public License as published by

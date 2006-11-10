@@ -1,7 +1,5 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$ 
-//  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
@@ -24,8 +22,8 @@
 
 package net.sourceforge.arbaro.params;
 
-public class ErrorParam extends Exception {
-    public ErrorParam(String msg) {
+public class ParamError extends Exception {
+    public ParamError(String msg) {
 	super(msg);
     }
 };

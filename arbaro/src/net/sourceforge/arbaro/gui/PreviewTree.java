@@ -1,7 +1,5 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$ 
-//  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
@@ -35,10 +33,14 @@ import javax.swing.event.EventListenerList;
 
 
 /**
+ * A tree used to preview the edited tree, it draws
+ * the stems and leaves with lines to Graphics context
+ * and modifies the level and branching parameters to
+ * calculate and draw only parts of the tree, reducing
+ * calculation time as well.
+ * 
  * @author wdiestel
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 public final class PreviewTree extends Tree {
 	// preview always shows this levels and 

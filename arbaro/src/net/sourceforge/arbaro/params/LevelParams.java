@@ -1,9 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  
-//  #         LevelParams class - it holds the tree parameters for the levels
-//  #
-//  #    Copyright (C) 2003  Wolfram Diestel
+//  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
 //  #    it under the terms of the GNU General Public License as published by
@@ -162,27 +159,27 @@ public class LevelParams {
 	}
 	
 	// help method for loading params
-	private int intParam(String name) throws ErrorParam {
+	private int intParam(String name) throws ParamError {
 		name = "" + level + name.substring(1);
 		IntParam par = (IntParam)paramDB.get(name);
 		if (par != null) {
 			return par.intValue();
 		} else {
-			throw new ErrorParam("bug: param "+name+" not found!");
+			throw new ParamError("bug: param "+name+" not found!");
 		}   
 	}
 	
-	private double dblParam(String name) throws ErrorParam {
+	private double dblParam(String name) throws ParamError {
 		name = "" + level + name.substring(1);
 		FloatParam par = (FloatParam)paramDB.get(name);
 		if (par != null) {
 			return par.doubleValue();
 		} else {
-			throw new ErrorParam("bug: param "+name+" not found!");
+			throw new ParamError("bug: param "+name+" not found!");
 		}   
 	}
 	
-	void fromDB(boolean leafLevelOnly) throws ErrorParam {
+	void fromDB(boolean leafLevelOnly) throws ParamError {
 		if (! leafLevelOnly) {
 			nTaper = dblParam("nTaper");
 			nCurveRes = intParam("nCurveRes");

@@ -1,7 +1,5 @@
 //  #**************************************************************************
 //  #
-//  #    $Id:OBJExporter.java 77 2006-11-05 11:46:01 +0000 (So, 05 Nov 2006) wolfram $ 
-//  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
@@ -40,10 +38,6 @@ import net.sourceforge.arbaro.tree.Tree;
 
 
 
-/**
- * @author wolfram
- *
- */
 
 class OBJLeafExporter extends DefaultTreeTraversal {
 	Progress progress;
@@ -230,7 +224,7 @@ class OBJLeafVertexExporter extends OBJLeafExporter {
 
 
 /**
- * @author wdiestel
+ * Exports a tree mesh as Wavefront OBJ file 
  *
  */
 public final class OBJExporter extends Exporter {
@@ -272,7 +266,7 @@ public final class OBJExporter extends Exporter {
 		}
 	}
 	
-	public void write() throws ErrorOutput {
+	public void write() throws ExportError {
 		smoothingGroup=1;
 
 		long objCount = 
@@ -315,7 +309,7 @@ public final class OBJExporter extends Exporter {
 			
 		}	catch (Exception e) {
 			System.err.println(e);
-			throw new ErrorOutput(e.getMessage());
+			throw new ExportError(e.getMessage());
 			//e.printStackTrace(System.err);
 		}
 	}

@@ -1,8 +1,5 @@
 //  #**************************************************************************
 //  #
-//  #    {$file}  - a Mesh to hold the mesh points, triangles and normals
-//  #               and output them to a povray mesh2 object
-//  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
@@ -233,7 +230,7 @@ public class MeshSection extends java.util.Vector {
 	 */
 	public Vector normalAt(int i) throws Exception {
 		Vertex v = (Vertex)elementAt(i);
-		if (v.normal == null) throw new ErrorMesh("Error: Normal not set for point "
+		if (v.normal == null) throw new MeshError("Error: Normal not set for point "
 				+vectorStr(v.point));
 		return v.normal;
 	}

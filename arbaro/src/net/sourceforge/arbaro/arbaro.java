@@ -1,8 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - the main program - handles command line a.s.o.
-//  #
-//  #    Copyright (C) 2003  Wolfram Diestel
+//  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
 //  #    it under the terms of the GNU General Public License as published by
@@ -33,6 +31,10 @@ import java.io.File;
 
 import net.sourceforge.arbaro.tree.*;
 
+/**
+ * Main class for command line version of Arbaro 
+ */
+
 public class arbaro {
 	static Tree tree;
 	
@@ -51,6 +53,9 @@ public class arbaro {
 		println();
 	}
 	
+	// TODO need switch for adding uv-coordinates in output
+	// switches should be more similar to the actual class
+	// structure now, e.g. --exporter=OBJ (-x OBJ)
 	static void usage () {
 		println("syntax:"); 
 		println("java -jar arbaro.jar [OPTIONS] <paramfile.xml> > <tree.inc>");

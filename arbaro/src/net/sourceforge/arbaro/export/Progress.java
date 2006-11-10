@@ -1,6 +1,6 @@
 //#**************************************************************************
 //#
-//#    $Id$  
+//#    $Id:Progress.java 77 2006-11-05 11:46:01 +0000 (So, 05 Nov 2006) wolfram $  
 //#      - class for holding progress information
 //#          
 //#
@@ -33,7 +33,7 @@ class ProgressError extends Exception{
 };
 
 /**
- * @author wdiestel
+ * Shows progress while creating and exporting a tree
  */
 public final class Progress {
 	String phase;

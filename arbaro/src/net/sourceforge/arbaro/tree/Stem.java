@@ -1,10 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  
-//  #             - Stem class - here is most of the logic of 
-//  #               the tree generating algorithm
-//  #
-//  #    Copyright (C) 2003  Wolfram Diestel
+//  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
 //  #    it under the terms of the GNU General Public License as published by
@@ -37,8 +33,8 @@ class ArbaroError extends Exception {
 	}
 };
 
-class ErrorNotYetImplemented extends ArbaroError{
-	public ErrorNotYetImplemented(String errmsg) {
+class NotYetImplementedError extends ArbaroError{
+	public NotYetImplementedError(String errmsg) {
 		super(errmsg);
 	} 
 };
@@ -134,6 +130,9 @@ class StemEnumerator implements Enumeration {
 	}
 }
 */
+
+// TODO the generation algorithm should be moved to a
+// TreeFactory class (or package)
 
 /**
  * A helper class for making 3d trees, this class makes a stem

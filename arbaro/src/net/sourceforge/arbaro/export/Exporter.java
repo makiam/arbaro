@@ -1,10 +1,6 @@
 //#**************************************************************************
 //#
-//#    $Id$  
-//#      - Output classes for writing the tree/meshes into a stream
-//#          
-//#
-//#    Copyright (C) 2004  Wolfram Diestel
+//#    Copyright (C) 2004-2006  Wolfram Diestel
 //#
 //#    This program is free software; you can redistribute it and/or modify
 //#    it under the terms of the GNU General Public License as published by
@@ -26,20 +22,21 @@
 
 package net.sourceforge.arbaro.export;
 
-// explaining of �D graphic formats at
+// explaining of 3D graphic formats at
 // http://www.dcs.ed.ac.uk/home/mxr/gfx/3d-hi.html
 
 import java.io.PrintWriter;
 import net.sourceforge.arbaro.tree.Tree;
 
-class ErrorOutput extends Exception {
-    public ErrorOutput(String msg) {
+class ExportError extends Exception {
+    public ExportError(String msg) {
 	super(msg);
     }
 };
 
 /**
- * Basic class for tree output to 3D-formats like Povray
+ * Base class for tree output to 3D-formats like Povray, DXF 
+ * and Wavefront OBJ file formats
  * 
  * @author Wolfram Diestel
  *
@@ -55,5 +52,5 @@ public abstract class Exporter {
 		this.progress = progress;
 	}
 	
-	public abstract void write() throws ErrorOutput;
+	public abstract void write() throws ExportError;
 }

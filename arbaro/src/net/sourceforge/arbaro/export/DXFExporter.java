@@ -1,7 +1,5 @@
 //  #**************************************************************************
 //  #
-//  #    $Id:DXFExporter.java 77 2006-11-05 11:46:01 +0000 (So, 05 Nov 2006) wolfram $ 
-//  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
@@ -36,8 +34,8 @@ import net.sourceforge.arbaro.tree.Leaf;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.transformation.*;
 
-/*
- *  Helper functions for writing a DXF file
+/**
+ *  Class with helper functions for writing a DXF file
  */
 
 final class DXFWriter {
@@ -163,7 +161,7 @@ final class DXFWriter {
 }
 
 /**
- * @author wolfram
+ * Exports the mesh's faces to the DXF file
  *
  */
 class DXFFaceExporter extends DefaultTreeTraversal {
@@ -220,10 +218,7 @@ class DXFFaceExporter extends DefaultTreeTraversal {
 }
 
 /**
- * @author wdiestel
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Exports a tree mesh as DXF file
  */
 public class DXFExporter extends Exporter {
 	long stemsProgressCount=0;
@@ -254,7 +249,7 @@ public class DXFExporter extends Exporter {
 	*/
 
 	
-	public void write() throws ErrorOutput {
+	public void write() throws ExportError {
 		try{
 			DXFWriter writer = new DXFWriter(w);
 			writer.writeHeader("DXF created with Arbaro, tree species: "+tree.getParam("Species"),
@@ -276,7 +271,7 @@ public class DXFExporter extends Exporter {
 		}
 		catch (Exception e) {
 			System.err.println(e);
-			throw new ErrorOutput(e.getMessage());
+			throw new ExportError(e.getMessage());
 			//e.printStackTrace(System.err);
 		}
 	}

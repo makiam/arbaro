@@ -1,9 +1,6 @@
 //#**************************************************************************
 //#
-//#    $Id$
-//#        - a class holding a point and a normal vector
-//#
-//#    Copyright (C) 2004  Wolfram Diestel
+//#    Copyright (C) 2004-2006  Wolfram Diestel
 //#
 //#    This program is free software; you can redistribute it and/or modify
 //#    it under the terms of the GNU General Public License as published by

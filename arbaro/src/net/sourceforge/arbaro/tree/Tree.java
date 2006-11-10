@@ -1,9 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  
-//  #          - tree class - it generates the tree beginning from the trunk
-//  #
-//  #    Copyright (C) 2003  Wolfram Diestel
+//  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
 //  #    it under the terms of the GNU General Public License as published by
@@ -384,9 +381,9 @@ public class Tree {
 	 * Read parameter values from an XML definition file
 	 * 
 	 * @param is The input XML stream
-	 * @throws ErrorParam
+	 * @throws ParamError
 	 */
-	public void readFromXML(InputStream is) throws ErrorParam {
+	public void readFromXML(InputStream is) throws ParamError {
 		params.readFromXML(is);
 	}
 	
@@ -394,9 +391,9 @@ public class Tree {
 	 * Writes out the parameters to an XML definition file
 	 * 
 	 * @param out The output stream
-	 * @throws ErrorParam
+	 * @throws ParamError
 	 */
-	public void toXML(PrintWriter out) throws ErrorParam {
+	public void toXML(PrintWriter out) throws ParamError {
 		params.toXML(out);
 	}
 	
@@ -466,7 +463,7 @@ public class Tree {
 		return leafCount;
 	}
 	
-	public void setParam(String param, String value) throws ErrorParam {
+	public void setParam(String param, String value) throws ParamError {
 		params.setParam(param,value);
 	}
 	

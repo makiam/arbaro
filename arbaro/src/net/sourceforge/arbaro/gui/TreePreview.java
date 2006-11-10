@@ -1,8 +1,5 @@
 //#**************************************************************************
 //#
-//#    $Id$ 
-//#        - an image for previewing parts of the tree
-//#
 //#    Copyright (C) 2003-2006  Wolfram Diestel
 //#
 //#    This program is free software; you can redistribute it and/or modify
@@ -45,10 +42,7 @@ import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.mesh.*;
 
 /**
- * @author wdiestel
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * An image showing parts of the edited tree
  */
 public class TreePreview extends JComponent {
 	

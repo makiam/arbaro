@@ -1,7 +1,5 @@
 //  #**************************************************************************
 //  #
-//  #    $Id: CfgDialog.java 60 2005-02-24 20:58:43 +0100 (Do, 24 Feb 2005) wolfram $  - the config dialog
-//  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify

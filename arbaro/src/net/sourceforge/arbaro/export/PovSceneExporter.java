@@ -1,6 +1,6 @@
 //#**************************************************************************
 //#
-//#    $Id$  
+//#    $Id:PovSceneExporter.java 77 2006-11-05 11:46:01 +0000 (So, 05 Nov 2006) wolfram $  
 //#      - Output class for writing Povray scene with the tree
 //#          
 //#
@@ -31,10 +31,9 @@ import java.io.PrintWriter;
 import net.sourceforge.arbaro.tree.Tree;
 
 /**
- * Class that creates a Povray scene file with the rendered tree
+ * Creates a Povray scene file with the rendered tree
  * included.
  * 
- * @author wolfram
  */
 public class PovSceneExporter extends Exporter {
 
@@ -56,7 +55,7 @@ public class PovSceneExporter extends Exporter {
     	return tree.params.Species + "_" + tree.params.Seed + "_";
     }
 
-    public void write() throws ErrorOutput {
+    public void write() throws ExportError {
 		w.println("// render as "+tree.getRenderH()+"x"+tree.getRenderW());
 
 		w.println("#include \"" + tree.params.Species + ".inc\"");

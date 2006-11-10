@@ -1,8 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  - the GUI version of Arbaro
-//  #
-//  #    Copyright (C) 2003  Wolfram Diestel
+//  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
 //  #    it under the terms of the GNU General Public License as published by
@@ -25,6 +23,10 @@
 package net.sourceforge.arbaro;
 
 import net.sourceforge.arbaro.gui.Workplace;    
+
+/**
+ * Main class for GUI version of Arbaro. It creates a new Workplace. 
+ */
 
 public class arbaro_gui {
 

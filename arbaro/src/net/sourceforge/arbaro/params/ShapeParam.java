@@ -1,7 +1,4 @@
 //  #**************************************************************************
-//  #
-//  #    $Id$ 
-//  #
 //  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify

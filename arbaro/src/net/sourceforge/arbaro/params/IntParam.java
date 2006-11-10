@@ -1,10 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  
-//  #            - Param classes for the several types of params (int,double,string)
-//  #          
-//  #
-//  #    Copyright (C) 2003  Wolfram Diestel
+//  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
 //  #    it under the terms of the GNU General Public License as published by
@@ -51,21 +47,21 @@ public class IntParam extends AbstractParam {
 		fireStateChanged();
 	}
 	
-	public void setValue(String val) throws ErrorParam {
+	public void setValue(String val) throws ParamError {
 		int i;
 		try {
 			i = Integer.parseInt(val);
 		} catch (NumberFormatException e) {
-			throw new ErrorParam("Error setting value of "+name+". \""+val
+			throw new ParamError("Error setting value of "+name+". \""+val
 					+"\" isn't a valid integer.");
 		}
 		
 		if (i<min) {
-			throw new ErrorParam("Value of "+name+" should be greater or equal to "+min);
+			throw new ParamError("Value of "+name+" should be greater or equal to "+min);
 		}
 		
 		if (i>max) {
-			throw new ErrorParam("Value of "+name+" should be greater or equal to "+max);
+			throw new ParamError("Value of "+name+" should be greater or equal to "+max);
 		}
 		
 		value = i;

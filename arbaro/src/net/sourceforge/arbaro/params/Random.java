@@ -1,9 +1,6 @@
 //  #**************************************************************************
 //  #
-//  #    $Id$  
-//  #         Random class - has methods getstate, setstate
-//  #
-//  #    Copyright (C) 2003  Wolfram Diestel
+//  #    Copyright (C) 2003-2006  Wolfram Diestel
 //  #
 //  #    This program is free software; you can redistribute it and/or modify
 //  #    it under the terms of the GNU General Public License as published by
@@ -25,6 +22,10 @@
 
 package net.sourceforge.arbaro.params;
 
+/**
+ * Random class to add variations to the tree. It has methods
+ * getState() and setState() to save and restore the random seed
+ */
 public class Random extends java.util.Random {
 	
 	public Random(long seed) {
