@@ -62,23 +62,24 @@ import net.sourceforge.arbaro.tree.Tree;
  * The main window of Arbaro GUI
  * 
  * @author wdiestel
- *
- * TODO:
- *  - toolbar buttons for level changes of preview, toggling of leaf showing
- *  - zoom function for previews
- *  - show long parameter descriptions when mouse _moves_ to helpInfo,
- *    smaller window, smaller font?
- *  - option for showing the whole tree in a (preview) window?
- * 
- *  MORE FEATURES:
- *  - export to 3DS?
- *  - more kinds of leafs (palm, sphere)
- *  - bumps for trunks
- *  - leafs that aren't flat
- *  - textures
- *  
  */
-public final class Workplace {
+ public final class Workplace {
+	/*
+	 * TODO:
+	 *  - toolbar buttons for level changes of preview, toggling of leaf showing
+	 *  - zoom function for previews
+	 *  - show long parameter descriptions when mouse _moves_ to helpInfo,
+	 *    smaller window, smaller font?
+	 *  - option for showing the whole tree in a (preview) window?
+	 * 
+	 *  MORE FEATURES:
+	 *  - export to 3DS?
+	 *  - more kinds of leafs (palm, sphere)
+	 *  - bumps for trunks
+	 *  - leafs that aren't flat
+	 *  - textures
+	 *  
+	 */
 
 	JFrame frame;
 	Config config;

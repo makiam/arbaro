@@ -31,8 +31,8 @@ class TraversalException extends ArbaroError{
 */
 
 /**
- * An interface, for traversal of the segments and 
- * subsegments of a stem. (Compare Hierarchical Visitor Pattern)
+ * An interface, for traversal of the stems and 
+ * leaves of a tree. (Compare Hierarchical Visitor Pattern)
  * 
  * @author Wolfram Diestel
  */

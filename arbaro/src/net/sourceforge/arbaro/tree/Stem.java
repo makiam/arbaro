@@ -1283,7 +1283,7 @@ public class Stem {
             if (leaves != null) {
             		Enumeration l = leaves.elements();
             		while (l.hasMoreElements())
-            			if (! ((Leaf)l.nextElement()).accept(traversal))
+            			if (! ((Leaf)l.nextElement()).traverseTree(traversal))
             				break;
             }
             

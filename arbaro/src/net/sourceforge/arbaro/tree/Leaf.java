@@ -119,7 +119,7 @@ public class Leaf {
 		setLeafOrientation();
 	}
 	
-	public boolean accept(TreeTraversal traversal) throws TraversalException{
+	public boolean traverseTree(TreeTraversal traversal) throws TraversalException{
 	    return traversal.visitLeaf(this);
 	}
 };
