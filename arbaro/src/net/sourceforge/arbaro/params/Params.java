@@ -1024,7 +1024,7 @@ public class Params {
 		);
 		
 		dbl4Param("nRotate",-360,360,0,120,120,120,
-				"BRANCHING","spirangling angle",
+				"BRANCHING","spiraling angle",
 				"<strong>nRotate</strong> is the angle, the branches are rotating around the parent<br>\n"+
 				"If nRotate is negative the branches are located on alternating<br>\n"+
 				"sides of the parent.<br>\n"
