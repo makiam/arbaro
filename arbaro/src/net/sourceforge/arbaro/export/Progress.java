@@ -39,20 +39,35 @@ public final class Progress {
 	String phase;
 	long maxProgress;
 	long progress;
+	public char consoleChar=' '; // show progress also on Console
 	
 	public Progress() {
 		maxProgress=100;
 		progress=0;
 	}
 	
+	synchronized public void consoleProgress() {
+		if (consoleChar != ' ') {
+			System.err.print(consoleChar);
+		}
+	}
+	
+	synchronized public void setConsoleChar(char consoleChar) {
+		this.consoleChar= consoleChar;
+	}
+	
 	synchronized public void beginPhase(String ph, long max) {
 		phase = ph;
 		maxProgress = max;
 		progress = 0;
+		
+		if (consoleChar != ' ') System.err.println(ph);
 	}
 	
 	synchronized public void endPhase() {
 		progress = maxProgress;
+		
+		if (consoleChar != ' ') System.err.println();
 	}
 	
 	synchronized public void setProgress(long prog) throws ProgressError {

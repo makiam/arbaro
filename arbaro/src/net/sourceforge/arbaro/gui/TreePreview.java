@@ -40,6 +40,8 @@ import java.awt.Color;
 import net.sourceforge.arbaro.tree.*;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.mesh.*;
+import net.sourceforge.arbaro.meshfactory.*;
+import net.sourceforge.arbaro.params.Params;
 
 /**
  * An image showing parts of the edited tree
@@ -112,7 +114,8 @@ public class TreePreview extends JComponent {
 			else {
 				drawMesh(g);
 				//drawLeaves(g);
-				previewTree.traverseTree(new LeafDrawer(g));
+				Params params = previewTree.getParams();
+				previewTree.traverseTree(new LeafDrawer(g,params));
 			}
 
 			// DEBUG
@@ -205,11 +208,11 @@ public class TreePreview extends JComponent {
 			}
 			public Stem getFound() { return found; }
 			public boolean enterStem(Stem stem) {
-				if (found == null && stem.stemlevel < level)
+				if (found == null && stem.getLevel() < level)
 					return true; // look further
-				else if (found != null || stem.stemlevel > level)
+				else if (found != null || stem.getLevel() > level)
 					return false; // found a stem or too deep
-				else if (stem.stemlevel == level)
+				else if (stem.getLevel() == level)
 					found = stem;
 				
 				return true;
@@ -280,9 +283,10 @@ public class TreePreview extends JComponent {
 			// how much to scale for fitting into view?
 			scale = Math.min((getHeight()-2*margin)/dh,(getWidth()-2*margin)/dw);
 			
-			if (previewTree.params.debug)
+			/*if (previewTree.params.debug)
 				System.err.println("scale: "+scale);
-
+*/
+			
 			// shift to mid point of the view
 			transform.translate(getWidth()/2,getHeight()/2);					
 			// scale to image height
@@ -307,12 +311,13 @@ public class TreePreview extends JComponent {
 		// DEBUG
 		Point p = new Point();
 		transform.transform(new Point2D.Double(0.0,0.0),p);
-		if (previewTree.params.debug) {
+	/*	if (previewTree.params.debug) {
 			System.err.println("width: "+minw+"+"+dw);
 			System.err.println("height: "+minh+"+"+dh);
 			System.err.println("Origin at: "+p);
 			System.err.println("view: "+getWidth()+"x"+getHeight());
 		}
+		*/
 	}
 	
 	
@@ -365,12 +370,13 @@ public class TreePreview extends JComponent {
 		LeafMesh m;
 		Graphics g;
 		
-		public LeafDrawer(Graphics g) {
+		public LeafDrawer(Graphics g, Params params) {
 			this.g = g;
 			g.setColor(leafColor);
+			
+			m = new MeshFactory(params,true /* useQuads */).createLeafMesh();
 		}
 		public boolean enterTree(Tree tree) {
-			m = tree.createLeafMesh(false);
 			return true;
 		}
 		public boolean leaveTree(Tree tree) {
@@ -382,21 +388,21 @@ public class TreePreview extends JComponent {
 		public boolean leaveStem(Stem stem) {
 			return true;
 		}
-		public boolean visitLeaf(Leaf l) {
+		public boolean visitLeaf(Leaf leaf) {
 			if (m.isFlat()) {
-				Vector p = l.transf.apply(m.shapeVertexAt(m.getShapeVertexCount()-1).point);
+				Vector p = leaf.getTransformation().apply(m.shapeVertexAt(m.getShapeVertexCount()-1).point);
 			
 				for (int i=0; i<m.getShapeVertexCount(); i++) {
-					Vector q = l.transf.apply(m.shapeVertexAt(i).point);
+					Vector q = leaf.getTransformation().apply(m.shapeVertexAt(i).point);
 					drawLine(g,p,q);
 					p=q;
 				}
 			} else {
 				for (int i=0; i<m.getShapeFaceCount(); i++) {
 					Face f = m.shapeFaceAt(i);
-					Vector p = l.transf.apply(m.shapeVertexAt((int)f.points[0]).point);
-					Vector q = l.transf.apply(m.shapeVertexAt((int)f.points[1]).point);
-					Vector r = l.transf.apply(m.shapeVertexAt((int)f.points[2]).point);
+					Vector p = leaf.getTransformation().apply(m.shapeVertexAt((int)f.points[0]).point);
+					Vector q = leaf.getTransformation().apply(m.shapeVertexAt((int)f.points[1]).point);
+					Vector r = leaf.getTransformation().apply(m.shapeVertexAt((int)f.points[2]).point);
 					drawLine(g,p,q);
 					drawLine(g,p,r);
 					drawLine(g,r,q);
@@ -417,19 +423,19 @@ public class TreePreview extends JComponent {
 			Leaf l = (Leaf)leaves.nextElement();
 			
 			if (m.isFlat()) {
-				Vector p = l.transf.apply(m.shapeVertexAt(m.getShapeVertexCount()-1).point);
+				Vector p = l.getTransformation().apply(m.shapeVertexAt(m.getShapeVertexCount()-1).point);
 			
 				for (int i=0; i<m.getShapeVertexCount(); i++) {
-					Vector q = l.transf.apply(m.shapeVertexAt(i).point);
+					Vector q = l.getTransformation().apply(m.shapeVertexAt(i).point);
 					drawLine(g,p,q);
 					p=q;
 				}
 			} else {
 				for (int i=0; i<m.getShapeFaceCount(); i++) {
 					Face f = m.shapeFaceAt(i);
-					Vector p = l.transf.apply(m.shapeVertexAt((int)f.points[0]).point);
-					Vector q = l.transf.apply(m.shapeVertexAt((int)f.points[1]).point);
-					Vector r = l.transf.apply(m.shapeVertexAt((int)f.points[2]).point);
+					Vector p = l.getTransformation().apply(m.shapeVertexAt((int)f.points[0]).point);
+					Vector q = l.getTransformation().apply(m.shapeVertexAt((int)f.points[1]).point);
+					Vector r = l.getTransformation().apply(m.shapeVertexAt((int)f.points[2]).point);
 					drawLine(g,p,q);
 					drawLine(g,p,r);
 					drawLine(g,r,q);
@@ -484,7 +490,7 @@ public class TreePreview extends JComponent {
 						public boolean enterSegment(Segment seg) throws TraversalException {
 							// FIXME: maybe draw rectangles instead of thin lines
 							//drawStripe(g,seg.posFrom(),seg.rad1,seg.postTo(),seg.rad2());
-							drawLine(g,seg.posFrom(),seg.posTo());
+							drawLine(g,seg.getLowerPosition(),seg.getUpperPosition());
 							return true; 
 						}
 						public boolean leaveSegment(Segment seg) { return true; }

@@ -24,8 +24,15 @@ package net.sourceforge.arbaro.gui;
 
 import net.sourceforge.arbaro.params.IntParam;
 import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.transformation.Vector;
+import net.sourceforge.arbaro.tree.Leaf;
+import net.sourceforge.arbaro.tree.Stem;
+import net.sourceforge.arbaro.tree.TraversalException;
+import net.sourceforge.arbaro.tree.TreeGenerator;
+import net.sourceforge.arbaro.tree.TreeTraversal;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.mesh.Mesh;
+import net.sourceforge.arbaro.meshfactory.MeshFactory;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -42,12 +49,14 @@ import javax.swing.event.EventListenerList;
  * @author wdiestel
  *
  */
-public final class PreviewTree extends Tree {
+public final class PreviewTree implements Tree {
 	// preview always shows this levels and 
 	// the previous levels stems 
 	int showLevel=1;
 	Params originalParams;
+	Params params;
 	Mesh mesh;
+	Tree tree;
 	
 	protected ChangeEvent changeEvent = null;
 	protected EventListenerList listenerList = new EventListenerList();
@@ -55,10 +64,33 @@ public final class PreviewTree extends Tree {
 	/**
 	 * @param other
 	 */
-	public PreviewTree(Tree other) {
-		super(other);
-		originalParams=other.params;
+	public PreviewTree(Params params) {
+		this.originalParams=params;
+		this.params = params;
 	}
+	
+	public Params getParams() { return params; }
+	
+	// delegate interface methods to the tree
+	public boolean traverseTree(TreeTraversal traversal)
+		throws TraversalException {
+		return tree.traverseTree(traversal);
+	}
+
+	public long getStemCount() { return tree.getStemCount(); }
+
+	public long getLeafCount() { return tree.getLeafCount(); }
+
+	public Vector getMaxPoint() { return tree.getMaxPoint(); }
+
+	public Vector getMinPoint() { return tree.getMinPoint(); }
+
+	public int getSeed() { return tree.getSeed(); }
+
+	public double getHeight() { return tree.getHeight(); }
+	
+	public double getWidth() { return tree.getWidth(); }
+	
 	
 	public void setShowLevel(int l) {
 		int Levels = ((IntParam)(originalParams.getParam("Levels"))).intValue(); 
@@ -71,7 +103,7 @@ public final class PreviewTree extends Tree {
 	}
 
 	public void remake() throws Exception {
-			clear();
+			//clear();
 			params = new Params(originalParams);
 			params.preview=true;
 //			previewTree = new Tree(originalTree);
@@ -80,17 +112,20 @@ public final class PreviewTree extends Tree {
 			// FIXME: previewTree.Levels <= tree.Levels
 			int Levels = ((IntParam)(originalParams.getParam("Levels"))).intValue(); 
 			if (Levels>showLevel+1) {
-				setParam("Levels",""+(showLevel+1));
-				setParam("Leaves","0");
+				params.setParam("Levels",""+(showLevel+1));
+				params.setParam("Leaves","0");
 			} 
 			for (int i=0; i<showLevel; i++) {
-				setParam(""+i+"Branches","1");
+				params.setParam(""+i+"Branches","1");
 				// if (((FloatParam)previewTree.getParam(""+i+"DownAngleV")).doubleValue()>0)
-				setParam(""+i+"DownAngleV","0");
+				params.setParam(""+i+"DownAngleV","0");
 			}
 			
-		    make();	
-			mesh = createStemMesh(true);
+			TreeGenerator treeFactory = new TreeGenerator(params,null,false,false);
+		    tree = treeFactory.makeTree(null);
+		    
+		    MeshFactory meshFactory = new MeshFactory(params,true /* useQuads */);
+			mesh = meshFactory.createStemMesh(tree,null);
 			
 			fireStateChanged();
 	}

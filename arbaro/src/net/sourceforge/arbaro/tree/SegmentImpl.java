@@ -32,24 +32,32 @@ import net.sourceforge.arbaro.params.*;
  * 
  * @author Wolfram Diestel
  */
-public class Segment {
+class SegmentImpl implements Segment {
 	
-	Params par;
-	public LevelParams lpar;
+	//Params par;
+	//public LevelParams lpar;
 	public int index;
 	Transformation transf;
 	double rad1;
 	public double rad2;
 	double length;
+
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableSegment#getLength()
+	 */
 	public double getLength() { return length; }
-	
-	Stem stem;
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableSegment#getTransformation()
+	 */
+	public Transformation getTransformation() { return transf; }
+
+	StemImpl stem;
 	
 	// FIXME: use Enumeration instead of making this public
-	public java.util.Vector subsegments;
+	java.util.Vector subsegments;
 	
-	public Segment(/*Params params, LevelParams lparams,*/ 
-			Stem stm, int inx, Transformation trf, 
+	public SegmentImpl(/*Params params, LevelParams lparams,*/ 
+			StemImpl stm, int inx, Transformation trf, 
 			double r1, double r2) {
 		index = inx;
 		transf = trf; 
@@ -57,8 +65,8 @@ public class Segment {
 		rad2 = r2;
 		stem = stm;
 
-		par = stem.par;
-		lpar = stem.lpar;
+		//par = stem.par;
+		//lpar = stem.lpar;
 		length = stem.segmentLength;
 		
 		// FIXME: rad1 and rad2 could be calculated only when output occurs (?)
@@ -66,15 +74,24 @@ public class Segment {
 		// FIXME: inialize subsegs with a better estimation of size
 		subsegments = new java.util.Vector(10);
 	}
+	
+	public void addSubsegment(SubsegmentImpl ss) {
+		if (subsegments.size() > 0) {
+			((SubsegmentImpl)subsegments.elementAt(subsegments.size()-1)).next = ss; 
+		}
+		subsegments.add(ss);
+	}
+	
 
-	private void minMaxTest(Vector p1, Vector p2) {
-		stem.minMaxTest(p1);
-		stem.minMaxTest(p2);
+	void minMaxTest() {
+		stem.minMaxTest(getUpperPosition());
+		stem.minMaxTest(getLowerPosition());
 	}
 	
 	/**
 	 * Makes the segments from subsegments 
 	 */
+	/*
 	public void make() {
 		// FIXME: numbers for cnt should correspond to Smooth value
 		// helical stem
@@ -105,26 +122,27 @@ public class Segment {
 		
 		// FIXME: for helical stems maybe this test
 		// should be made for all subsegments
-		minMaxTest(posFrom(),posTo());
+		minMaxTest(getLowerPosition(),getUpperPosition());
 	}
-	
+	*/
 	/**
 	 * Creates susbsegments for the segment
 	 * 
 	 * @param cnt the number of subsegments
 	 */
+	/*
 	private void makeSubsegments(int cnt) {
-		Vector dir = posTo().sub(posFrom());
+		Vector dir = getUpperPosition().sub(getLowerPosition());
 		for (int i=0; i<cnt+1; i++) {
 			double pos = i*length/cnt;
 			// System.err.println("SUBSEG:stem_radius");
 			double rad = stem.stemRadius(index*length + pos);
 			// System.err.println("SUBSEG: pos: "+ pos+" rad: "+rad+" inx: "+index+" len: "+length);
 			
-			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad, pos));
+			subsegments.addElement(new Subsegment(getLowerPosition().add(dir.mul(pos/length)),rad, pos));
 		}
 	}
-	
+	*/
 	/**
 	 * Make a subsegments for a segment with spherical end
 	 * (last stem segment), subsegment lengths decrements near
@@ -132,17 +150,18 @@ public class Segment {
 	 * 
 	 * @param cnt the number of subsegments
 	 */
+	/*
 	private void makeSphericalEnd(int cnt) {
-		Vector dir = posTo().sub(posFrom());
+		Vector dir = getUpperPosition().sub(getLowerPosition());
 		for (int i=0; i<cnt; i++) {
 			double pos = length-length/Math.pow(2,i);
 			double rad = stem.stemRadius(index*length + pos);
 			//stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad, pos));
+			subsegments.addElement(new Subsegment(getLowerPosition().add(dir.mul(pos/length)),rad, pos));
 		}
-		subsegments.addElement(new Subsegment(posTo(),rad2,length));
+		subsegments.addElement(new Subsegment(getUpperPosition(),rad2,length));
 	}
-	
+	*/
 	/**
 	 * Make subsegments for a segment with flare
 	 * (first trunk segment). Subsegment lengths are decrementing
@@ -150,17 +169,18 @@ public class Segment {
 	 * 
 	 * @param cnt the number of subsegments
 	 */
+	/*
 	private void makeFlare(int cnt) {
-		Vector dir = posTo().sub(posFrom());
-		subsegments.addElement(new Subsegment(posFrom(),rad1,0));
+		Vector dir = getUpperPosition().sub(getLowerPosition());
+		subsegments.addElement(new Subsegment(getLowerPosition(),rad1,0));
 		for (int i=cnt-1; i>=0; i--) {
 			double pos = length/Math.pow(2,i);
 			double rad = stem.stemRadius(index*length+pos);
 			//self.stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-			subsegments.addElement(new Subsegment(posFrom().add(dir.mul(pos/length)),rad, pos));
+			subsegments.addElement(new Subsegment(getLowerPosition().add(dir.mul(pos/length)),rad, pos));
 		}
 	}
-	
+	*/
 	/**
 	 * Make subsegments for a segment with helical curving.
 	 * They curve around with 360° from base to top of the
@@ -169,6 +189,7 @@ public class Segment {
 	 * @param cnt the number of subsegments, should be higher
 	 *        when a smooth curve is needed.
 	 */
+	/*
 	private void makeHelix(int cnt) {
 		double angle = Math.abs(lpar.nCurveV)/180*Math.PI;
 		// this is the radius of the helix
@@ -186,7 +207,7 @@ public class Segment {
 			subsegments.addElement(new Subsegment(transf.apply(pos), srad, i*length/cnt));
 		}
 	}
-	
+	*/
 	/**
 	 * Calcs the position of a substem in the segment given 
 	 * a relativ position where in 0..1 - needed esp. for helical stems,
@@ -197,6 +218,7 @@ public class Segment {
 	 * @return the new transformation of the substem (shifted from
 	 *        the axis of the segment to the axis of the subsegment)
 	 */
+	/*
 	public Transformation substemPosition(Transformation trf,double where) {
 		if (lpar.nCurveV>=0) { // normal segment 
 			return trf.translate(transf.getZ().mul(where*length));
@@ -207,16 +229,16 @@ public class Segment {
 			Vector p1 = ((Subsegment)subsegments.elementAt(i)).pos;
 			Vector p2 = ((Subsegment)subsegments.elementAt(i+1)).pos;
 			Vector pos = p1.add(p2.sub(p1).mul(where - i/(subsegments.size()-1)));
-			return trf.translate(pos.sub(posFrom()));
+			return trf.translate(pos.sub(getLowerPosition()));
 		}
 	}
-	
+	*/
 	/**
 	 * Position at the beginning of the segment
 	 * 
 	 * @return beginning point of the segment
 	 */
-	public Vector posFrom() {
+	public Vector getLowerPosition() {
 		// self.stem.DBG("segmenttr0: %s, t: %s\n"%(self.transf_pred,self.transf_pred.t()))
 		return transf.getT();
 	}
@@ -226,27 +248,41 @@ public class Segment {
 	 * 
 	 * @return end point of the segment
 	 */
-	public Vector posTo() {
+	public Vector getUpperPosition() {
 		//self.stem.DBG("segmenttr1: %s, t: %s\n"%(self.transf,self.transf.t()))
 		return transf.getT().add(transf.getZ().mul(length));
 	}
 	
-	/**
-	 * Tests, if the segment is the first stem segment
-	 * 
-	 * @return true, if it's the first stem segment, false otherwise
+	public int getIndex() {
+		return index;
+	}
+	
+	public int getSubsegmentCount() {
+		return subsegments.size();
+	}
+	
+	public double getLowerRadius() {
+		return rad1;
+	}
+	
+	public double getUpperRadius() {
+		return rad2;
+	}
+
+	
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableSegment#isFirstStemSegment()
 	 */
 	public boolean isFirstStemSegment() {
 		return index == 0;
 	}
 	
-	/**
-	 * Tests, if the segment ist the last stem segment
-	 * 
-	 * @return true, if it's the last stem segment, false otherwise
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableSegment#isLastStemSegment()
 	 */
 	public boolean isLastStemSegment() {
-		return index == lpar.nCurveRes-1;
+		// return index == lpar.nCurveRes-1;
+		return index == stem.segments.size()-1;
 	}
 	
 	
@@ -326,11 +362,8 @@ public class Segment {
 	}
 	*/
 	
-	/**
-	 * Adds the segments to a mesh part. For every subsegment one ore
-	 * two mesh sections are added.
-	 * 
-	 * @param meshpart the mesh part, to wich the segment should be added
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableSegment#traverseStem(net.sourceforge.arbaro.tree.StemTraversal)
 	 */
 	
 /*	

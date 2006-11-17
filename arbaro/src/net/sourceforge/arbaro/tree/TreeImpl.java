@@ -45,7 +45,8 @@ import net.sourceforge.arbaro.mesh.*;
  * @author Wolfram Diestel
  *
  */
-public class Tree {
+class TreeImpl implements Tree {
+	/*
 	// Outputformats
 	public final static int MESH = 0;
 	public final static int CONES = 1;
@@ -53,9 +54,20 @@ public class Tree {
 	public final static int OBJ=3;
 	
 	final static String[] formats = { "Povray meshes","Povray primitives","AutoCAD DXF","Wavefront OBJ" };
+*/
+//	public Params params;
+	int seed = 13;
+	public int getSeed() { return seed; }
+	
+	long stemCount;
+	long leafCount;
+	public long getStemCount() { return stemCount; }
+	public long getLeafCount() { return leafCount; }
+	
+	public void setStemCount(long cnt) { stemCount=cnt; }
+	public void setLeafCount(long cnt) { leafCount=cnt; }
 
-	public Params params;
-
+	/*
 	int outputType = MESH;
 	String outputPath = System.getProperty("user.dir")
 		+System.getProperty("file.separator")+"pov";
@@ -63,12 +75,12 @@ public class Tree {
 	int renderH = 600;
 	boolean outputStemUVs = false;
 	boolean outputLeafUVs = false;
-	
+*/	
 	// the trunks (one for trees, many for bushes)
 	java.util.Vector trunks;
 	double trunk_rotangle = 0;
 	
-	Progress progress;
+	//Progress progress;
 	
 	Vector maxPoint;
 	Vector minPoint;
@@ -138,10 +150,11 @@ public class Tree {
 	/**
 	 * Creates a new tree object 
 	 */
-	public Tree() {
-		params = new Params();
+	public TreeImpl(int seed) {
+		//params = new Params();
+		this.seed = seed;
 		trunks = new java.util.Vector();
-		newProgress();
+		//newProgress();
 	}
 	
 	/**
@@ -150,21 +163,22 @@ public class Tree {
 	 * 
 	 * @param other the other tree, from wich parameters are taken
 	 */
-	public Tree(Tree other) {
-		params = new Params(other.params);
+	public TreeImpl(TreeImpl other) {
+		//params = new Params(other.params);
 		trunks = new java.util.Vector();
-		outputType = other.getOutputType();
+/*		outputType = other.getOutputType();
 		outputPath = other.getOutputPath();
 		renderW = other.getRenderW();
 		renderH = other.getRenderH();
 		outputStemUVs = other.outputStemUVs;
 		outputLeafUVs = other.outputLeafUVs;
 		newProgress();
+		*/
 	}
 	
 	public void clear() {
 		trunks = new java.util.Vector();
-		newProgress();
+		//newProgress();
 	}
 	
 	/**
@@ -176,6 +190,7 @@ public class Tree {
 	 * 
 	 * @throws Exception
 	 */
+	/*
 	public void make() throws Exception {
 		setupGenProgress();
 		params.prepare();
@@ -220,15 +235,12 @@ public class Tree {
 		if (params.verbose) System.err.println(".");
 		progress.endPhase();
 	}
+	*/
 	
-	/**
-	 * Calcs the trunk direction. Of special importance for plants with
-	 * multiple trunks.
-	 * 
-	 * @param trf The original transformation
-	 * @param lpar The parameters for the trunk (level 0)
-	 * @return The transformation after giving the trunk a new direction
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableTree#traverseTree(net.sourceforge.arbaro.tree.TreeTraversal)
 	 */
+	/*
 	Transformation trunkDirection(Transformation trf, LevelParams lpar) {
 		
 		// get rotation angle
@@ -248,6 +260,7 @@ public class Tree {
 		
 		return trf.rotxz(downangle,rotangle);
 	}
+	*/
 	
 	public boolean traverseTree(TreeTraversal traversal)  throws TraversalException{
 	    if (traversal.enterTree(this))  // enter this tree?
@@ -261,7 +274,8 @@ public class Tree {
         return traversal.leaveTree(this);
 	}
 
-	
+	// FIXME move to the caller class
+	/*
 	public void output(PrintWriter w) throws Exception {
 		progress.beginPhase("output tree code",-1);
 		
@@ -287,39 +301,50 @@ public class Tree {
 		if (params.verbose) System.err.println();
 		progress.endPhase();
 	}
+	*/
 	
-	// TODO should be moved to caller class, when TreeTraversals are working
+	// FIXME move to MeshFactory
+	/*
 	public Mesh createStemMesh(boolean useQuads) throws Exception {
 		progress.beginPhase("Creating mesh",getStemCount());
 		
-		Mesh mesh = new Mesh(params.Levels);
-/*		for (int t=0; t<trunks.size(); t++) {
-			((Stem)trunks.elementAt(t)).addToMesh(mesh,true,useQuads);
+		if (params.verbose) {
+			System.err.println("Output: " + (outputType == MESH? "mesh":"cones"));
+			if (outputType==MESH) { 
+				for (int l=0; l<Math.min(params.Levels,4); l++) {
+					System.err.println("  Level " + l + ": vertices/section: " 
+							+ params.levelParams[l].mesh_points + ", smooth: " 
+							+ (params.smooth_mesh_level>=l? "yes" : "no"));
+				}
+			}
 		}
-		getProgress().incProgress(trunks.size());
-		*/
+		
+		
+		Mesh mesh = new Mesh(params.Levels);
 		MeshCreator meshCreator = new MeshCreator(mesh, -1, useQuads, progress);
 		traverseTree(meshCreator);
 		
 		progress.endPhase();
 		return mesh;
 	}
-
-	// TODO should be moved to caller class, when TreeTraversals are working
+*/
+	// FIXME move to MeshFactory
+	/*
 	public Mesh createStemMeshByLevel(boolean useQuads) throws Exception {
 		progress.beginPhase("Creating mesh",getStemCount());
 		
-		Mesh mesh = new Mesh(params.Levels);
-		
-		/*
-		for (int level=0; level < params.Levels; level++) {
-			Enumeration stems = allStems(level);
-			while (stems.hasMoreElements()) {
-				((Stem)stems.nextElement()).addToMesh(mesh,false,useQuads);
-				getProgress().incProgress(1);
+		if (params.verbose) {
+			System.err.println("Output: " + (outputType == MESH? "mesh":"cones"));
+			if (outputType==MESH) { 
+				for (int l=0; l<Math.min(params.Levels,4); l++) {
+					System.err.println("  Level " + l + ": vertices/section: " 
+							+ params.levelParams[l].mesh_points + ", smooth: " 
+							+ (params.smooth_mesh_level>=l? "yes" : "no"));
+				}
 			}
 		}
-		*/
+
+		Mesh mesh = new Mesh(params.Levels);
 		for (int level=0; level < params.Levels; level++) {
 			MeshCreator meshCreator = new MeshCreator(mesh, level, useQuads, progress);
 			traverseTree(meshCreator);
@@ -328,13 +353,15 @@ public class Tree {
 		progress.endPhase();
 		return mesh;
 	}
-	
+	*/
+	// FIXME move to MeshFactory
+	/*
 	public LeafMesh createLeafMesh(boolean useQuads) {
 		double leafLength = params.LeafScale/Math.sqrt(params.LeafQuality);
 		double leafWidth = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
 		return new LeafMesh(params.LeafShape,leafLength,leafWidth,params.LeafStemLen,useQuads);
 	}
-	
+	*/
 	public void minMaxTest(Vector pt) {
 		maxPoint.setMaxCoord(pt);
 		minPoint.setMinCoord(pt);
@@ -346,10 +373,12 @@ public class Tree {
 	 * 
 	 * @param w
 	 */
+	/*
 	public void outputScene(PrintWriter w) throws Exception {
-		Exporter output = new PovSceneExporter(this,w);
+		Exporter output = new POVSceneExporter(this,w);
 		output.write();
 	}
+	*/
 	
 	
 	/*
@@ -366,16 +395,20 @@ public class Tree {
 	 * @param group The parameter group name
 	 * @return A hash table with the parameters
 	 */
+	/*
 	public java.util.TreeMap getParamGroup(int level, String group) {
 		return params.getParamGroup(level,group);
 	}
+	*/
 	
 	/**
 	 * Clear all parameter values of the tree.
 	 */
+	/*
 	public void clearParams() {
 		params.clearParams();
 	}
+	*/
 	
 	/**
 	 * Read parameter values from an XML definition file
@@ -383,9 +416,11 @@ public class Tree {
 	 * @param is The input XML stream
 	 * @throws ParamError
 	 */
+	/*
 	public void readFromXML(InputStream is) throws ParamError {
 		params.readFromXML(is);
 	}
+	*/
 	
 	/**
 	 * Writes out the parameters to an XML definition file
@@ -393,9 +428,11 @@ public class Tree {
 	 * @param out The output stream
 	 * @throws ParamError
 	 */
+	/*
 	public void toXML(PrintWriter out) throws ParamError {
 		params.toXML(out);
 	}
+	*/
 	
 //	/**
 //	 * Sets the species name of the tree
@@ -420,18 +457,22 @@ public class Tree {
 	 * 
 	 * @return the random seed
 	 */
+	/*
 	public int getSeed() {
 		return params.Seed;
 	}
+	*/
 	
 	/**
 	 * Sets the random seed for the tree
 	 * 
 	 * @param s
 	 */
+	/*
 	public void setSeed(int s) {
 		params.Seed = s;
 	}
+	*/
 	
 //	/**
 //	 * Returns the smooth value. It influences the number of vertices 
@@ -452,6 +493,7 @@ public class Tree {
 //	}
 	
 	// TODO will be obsolet, when TreeTraversals are working
+/*	
 	public long getLeafCount() {
 		if (params.Leaves==0) return 0;
 		
@@ -462,7 +504,9 @@ public class Tree {
 		}
 		return leafCount;
 	}
+	*/
 	
+	/*
 	public void setParam(String param, String value) throws ParamError {
 		params.setParam(param,value);
 	}
@@ -470,6 +514,7 @@ public class Tree {
 	public AbstractParam getParam(String param) {
 		return params.getParam(param);
 	}
+	*/
 	
 	
 	/**
@@ -479,7 +524,7 @@ public class Tree {
 	 * 
 	 * @param output
 	 */
-	public void setOutputType(int output) {
+/*	public void setOutputType(int output) {
 		outputType = output;
 	}
 	
@@ -514,7 +559,7 @@ public class Tree {
 	public int getRenderW() {
 		return renderW;
 	}
-	
+
 	public void setOutputStemUVs(boolean oUV) {
 		outputStemUVs = oUV;
 	}
@@ -537,14 +582,17 @@ public class Tree {
 	
 	public void newProgress() {
 		progress = new Progress();
+		if (tree.params.verbose) 
+			progress.setConsoleChar('.');
 	}
-	
+*/	
 	//    boolean writingCode; 
 	//    String progressMsg = "";
 	
 	/**
 	 * Sets the maximum for the progress while generating the tree 
 	 */
+	/*
 	public void setupGenProgress() {
 		if (progress != null) {
 			// max progress = trunks * trunk segments * (first level branches + 1) 
@@ -556,7 +604,9 @@ public class Tree {
 			progress.beginPhase("Creating tree structure",maxGenProgress);
 		}
 	}
+	*/
 	
+	/*
 	public long getStemCount() {
 		long stemCount = trunks.size();
 		for (int t=0; t<trunks.size(); t++) {
@@ -564,14 +614,17 @@ public class Tree {
 		}
 		return stemCount;
 	}
+	*/
 	
 	/**
 	 * Sets (i.e. calcs) the progress for the process of making the tree
 	 * object.
 	 */
-	long genProgress;
+//	long genProgress;
 	
-	public synchronized void updateGenProgress() {
+	/*
+	  
+	 public synchronized void updateGenProgress() {
 		try {
 			// how much of 0Branches*0CurveRes*(1Branches+1) are created yet
 			long sum = 0;
@@ -592,7 +645,7 @@ public class Tree {
 			System.err.println(e);
 		}
 	}
-
+*/
 	
 };
 

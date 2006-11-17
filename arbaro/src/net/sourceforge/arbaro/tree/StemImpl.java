@@ -141,12 +141,13 @@ class StemEnumerator implements Enumeration {
  * @author Wolfram Diestel
  * 
  */
-public class Stem {
-	Tree tree;
-	Params par;
+class StemImpl implements Stem {
+	TreeImpl tree;
+/*	Params par;
 	LevelParams lpar;
-	Stem parent; // the parent stem
-	Stem clonedFrom=null; // the stem, from which this clone spreads out 
+	*/
+	StemImpl parent; // the parent stem
+	StemImpl clonedFrom=null; // the stem, from which this clone spreads out 
 	
 	Transformation transf;
 	public Transformation getTransformation() { return transf; }
@@ -154,7 +155,13 @@ public class Stem {
 	Vector minPoint;
 	Vector maxPoint;
 	
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableStem#getMinPoint()
+	 */
 	public Vector getMinPoint() { return minPoint; }
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableStem#getMaxPoint()
+	 */
 	public Vector getMaxPoint() { return maxPoint; }
 	
 	// stems shouldn't be shorter than 1/2 mm,
@@ -330,7 +337,7 @@ public class Stem {
 	 * @param trf the base transformation of the stem
 	 * @param offs the offset of ste stem within the parent stem (0..1)
 	 */
-	public Stem(Tree tr, Stem growsOutOf, int stlev, 
+	public StemImpl(TreeImpl tr, StemImpl growsOutOf, int stlev, 
 			Transformation trf, double offs) /* offs=0 */ {
 		tree = tr;
 		stemlevel = stlev;
@@ -346,6 +353,7 @@ public class Stem {
 			}
 		}
 
+/*		
 		par = tree.params;
 		lpar = par.levelParams[Math.min(stemlevel,3)];
 
@@ -371,7 +379,7 @@ public class Stem {
 		index=0; // substem number
 		cloneIndex = new java.util.Vector();
 		pruneTest = false; // flag used for pruning
-		
+*/		
 		//...
 		maxPoint = new Vector(-Double.MAX_VALUE,-Double.MAX_VALUE,-Double.MAX_VALUE);
 		minPoint = new Vector(Double.MAX_VALUE,Double.MAX_VALUE,Double.MAX_VALUE);
@@ -387,31 +395,29 @@ public class Stem {
 	 *              has this transformation
 	 * @param trf  The transformation
 	 */
+/*	
 	void TRF(String where, Transformation trf) {
 		DBG(where + ": " + trf.toString());
 	}
-	
+	*/
 	/**
 	 * Output debug string, when debugging ist enabled
 	 * 
 	 * @param dbgstr The output string
 	 */
+	/*
 	public void DBG(String dbgstr) {
 		// print debug string to stderr if debugging is enabled
 		if (par.debug) System.err.println(getTreePosition() + ":" + dbgstr);
 	}
-	
-	/**
-	 * The position of the stem in the tree. 0.1c2.3 means:
-	 * fourth twig of the third clone of the second branch growing
-	 * out of the first (only?) trunk 
-	 * 
-	 * @return The stem position in the tree as a string
+	*/
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableStem#getTreePosition()
 	 */
 	public String getTreePosition() {
 		// returns the position of the stem in the tree as a string, e.g. 0c0.1
 		// for the second substem of the first clone of the trunk
-		Stem stem = this;
+		StemImpl stem = this;
 		int lev = stemlevel;
 		String pos = "";
 		while (lev>=0) {
@@ -431,6 +437,22 @@ public class Stem {
 		return pos;
 	}
 	
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableStem#getLevel()
+	 */
+	public int getLevel() {
+		return stemlevel;
+	}
+	
+	public double getBaseRadius() {
+		return ((SegmentImpl)segments.elementAt(0)).rad1;
+	}
+	
+	public double getPeakRadius() {
+		return ((SegmentImpl)segments.elementAt(segments.size()-1)).rad2;
+	}
+	
+	
 	/**
 	 * Make a clone of the stem at this position
 	 * 
@@ -439,6 +461,7 @@ public class Stem {
 	 *        the clone spreads out
 	 * @return The clone stem object
 	 */
+	/*
 	Stem clone(Transformation trf, int start_segm) {
 		// creates a clone stem with same atributes as this stem
 		Stem clone = new Stem(tree,this,stemlevel,trf,offset);
@@ -469,11 +492,13 @@ public class Stem {
 		}
 		return clone;
 	}
+	*/
 	
 	/**
 	 * Makes the stem, i.e. calculates all its segments, clones and substems
 	 * a.s.o. recursively
 	 */
+	/*
 	public void make() {
 		
 		// makes the stem with all its segments, substems, clones and leaves
@@ -507,11 +532,13 @@ public class Stem {
 //		tree.minMaxTest(maxPoint);
 //		tree.minMaxTest(minPoint);
 	}
+	*/
 	
 	/**
 	 * Apply pruning to the stem. If it grows out of the 
 	 * pruning envelope, it is shortened.
 	 */
+	/*
 	void pruning() {
 		
 		// save random state, split and len values
@@ -564,12 +591,13 @@ public class Stem {
 		pruneTest = false;
 		//self.DBG("PRUNE-ok: len: %f, segm: %d/%d\n"%(self.length,segm,self.segment_cnt))
 	}
-	
+	*/
 	/**
 	 * Calcs stem length from parameters and parent length
 	 * 
 	 * @return the stem length
 	 */
+	/*
 	double stemLength() {
 		if (stemlevel == 0) { // trunk
 			return (lpar.nLength + lpar.var(lpar.nLengthV)) * par.scale_tree;
@@ -655,6 +683,7 @@ public class Stem {
 		
 		return -1;
 	}
+	*/
 	
 	/**
 	 * Tests if a point is inside the pruning envelope
@@ -662,12 +691,13 @@ public class Stem {
 	 * @param vector the point to test
 	 * @return true if the point is inside the pruning envelope
 	 */
+	/*
 	boolean isInsideEnvelope(Vector vector) {
 		double r = Math.sqrt(vector.getX()*vector.getX() + vector.getY()*vector.getY());
 		double ratio = (par.scale_tree - vector.getZ())/(par.scale_tree*(1-par.BaseSize));
 		return (r/par.scale_tree) < (par.PruneWidth * par.getShapeRatio(ratio,8));
 	}
-	
+	*/
 	
 	/**
 	 * Calcs a new direction for the current segment
@@ -677,6 +707,7 @@ public class Stem {
 	 *              first stem segment
 	 * @return The new transformation of the current segment
 	 */
+	/*
 	Transformation newDirection(Transformation trf, int nsegm) {
 		// next segments direction
 		
@@ -749,13 +780,16 @@ public class Stem {
 		}
 		return trf;
 	}
+	*/
 	
 	/**
 	 * Calcs the base radius of the stem
 	 * 
 	 * @return
 	 */
+	/*
 	double stemBaseRadius() {
+		
 		if (stemlevel == 0) { // trunk
 			// radius at the base of the stem
 			// I think nScale+-nScaleV should applied to the stem radius but not to base radius(?)
@@ -770,6 +804,7 @@ public class Stem {
 			return Math.min(radius,max_radius);
 		}
 	}
+	*/
 	
 	/**
 	 * Calcs the stem radius at a given offset
@@ -777,6 +812,7 @@ public class Stem {
 	 * @param h the offset at which the radius is calculated
 	 * @return the stem radius at this position
 	 */
+	/*
 	public double stemRadius(double h) {
 		DBG("Stem.stem_radius("+h+") base_rad:"+baseRadius);
 		
@@ -839,12 +875,13 @@ public class Stem {
 		
 		return radius;
 	}
-	
+	*/
 	
 	/**
 	 * Precalcs some stem parameters used later during when generating
 	 * the current stem
 	 */
+	/*
 	void prepareSubstemParams() {
 		//int level = min(stemlevel+1,3);
 		LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
@@ -882,12 +919,13 @@ public class Stem {
 			leavesPerSegment = leavesPerBranch() / segmentCount;
 		}
 	}
-	
+	*/
 	/**
 	 * Number of leaves of the stem
 	 * 
 	 * @return
 	 */
+	/*
 	double leavesPerBranch() {
 		// calcs the number of leaves for a stem
 		if (par.Leaves==0) return 0;
@@ -901,12 +939,14 @@ public class Stem {
 				* par.getShapeRatio(offset/parent.length,par.LeafDistrib) 
 				* par.LeafQuality);
 	}
+	*/
 	
 	/**
 	 * Make substems of the current stem
 	 * 
 	 * @param segment
 	 */
+	/*
 	void makeSubstems(Segment segment) {
 		// creates substems for the current segment
 		LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
@@ -974,6 +1014,7 @@ public class Stem {
 			substems.addElement(substem);
 		}
 	}
+	*/
 	
 	/**
 	 * Calcs the direction of a substem from the parameters
@@ -982,6 +1023,7 @@ public class Stem {
 	 * @param offset The offset of the substem from the base of the currents stem
 	 * @return The direction of the substem
 	 */
+	/*
 	Transformation substemDirection(Transformation trf, double offset) {
 		LevelParams lpar_1 = par.levelParams[Math.min(stemlevel+1,3)];
 		//lev = min(level+1,3);
@@ -1010,12 +1052,14 @@ public class Stem {
 		
 		return trf.rotxz(downangle,rotangle);
 	}
+	*/
 	
 	/**
 	 * Creates the leaves for the current stem segment
 	 * 
 	 * @param segment
 	 */
+	/*
 	void makeLeaves(Segment segment) {
 		// creates leaves for the current segment
 		
@@ -1052,7 +1096,7 @@ public class Stem {
 				trf = trf.translate(segment.transf.getZ().mul(where*segmentLength));
 				
 				// create new leaf
-				Leaf leaf = new Leaf(par,trf/*,loffs*/);
+				Leaf leaf = new Leaf(par,trf); // ,loffs);
 				leaf.make();
 				leaves.addElement(leaf);
 				
@@ -1074,7 +1118,7 @@ public class Stem {
 			// use different method for odd and even number
 			if (cnt%2 == 1) {
 				// create one leaf in the middle
-				Leaf leaf = new Leaf(par,trf/*,segmentCount*segmentLength*/);
+				Leaf leaf = new Leaf(par,trf); //,segmentCount*segmentLength);
 				leaf.make();
 				leaves.addElement(leaf);
 				offsetangle = distangle;
@@ -1087,14 +1131,14 @@ public class Stem {
 					Transformation transf1 = trf.roty(rot*(offsetangle+s*distangle
 							+lpar_1.var(varangle)));
 					transf1 = transf1.rotx(downangle+lpar_1.var(vardown));
-					Leaf leaf = new Leaf(par,transf1/*,segmentCount*segmentLength*/);
+					Leaf leaf = new Leaf(par,transf1); //,segmentCount*segmentLength);
 					leaf.make();
 					leaves.addElement(leaf);
 				}
 			}
 		}
 	}
-	
+	*/
 	
 	/**
 	 * Make clones of the current stem at the current segment
@@ -1104,6 +1148,7 @@ public class Stem {
 	 * @return Segments outside the pruning envelope, -1
 	 *         if stem clone is completely inside the envelope
 	 */
+	/*
 	int makeClones(Transformation trf,int nseg) {
 		// splitting
 		// FIXME: maybe move this calculation to LevelParams
@@ -1162,7 +1207,7 @@ public class Stem {
 		trf = split(trf,0,nseg,seg_splits_eff);
 		return -1;
 	}
-	
+	*/
 	
 	/**
 	 * Gives a clone a new direction (splitting)
@@ -1173,6 +1218,7 @@ public class Stem {
 	 * @param nsplits The number of clones
 	 * @return The new direction for the clone
 	 */
+	/*
 	Transformation split(Transformation trf,
 			double s_angle, int nseg, int nsplits) {
 		// applies a split angle to the stem - the Weber/Penn method
@@ -1216,7 +1262,7 @@ public class Stem {
 		}
 		return trf;
 	}
-	
+	*/
 	/*
 	 # The Weber/Penn splitting method is problematic for big splitting angles, or
 	 # may be i misunderstood it, but it seems, that evenly splitting like for
@@ -1224,11 +1270,8 @@ public class Stem {
 	 */
 	
 	
-	/**
-	 * Adds the current stem to the mesh object
-	 *  
-	 * @param mesh the mesh object
-	 * @throws Exception
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableStem#traverseTree(net.sourceforge.arbaro.tree.TreeTraversal)
 	 */
 	/*
 	// TODO should be obsolete, when TreeTraversals are working
@@ -1306,6 +1349,9 @@ public class Stem {
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableStem#traverseStem(net.sourceforge.arbaro.tree.StemTraversal)
+	 */
 	public boolean traverseStem(StemTraversal traversal) throws TraversalException {
 	    if (traversal.enterStem(this))  // enter this stem?
         {
@@ -1333,12 +1379,13 @@ public class Stem {
 		long sum = substems.size();
 		for (int i=0; i<substems.size(); i++) {
 			// FIXME: what about clones?
-			sum += ((Stem)substems.elementAt(i)).substemTotal();
+			sum += ((StemImpl)substems.elementAt(i)).substemTotal();
 		}
 		return sum;
 	}
 	
 	// will be obsolet, when TreeTraversals are working
+	/*
 	long leafCount() {
 		long sum = 0;
 		
@@ -1368,8 +1415,12 @@ public class Stem {
 		
 		return sum;
 	}
+	*/
 	
 	// use with TreeTraversal
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableStem#getLeafCount()
+	 */
 	public long getLeafCount() {
 		if (leaves != null)
 			return leaves.size();
@@ -1377,9 +1428,23 @@ public class Stem {
 			return 0;
 	}
 	
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableStem#isClone()
+	 */
 	public boolean isClone(){
 		return cloneIndex.size()>0;
 	}
+	
+	/**
+	 * For every stem there is a box (as minPoint, maxPoint), 
+	 * within the stem with all it's substems of any level
+	 * should be contained. The box is calculated by invoking
+	 * this method for every point limiting a stem segment.
+	 * If such point of a stems segment of substems segment
+	 * is outside of the box, the box is adapted.
+	 *
+	 * @param pt The point which should be inside of the containing box
+	 */
 	
 	public void minMaxTest(Vector pt) {
 		maxPoint.setMaxCoord(pt);

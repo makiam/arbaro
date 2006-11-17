@@ -32,16 +32,18 @@ import net.sourceforge.arbaro.params.*;
  * 
  * @author Wolfram Diestel
  */
-public class Leaf {
+class LeafImpl implements Leaf {
 	
 	public Transformation transf;
 	Params par;
+	
+	public Transformation getTransformation() { return transf; }
 	
 //	double offset;    // how far from the parent's base
 //	double length;    // the length of the leaf (without leaf stem)
 //	double width;     // the width of the leaf
 	
-	public Leaf(Params params, Transformation trf/*, double offs*/) { /* offs = 0 */
+	public LeafImpl(Params params, Transformation trf/*, double offs*/) { /* offs = 0 */
 		par = params;
 		transf = trf;
 //		offset = offs;
@@ -119,6 +121,9 @@ public class Leaf {
 		setLeafOrientation();
 	}
 	
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableLeaf#traverseTree(net.sourceforge.arbaro.tree.TreeTraversal)
+	 */
 	public boolean traverseTree(TreeTraversal traversal) throws TraversalException{
 	    return traversal.visitLeaf(this);
 	}

@@ -28,6 +28,9 @@ import java.awt.event.*;
 import javax.swing.*;    
 
 import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.TreeGenerator;
+import net.sourceforge.arbaro.export.*;
+import net.sourceforge.arbaro.params.Params;
 
 public class ExportDialog {
 	final static int INTERVAL = 500; // 0.5 sec
@@ -39,7 +42,10 @@ public class ExportDialog {
 	JPanel mainPanel;
 	Progressbar progressbar;
 	
-	Tree tree;
+	// Tree tree;
+	Params params;
+	int seed;
+	ExporterFactory exporterFactory;
 
 	File treefile = null;
 	JFileChooser fileChooser;
@@ -67,11 +73,14 @@ public class ExportDialog {
 	
 	String fileSep = System.getProperty("file.separator");
 	
-	public ExportDialog(JFrame parent, Tree tr, Config cfg, boolean rend) {
+	public ExportDialog(JFrame parent, int seed, ExporterFactory exporterFactory, Params params, Config cfg, boolean render) {
 		
-		tree = tr;
-		config = cfg;
-		render = rend;
+		//tree = tr;
+		this.params = params;
+		this.config = cfg;
+		this.render = render;
+		this.exporterFactory = exporterFactory;
+		this.seed = seed;
 		
 		frame = new JFrame("Create and export tree");
 		frame.setIconImage(parent.getIconImage());
@@ -81,13 +90,13 @@ public class ExportDialog {
 		fileChooser = new JFileChooser();
 
 		// FIXME use path from preferences
-		fileChooser.setCurrentDirectory(new File(tree.getOutputPath()));
+		fileChooser.setCurrentDirectory(new File(exporterFactory.getOutputPath()));
 //		System.getProperty("user.dir")+fileSep+"pov"));
 		sceneFileChooser = new JFileChooser();
-		sceneFileChooser.setCurrentDirectory(new File(tree.getOutputPath()));
+		sceneFileChooser.setCurrentDirectory(new File(exporterFactory.getOutputPath()));
 //				System.getProperty("user.dir")+fileSep+"pov"));
 		renderFileChooser = new JFileChooser();
-		renderFileChooser.setCurrentDirectory(new File(tree.getOutputPath()));
+		renderFileChooser.setCurrentDirectory(new File(exporterFactory.getOutputPath()));
 //		System.getProperty("user.dir")+fileSep+"pov"));
 		
 		timer = new Timer(INTERVAL, new TimerListener());
@@ -146,9 +155,9 @@ public class ExportDialog {
 
 	private void formatSettings(int outputFormat) {
 		switch (outputFormat) {
-		case Tree.MESH: 
+		case ExporterFactory.POV_MESH: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
-					+fileSep+tree.getParam("Species")+".inc");
+					+fileSep+params.Species+".inc");
 		sceneCheckbox.setEnabled(true);
 		renderCheckbox.setEnabled(true);
 		smoothField.setEnabled(true);
@@ -157,9 +166,9 @@ public class ExportDialog {
 		uvLeavesCheckbox.setEnabled(true);
 		break;
 		
-		case Tree.CONES: 
+		case ExporterFactory.POV_CONES: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
-					+fileSep+tree.getParam("Species")+".inc");
+					+fileSep+params.Species+".inc");
 		sceneCheckbox.setEnabled(true);
 		renderCheckbox.setEnabled(true);
 		smoothField.setEnabled(false);
@@ -168,9 +177,9 @@ public class ExportDialog {
 		uvLeavesCheckbox.setEnabled(false);
 		break;
 		
-		case Tree.DXF: 
+		case ExporterFactory.DXF: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
-					+fileSep+tree.getParam("Species")+".dxf");
+					+fileSep+params.Species+".dxf");
 		sceneCheckbox.setSelected(false);
 		sceneCheckbox.setEnabled(false);
 		renderCheckbox.setSelected(false);
@@ -181,9 +190,9 @@ public class ExportDialog {
 		uvLeavesCheckbox.setEnabled(false);
 		break;
 		
-		case Tree.OBJ: 
+		case ExporterFactory.OBJ: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
-					+fileSep+tree.getParam("Species")+".obj");
+					+fileSep+params.Species+".obj");
 		sceneCheckbox.setSelected(false);
 		sceneCheckbox.setEnabled(false);
 		renderCheckbox.setSelected(false);
@@ -238,13 +247,13 @@ public class ExportDialog {
 		panel.add(label);
 		
 		ctext.gridy = line;
-		formatBox = new JComboBox(Tree.getOutputTypes());
+		formatBox = new JComboBox(ExporterFactory.getExportFormats());
 		int format = Integer.parseInt(config.getProperty("export.format","0")); 
 		if (render) {
-			for (int i=formatBox.getItemCount()-1; i>=Tree.DXF; i--) {
+			for (int i=formatBox.getItemCount()-1; i>=ExporterFactory.DXF; i--) {
 				formatBox.removeItemAt(i);
 			}
-			if (format>=Tree.DXF) format=Tree.MESH;
+			if (format>=ExporterFactory.DXF) format=ExporterFactory.POV_MESH;
 		}
 		formatBox.setEditable(false);
 		formatBox.setSelectedIndex(format);
@@ -267,7 +276,7 @@ public class ExportDialog {
 		ctext.gridy = line;
 		fileField = new JTextField(30);
 		fileField.setText(fileChooser.getCurrentDirectory().getPath()
-				+fileSep+tree.getParam("Species")+".inc");
+				+fileSep+params.Species+".inc");
 		fileField.setMinimumSize(new Dimension(250,19));
 		grid.setConstraints(fileField,ctext);
 		panel.add(fileField);
@@ -293,9 +302,9 @@ public class ExportDialog {
 		
 		ctext.gridy = line;
 		uvStemsCheckbox = new JCheckBox("for Stems");
-		uvStemsCheckbox.setSelected(tree.getOutputStemUVs());
+		uvStemsCheckbox.setSelected(exporterFactory.getOutputStemUVs());
 		uvLeavesCheckbox = new JCheckBox("for Leaves");
-		uvLeavesCheckbox.setSelected(tree.getOutputLeafUVs());
+		uvLeavesCheckbox.setSelected(exporterFactory.getOutputLeafUVs());
 		JPanel uv = new JPanel();
 		uv.add(uvStemsCheckbox);
 		uv.add(uvLeavesCheckbox);
@@ -320,7 +329,7 @@ public class ExportDialog {
 		sceneFileField = new JTextField(30);
 		sceneFileField.setEnabled(sceneCheckbox.isSelected());
 		sceneFileField.setText(sceneFileChooser.getCurrentDirectory().getPath()
-				+fileSep+tree.getParam("Species")+".pov");
+				+fileSep+params.Species+".pov");
 		sceneFileField.setMinimumSize(new Dimension(250,19));
 		grid.setConstraints(sceneFileField,ctext);
 		panel.add(sceneFileField);
@@ -346,7 +355,7 @@ public class ExportDialog {
 		panel.add(label);
 		
 		ctext.gridy = line;
-		seedField.setText(""+tree.getSeed()); 
+		seedField.setText(""+seed); 
 		seedField.setMinimumSize(new Dimension(80,19));
 		grid.setConstraints(seedField,ctext);
 		panel.add(seedField);
@@ -358,7 +367,7 @@ public class ExportDialog {
 		panel.add(label);
 		
 		ctext.gridy = line;
-		smoothField.setText(tree.getParam("Smooth").toString());
+		smoothField.setText(params.getParam("Smooth").toString());
 		smoothField.setMinimumSize(new Dimension(80,19));
 		grid.setConstraints(smoothField,ctext);
 		panel.add(smoothField);
@@ -415,7 +424,7 @@ public class ExportDialog {
 		renderFileField = new JTextField(30);
 		renderFileField.setEnabled(renderCheckbox.isSelected());
 		renderFileField.setText(renderFileChooser.getCurrentDirectory().getPath()
-				+fileSep+tree.getParam("Species")+".png");
+				+fileSep+params.Species+".png");
 		renderFileField.setMinimumSize(new Dimension(250,19));
 		grid.setConstraints(renderFileField,ctext);
 		panel.add(renderFileField);
@@ -441,7 +450,7 @@ public class ExportDialog {
 		panel.add(label);
 		
 		ctext.gridy = line;
-		widthField.setText(""+tree.getRenderW());
+		widthField.setText(""+exporterFactory.getRenderW());
 		widthField.setMinimumSize(new Dimension(80,19));
 		grid.setConstraints(widthField,ctext);
 		panel.add(widthField);
@@ -453,7 +462,7 @@ public class ExportDialog {
 		panel.add(label);
 		
 		ctext.gridy = line;
-		heightField.setText(""+tree.getRenderH());
+		heightField.setText(""+exporterFactory.getRenderH());
 		heightField.setMinimumSize(new Dimension(80,19));
 		grid.setConstraints(heightField,ctext);
 		panel.add(heightField);
@@ -470,14 +479,18 @@ public class ExportDialog {
 			
 			// get seed, output parameters
 			
+			// FIXME set progress, verbose, debug here?
+			TreeGenerator treeFactory = new TreeGenerator(params,null,false,false);
+			ExporterFactory exporterFactory = new ExporterFactory();
+			
 			try{
-				tree.setSeed(Integer.parseInt(seedField.getText()));
-				tree.setParam("Smooth",smoothField.getText());
-				tree.setRenderW(Integer.parseInt(widthField.getText()));
-				tree.setRenderH(Integer.parseInt(heightField.getText()));
-				tree.setOutputType(formatBox.getSelectedIndex());
-				tree.setOutputStemUVs(uvStemsCheckbox.isSelected());
-				tree.setOutputLeafUVs(uvLeavesCheckbox.isSelected());
+				treeFactory.setSeed(Integer.parseInt(seedField.getText()));
+				treeFactory.setParam("Smooth",smoothField.getText());
+				exporterFactory.setRenderW(Integer.parseInt(widthField.getText()));
+				exporterFactory.setRenderH(Integer.parseInt(heightField.getText()));
+				exporterFactory.setExportFormat(formatBox.getSelectedIndex());
+				exporterFactory.setOutputStemUVs(uvStemsCheckbox.isSelected());
+				exporterFactory.setOutputLeafUVs(uvLeavesCheckbox.isSelected());
 				//FIXME fileChooser.getPath() ???
 				//tree.setOutputPath(fileField.getText());
 			} catch (Exception err) {
@@ -501,7 +514,7 @@ public class ExportDialog {
 			if (sceneCheckbox.isSelected()) povfile = new File(sceneFileField.getText());
 			String imgFilename = null;
 			if (renderCheckbox.isSelected()) imgFilename = renderFileField.getText();
-			treeCreationTask.start(tree,incfile,povfile,imgFilename); //fileChooser.getSelectedFile());
+			treeCreationTask.start(treeFactory,exporterFactory,incfile,povfile,imgFilename); //fileChooser.getSelectedFile());
 			timer.start();
 		}
 	}
@@ -591,7 +604,10 @@ class Progressbar extends JPanel {
 /* this class actually creates the tree and saves it to a POV file
  */
 class TreeCreationTask {
-	Tree tmptree;
+	TreeGenerator treeFactory;
+	ExporterFactory exporterFactory;
+	Progress progress;
+	//Tree tmptree;
 	PrintWriter writer;
 	File scene_file = null;
 	PrintWriter scenewriter = null;
@@ -622,11 +638,12 @@ class TreeCreationTask {
 		isNotActive=true;
 	};
 	
-	public void start(Tree tree, File outFile, File sceneFile, String imgFilename) {
+	public void start(TreeGenerator treeFactory, ExporterFactory exporterFactory, 
+			File outFile, File sceneFile, String imgFilename) {
 		// create new Tree copying the parameters of tree
 		try {
-			tmptree = new Tree(tree);
-			tmptree.params.verbose=false;
+			this.treeFactory = treeFactory;
+			this.exporterFactory = exporterFactory;
 			
 			writer = new PrintWriter(new FileWriter(outFile)); 
 			if (sceneFile != null) {
@@ -647,11 +664,11 @@ class TreeCreationTask {
 	}
 	
 	int getProgress() {
-		return tmptree.getProgress().getPercent();
+		return progress.getPercent();
 	}
 	
 	String getProgressMsg() {
-		return tmptree.getProgress().getPhase();
+		return progress.getPhase();
 	}
 	
 	void stop() {
@@ -673,8 +690,8 @@ class TreeCreationTask {
 				
 				String [] povcmd = { povrayexe,
 						"+L"+scene_file.getParent(),
-						"+w"+tmptree.getRenderW(),
-						"+h"+tmptree.getRenderH(),
+						"+w"+exporterFactory.getRenderW(),
+						"+h"+exporterFactory.getRenderH(),
 						"+o"+renderFilename,
 						scene_file.getPath()};
 				System.err.println(povcmd);
@@ -693,15 +710,30 @@ class TreeCreationTask {
 				e.printStackTrace(System.err);
 			}
 		}
+		
 		DoTask() {
 			try {
-				tmptree.make();
-				tmptree.output(writer);
-				if (scenewriter != null) tmptree.outputScene(scenewriter);
-				if (renderFilename != null && renderFilename.length()>0) {
-					tmptree.getProgress().beginPhase("Rendering tree",-1);
-					render();
+				progress = new Progress();
+				// create the tree
+				Tree tree = treeFactory.makeTree(progress);
+				Params params = treeFactory.getParams();
+				// export the tree
+				Exporter exporter = exporterFactory.createExporter(tree,params);
+				exporter.write(writer,progress);
+				
+				// export Povray scene ?
+				if (scenewriter != null) {
+					exporter = exporterFactory.createSceneExporter(tree,params);
+					exporter.write(scenewriter,progress);
 				}
+				
+				// render scene ?
+				if (renderFilename != null && renderFilename.length()>0) {
+					progress.beginPhase("Rendering tree",-1);
+					render();
+					progress.endPhase();
+				}
+				
 			} catch (Exception err) {
 				System.err.println(err);
 				err.printStackTrace(System.err);

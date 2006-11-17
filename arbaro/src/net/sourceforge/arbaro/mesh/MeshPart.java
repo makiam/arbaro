@@ -92,9 +92,9 @@ public class MeshPart extends java.util.Vector {
 			// finding the corresponding segment in the parent stem's mesh
 			int uvVertexOffset=0; 
 			if (uv && stem.isClone()) {
-				MeshPart mp = ((MeshPart)mesh.elementAt(mesh.firstMeshPart[stem.stemlevel]));
+				MeshPart mp = ((MeshPart)mesh.elementAt(mesh.firstMeshPart[stem.getLevel()]));
 				for (MeshSection ms=((MeshSection)mp.elementAt(1)); // ignore root vertex
-					ms.next.segment.index < sec.segment.index;
+					ms.next.segment.getIndex() < sec.segment.getIndex();
 					ms = ms.next) {
 					
 					uvVertexOffset += ms.size()==1? 1 : ms.size()+1;
@@ -134,13 +134,13 @@ public class MeshPart extends java.util.Vector {
 	}
 	
 	
-	public MeshPart(Stem aStem, boolean normals, boolean quads) { 
+	public MeshPart(Stem stem, boolean useNormals, boolean useQuads) { 
 		// FIXME normals not yet used,
 		// other mesh output format needed if theire are
 		// less normals then vertices
-		useNormals = normals;
-		useQuads = quads;
-		stem = aStem;
+		this.useNormals = useNormals;
+		this.useQuads = useQuads;
+		this.stem = stem;
 	}
 	
 	public Stem getStem() {
@@ -152,7 +152,7 @@ public class MeshPart extends java.util.Vector {
 	}
 	
 	public int getLevel() {
-		return stem.stemlevel;
+		return stem.getLevel();
 	}
 	
 	/**
@@ -423,9 +423,9 @@ public class MeshPart extends java.util.Vector {
 		// finding the corresponding segment in the parent stem's mesh
 		int uvVertexOffset=0; 
 		if (stem.isClone()) {
-			MeshPart mp = ((MeshPart)mesh.elementAt(mesh.firstMeshPart[stem.stemlevel]));
+			MeshPart mp = ((MeshPart)mesh.elementAt(mesh.firstMeshPart[stem.getLevel()]));
 			for (MeshSection ms=((MeshSection)mp.elementAt(1)); // ignore root vertex
-				ms.next.segment.index < section.segment.index;
+				ms.next.segment.getIndex() < section.segment.getIndex();
 				ms = ms.next) {
 				
 				uvVertexOffset += ms.size()==1? 1 : ms.size()+1;

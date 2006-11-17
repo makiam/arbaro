@@ -26,7 +26,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.export.ExporterFactory;
 
 public class CfgDialog {
 	JFrame frame;
@@ -93,7 +93,7 @@ public class CfgDialog {
 		mainPanel.add(label);
 		
 		ctext.gridy = line;
-		formatBox = new JComboBox(Tree.getOutputTypes());
+		formatBox = new JComboBox(ExporterFactory.getExportFormats());
 		formatBox.setEditable(false);
 		formatBox.setSelectedIndex(
 				Integer.parseInt(config.getProperty("export.format","0")));

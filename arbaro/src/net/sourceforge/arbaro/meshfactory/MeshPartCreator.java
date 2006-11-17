@@ -20,11 +20,12 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.meshfactory;
 
 import net.sourceforge.arbaro.mesh.MeshPart;
 import net.sourceforge.arbaro.mesh.MeshSection;
 import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.tree.*;
 import net.sourceforge.arbaro.params.*;
 
 
@@ -34,19 +35,24 @@ import net.sourceforge.arbaro.params.*;
  * @author wolfram
  *
  */
-public class MeshPartCreator implements StemTraversal {
+class MeshPartCreator implements StemTraversal {
 	MeshPart meshPart;
 	boolean useQuads;
 	Stem stem;
 	Segment segment;
 	boolean firstSubsegment;
+	Params par;
+	LevelParams lpar;
+
 	
 	/**
 	 * 
 	 */
-	public MeshPartCreator(boolean useQuads) {
+	public MeshPartCreator(Params params, boolean useQuads) {
 		super();
 		this.useQuads = useQuads;
+		this.par = params;
+		this.lpar = par.getLevelParams(0);
 	}
 
 	public MeshPart getMeshPart() {
@@ -70,9 +76,11 @@ public class MeshPartCreator implements StemTraversal {
 	 */
 	public boolean enterStem(Stem stem) throws TraversalException {
 		this.stem = stem;
-		int smooth_mesh_level = stem.tree.params.smooth_mesh_level; 
-		meshPart = new MeshPart(stem, stem.stemlevel<=smooth_mesh_level, useQuads);
-
+		lpar = par.getLevelParams(stem.getLevel()); //segment.lpar;
+		int smooth_mesh_level = par.smooth_mesh_level;
+		
+		meshPart = new MeshPart(stem, stem.getLevel()<=smooth_mesh_level, useQuads);
+		
 		return true;
 	}
 
@@ -87,19 +95,19 @@ public class MeshPartCreator implements StemTraversal {
 			// close mesh with normal in z-direction
 			if (segment.isLastStemSegment()) {
 				
-				if (segment.rad2>0.000001) {
-					createSectionMeshpoints(segment.posTo(),0,false,
+				if (segment.getUpperRadius()>0.000001) {
+					createSectionMeshpoints(segment.getUpperPosition(),0,false,
 							1);
 				}
 				
 				//DBG System.err.println("LAST StemSegm, setting normals to Z-dir");
-				((MeshSection)meshPart.lastElement()).setNormalsToVector(segment.transf.getZ());
+				((MeshSection)meshPart.lastElement()).setNormalsToVector(segment.getTransformation().getZ());
 			}
 			
 			return true;
 		} catch (Exception e) {
 			throw new TraversalException("Mesh creation error at tree pos: " 
-					+ stem.getTreePosition() + " segment "+segment.index+": "
+					+ stem.getTreePosition() + " segment "+segment.getIndex()+": "
 					+ e.getMessage());
 		}
 
@@ -120,10 +128,9 @@ public class MeshPartCreator implements StemTraversal {
 		
 		// System.err.println("Segment-create meshpts, pos: "+pos+" rad: "+rad);
 		
-		Params par = segment.par;
-		LevelParams lpar = segment.lpar;
+		//LevelParams lpar = params.levelParams[stem.getLevel()]; //segment.lpar;
 		
-		Transformation trf = segment.transf.translate(pos.sub(segment.posFrom()));
+		Transformation trf = segment.getTransformation().translate(pos.sub(segment.getLowerPosition()));
 		//self.stem.TRF("MESH:",trf)
 		
 		// if radius = 0 create only one point
@@ -153,7 +160,7 @@ public class MeshPartCreator implements StemTraversal {
 					//	rad*(1.0+self.tree.LobeDepth*cos(self.tree.Lobes*angle*pi/180.0))))
 					double rad1 = rad * (1 + 
 							par.random.uniform(-par._0ScaleV,par._0ScaleV)/
-							segment.subsegments.size());
+							segment.getSubsegmentCount());
 					pt = pt.mul(rad1*(1.0+par.LobeDepth*Math.cos(par.Lobes*angle*Math.PI/180.0))); 
 				} else {
 					pt = pt.mul(rad); // faster - no radius calculations
@@ -187,19 +194,19 @@ public class MeshPartCreator implements StemTraversal {
 			throws TraversalException {
 		
 		try {
-			double vLength = stem.getLength()+stem.stemRadius(0)+stem.stemRadius(stem.length);
+			double vLength = stem.getLength()+stem.getBaseRadius()+stem.getPeakRadius();
 			//double vBase = + stem.stemRadius(0);
 			
 			// if first segment, create lower meshpoints
 			if (meshPart.size() == 0) {
 				// one point at the stem origin, with normal in reverse z-direction
-				createSectionMeshpoints(ss.pos,0,
-						segment.isFirstStemSegment() && segment.lpar.level==0,0);
-				((MeshSection)meshPart.firstElement()).setNormalsToVector(segment.transf.getZ().mul(-1));
+				createSectionMeshpoints(ss.getPosition(),0,
+						segment.isFirstStemSegment() && lpar.level==0,0);
+				((MeshSection)meshPart.firstElement()).setNormalsToVector(segment.getTransformation().getZ().mul(-1));
 				
 				// more points around the stem origin
-				createSectionMeshpoints(ss.pos,ss.rad,
-						segment.isFirstStemSegment() && segment.lpar.level==0,
+				createSectionMeshpoints(ss.getPosition(),ss.getRadius(),
+						segment.isFirstStemSegment() && lpar.level==0,
 						0 /* vBase/vLength */);
 
 				firstSubsegment=false;
@@ -212,8 +219,8 @@ public class MeshPartCreator implements StemTraversal {
 					firstSubsegment=false;
 				} else {
 					// create meshpoints on top of each subsegment
-					createSectionMeshpoints(ss.pos,ss.rad,false,
-						(/*vBase+*/segment.index*segment.length+ss.height)/vLength);
+					createSectionMeshpoints(ss.getPosition(),ss.getRadius(),false,
+						(/*vBase+*/segment.getIndex()*segment.getLength()+ss.getHeight())/vLength);
 				}
 			}
 			
@@ -221,7 +228,7 @@ public class MeshPartCreator implements StemTraversal {
 			
 		} catch (Exception e) {
 			throw new TraversalException("Mesh creation error at tree pos: " 
-					+ stem.getTreePosition() + " subseg of segment "+segment.index+": "
+					+ stem.getTreePosition() + " subseg of segment "+segment.getIndex()+": "
 					+ e.toString());
 		}		
 	}

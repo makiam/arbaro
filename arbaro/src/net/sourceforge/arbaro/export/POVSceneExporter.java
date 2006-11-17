@@ -29,58 +29,70 @@ package net.sourceforge.arbaro.export;
 import java.io.PrintWriter;
 
 import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.params.*;
 
 /**
  * Creates a Povray scene file with the rendered tree
  * included.
  * 
  */
-public class PovSceneExporter extends Exporter {
-
+class POVSceneExporter extends AbstractExporter {
+	Tree tree;
+	Params params;
+	String povrayDeclarationPrefix;
+	int renderW;
+	int renderH;
+	
 	/**
-	 * @param aTree
-	 * @param pw
+	 * @param tree
 	 */
-	public PovSceneExporter(Tree tree, PrintWriter pw) {
-		super(tree, pw, null);
+	public POVSceneExporter(Tree tree, Params params,
+			int renderW, int renderH) {
+		this.tree = tree;
+		this.params = params;
+		this.renderW = renderW;
+		this.renderH = renderH;
+		this.povrayDeclarationPrefix = params.getParam("Species") + "_" + tree.getSeed() + "_"; 
 	}
-
+	
     /**
      * Returns a prefix for the Povray objects names,
      * it consists of the species name and the random seed
      * 
      * @return the prefix string
      */
+	/*
     private String povrayDeclarationPrefix() {
-    	return tree.params.Species + "_" + tree.params.Seed + "_";
+    		return params.getParam("Species") + "_" + tree.getSeed() + "_";
     }
+    */
 
-    public void write() throws ExportError {
-		w.println("// render as "+tree.getRenderH()+"x"+tree.getRenderW());
+    public void doWrite() throws ExportError {
+		w.println("// render as "+renderH+"x"+renderW);
 
-		w.println("#include \"" + tree.params.Species + ".inc\"");
+		w.println("#include \"" + params.getParam("Species") + ".inc\"");
 		w.println("background {rgb <0.95,0.95,0.9>}");
 
 		w.println("light_source { <5000,5000,-3000>, rgb 1.2 }");
 		w.println("light_source { <-5000,2000,3000>, rgb 0.5 shadowless }");
 
-		w.println("#declare HEIGHT = " + povrayDeclarationPrefix() + "height * 1.3;");
-		w.println("#declare WIDTH = HEIGHT*"+tree.getRenderW()+"/"+tree.getRenderH()+";");
+		w.println("#declare HEIGHT = " + povrayDeclarationPrefix + "height * 1.3;");
+		w.println("#declare WIDTH = HEIGHT*"+renderW+"/"+renderH+";");
 
 		w.println("camera { orthographic location <0, HEIGHT*0.45, -100>");
 		w.println("         right <WIDTH, 0, 0> up <0, HEIGHT, 0>");
 		w.println("         look_at <0, HEIGHT*0.45, -80> }");
 
 		w.println("union { ");
-		w.println("         object { " + povrayDeclarationPrefix() + "stems");
+		w.println("         object { " + povrayDeclarationPrefix + "stems");
 		w.println("                pigment {color rgb 0.9} }"); 
-		w.println("         object { " + povrayDeclarationPrefix() + "leaves");
+		w.println("         object { " + povrayDeclarationPrefix + "leaves");
 		w.println("                texture { pigment {color rgb 1} ");
 		w.println("                          finish { ambient 0.15 diffuse 0.8 }}}");
 		w.println("         rotate 90*y }");
 
-		if (tree.params.Leaves > 0) {
-		    w.println("         object { " + povrayDeclarationPrefix() + "stems");
+		if (((IntParam)params.getParam("Leaves")).intValue() > 0) {
+		    w.println("         object { " + povrayDeclarationPrefix + "stems");
 		    w.println("                scale 0.7 rotate 45*y");  
 		    w.println("                translate <WIDTH*0.33,HEIGHT*0.33,WIDTH>");
 		    w.println("                pigment {color rgb 0.9} }"); 

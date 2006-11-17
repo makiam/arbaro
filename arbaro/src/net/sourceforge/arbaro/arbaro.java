@@ -30,14 +30,14 @@ import java.io.FileWriter;
 import java.io.File;
 
 import net.sourceforge.arbaro.tree.*;
+import net.sourceforge.arbaro.export.*;
+import net.sourceforge.arbaro.params.Params;
 
 /**
  * Main class for command line version of Arbaro 
  */
 
 public class arbaro {
-	static Tree tree;
-	
 	static int XMLinput = 0;
 	static int CFGinput = 1;
 	static int XMLoutput = 99;
@@ -65,34 +65,36 @@ public class arbaro {
 		println();
 		println("     -q|--quiet          Only error messages are output to stderr no progress");
 		println();
-		println("     -d|--debug          Much debugging ouput should be interesting for developer only");
+		println("     -d|--debug          Much debugging ouput should be interesting for developers only");
 		println();
-		println("     -o|--output <file>  Output Povray code to this file instead of STDOUT");
+		println("     -o|--output <file>  Output tree code to this file instead of STDOUT");
 		println();
 		println("     -s|--seed <seed>    Random seed for the tree, default is 13, but you won't all");
-		println("                         trees look the same as mine, so giv something like -s 17 here");
-		println("                         the seed is part of the  declaration string in the povray file");
+		println("                         trees look the same as mine, so give something like -s 17 here");
+		println("                         the seed is part of the  declaration string in povray files");
 		println();
-		println("    -l|--levels <level>  1..Levels+1 -- calc and ouput only so much levels, usefull for");
+		println("    -l|--levels <level>  1..Levels+1 -- calculates and ouputs only so much levels, usefull for");
 		println("                         fast testing of parameter changes or to get a draft tree for");
 		println("                         a first impression of a scene without all that small stems and");
-		println("                         leaves. Levels+1 means calc alle Levels and Leaves, but this");
+		println("                         leaves. Levels+1 means: calculate alle Levels and Leaves, but this");
 		println("                         is the same as not giving this option here");
 		println();
-		println("    -m|--mesh [<smooth>] Output stems as mesh2 objects. The optional smooth value influences");
-		println("                         how much vertices are used for every stem section and for which");
-		println("                         levels normals should be used to hide the triangle borders");
+		println("    -f|--format <format> Export format, this is one of: ");
+		println("                         POV_CONES -- Povray primitives (cones and spheres)");
+		println(	"                         POV_MESH  -- Povray mesh2 objects");
+		println(	"                         OBJ       -- Wavefront OBJ file");
+		println(	"                         DXF       -- AutoCAD DXF file");
 		println();
-		println("    --dxf [<smooth>]     Output stems as DXF file. The optional smooth value influences");
-		println("                         how much vertices are used for every stem section");
+		println("    --uvleaves           For the export formats POV_MESH and OBJ:");
+		println("                         Output uv coordinates for the leaves");
 		println();
-		println("    --obj [<smooth>]     Output stems as Wavefront OBJ file. The optional smooth value influences");
-		println("                         how much vertices are used for every stem section");
+		println("    --uvstems            For the export formats POV_MESH and OBJ:");
+		println("                         Output uv coordinates for the stems");
 		println();
-		println("    -c|--cones           output stems as unions of cones and spheres, Lobes don't work");
-		println("                         with this option, but source files are a little bit smaller.");
-		println("                         Povray read Mesh2 objects faster. Cones are handy for use with");
-		println("                         KPovmodeler, which doesn't support mesh2 objects yet.");
+		println("    -s|--smooth <value>  For the export formats POV_MESH, OBJ and DXF, the smooth value");
+		println("                         influences how much vertices are used for every stem section");
+		println("                         and for POV_MESH which levels normals should be used to hide");
+		println("                         the triangle borders. The value should be between 0.0 and 1.0");
 		println();
 		println("    -r|--treecfg         Input file is a simple Param=Value list. Needs less typing for");
 		println("                         a new tree than writing XML code");
@@ -100,24 +102,33 @@ public class arbaro {
 		println("    -x|--xml             Output parameters as XML tree definition instead of creating");
 		println("                         the tree and writing it as povray code. Useful for converting a");
 		println("                         simple parameter list to a XML file: ");
-		println("                            arbaro.py --treecfg -x < mytree.cfg > mytree.xml");
-		println("    -p|--scene [<file>]  output Povray scene file");
+		println("                            java -jar arbaro_cmd.jar --treecfg --xml < mytree.cfg > mytree.xml");
+		println("    -p|--scene [<file>]  additionally output Povray scene file");
 		println();
 		println("example:");
 		println();
-		println("    java -jar arbaro.jar trees/quaking_aspen.xml > pov/quaking_aspen.inc");
+		println("    java -jar arbaro_cmd.jar trees/quaking_aspen.xml > pov/quaking_aspen.inc");
 		println();
+	}
+	
+	private static int getExportFormat(String format) throws InvalidExportFormatException {
+		String[] formats = ExporterFactory.getExportFormats();
+		for (int i=0; i<formats.length; i++) {
+			if (formats[i].equals(format)) return i;
+		}
+		throw new InvalidExportFormatException("Invalid export format given.");
 	}
 	
 	public static void main (String [] args) throws Exception{
 		//	try {
-		tree = new Tree();
 		
 		boolean quiet = false;
 		boolean debug = false;
+		boolean uvLeaves = false;
+		boolean uvStems = false;
 		int seed = 13;
 		int levels = -1;
-		int output=Tree.MESH;
+		int output=ExporterFactory.POV_MESH;
 		double smooth=-1;
 		int input = XMLinput;
 		String input_file = null;
@@ -140,23 +151,14 @@ public class arbaro {
 				seed = new Integer(args[++i]).intValue();
 			} else if (args[i].equals("-l") || args[i].equals("--levels")) {
 				levels = new Integer(args[++i]).intValue();
-			} else if (args[i].equals("-c") || args[i].equals("--cones")) {
-				output = Tree.CONES;
-			} else if (args[i].equals("-m") || args[i].equals("--mesh")) {
-				output = Tree.MESH;
-				if (args[i+1].charAt(0) == '0' || args[i+1].charAt(0) == '1') {
-					smooth = new Double(args[++i]).doubleValue();
-				}
-			} else if (args[i].equals("--dxf")) {
-				output = Tree.DXF;
-				if (args[i+1].charAt(0) == '0' || args[i+1].charAt(0) == '1') {
-					smooth = new Double(args[++i]).doubleValue();
-				}
-			} else if (args[i].equals("--obj")) {
-				output = Tree.OBJ;
-				if (args[i+1].charAt(0) == '0' || args[i+1].charAt(0) == '1') {
-					smooth = new Double(args[++i]).doubleValue();
-				}
+			} else if (args[i].equals("-f") || args[i].equals("--format")) {
+				output = getExportFormat(args[++i]); 
+			} else if (args[i].equals("--uvleaves")) {
+				uvLeaves = true; i++; 
+			} else if (args[i].equals("--uvstems")) {
+				uvStems = true; i++; 
+			} else if (args[i].equals("-s") || args[i].equals("--smooth")) {
+				smooth = new Double(args[++i]).doubleValue();
 			} else if (args[i].equals("-x") || args[i].equals("--xml")) {
 				output = XMLoutput;
 			} else if (args[i].equals("-r") || args[i].equals("--treecfg")) {
@@ -183,10 +185,15 @@ public class arbaro {
 			printProgramName();
 		}
 		
-		tree.params.debug=debug;
-		tree.setOutputType(output);
+		Progress progress = new Progress();
+		TreeGenerator treeFactory = new TreeGenerator(progress,!quiet,debug);
+		
+		ExporterFactory exporterFactory = new ExporterFactory();
+		Exporter exporter;
+
+
 		// put here or later?
-		if (smooth>=0) tree.params.Smooth = smooth;
+		//if (smooth>=0) treeFactory.params.Smooth = smooth;
 		
 		InputStream in;
 		if (input_file == null) {
@@ -204,15 +211,17 @@ public class arbaro {
 		}
 		
 		// read parameters
-		if (input == CFGinput) tree.params.readFromCfg(in);
-		else tree.readFromXML(in);
+		if (input == CFGinput) treeFactory.readParamsFromCfg(in);
+		else treeFactory.readParamsFromXML(in);
 		
 		// FIXME: put here or earlier?
-		if (smooth>=0) tree.params.setParam("Smooth",new Double(smooth).toString());
+		if (smooth>=0) treeFactory.setParam("Smooth",new Double(smooth).toString());
 		
-		tree.params.verbose=(! quiet);
-		tree.params.Seed=seed;
-		tree.params.stopLevel = levels;
+		if (quiet) progress.setConsoleChar(' ');
+		else progress.setConsoleChar('.');
+		
+		//tree.setSeed(seed);
+		//params.stopLevel = levels;
 		
 		PrintWriter out;
 		if (output_file == null) {
@@ -223,18 +232,25 @@ public class arbaro {
 		
 		if (output==XMLoutput) {
 			// save parameters in XML file, don't create tree
-			tree.params.toXML(out);
+			treeFactory.writeParamsToXML(out);
 		} else {
-			tree.make();
-			tree.output(out);
-		}
+			treeFactory.setSeed(seed);
+			Tree tree = treeFactory.makeTree(progress);
+			Params params = treeFactory.getParams();
+			params.stopLevel = levels;
+			exporterFactory.setExportFormat(output);
+			exporterFactory.setOutputStemUVs(uvStems);
+			exporterFactory.setOutputLeafUVs(uvLeaves);
+			exporter = exporterFactory.createExporter(tree,params);
+			exporter.write(out,progress);
 		
-		if (scene_file != null) {
-			if (! quiet) System.err.println("Writing Povray scene to "+scene_file+"...");
-			PrintWriter scout = new PrintWriter(new FileWriter(new File(scene_file)));
-			tree.outputScene(scout);
-		}
-		
+			if (scene_file != null) {
+				if (! quiet) System.err.println("Writing Povray scene to "+scene_file+"...");
+				PrintWriter scout = new PrintWriter(new FileWriter(new File(scene_file)));
+				exporter = exporterFactory.createSceneExporter(tree,params);
+				exporter.write(scout,progress);
+			}
+		}		
 	}
 };
 

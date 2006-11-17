@@ -173,13 +173,14 @@ public class Params {
 	
 	public double leavesErrorValue;
 	
-	public LevelParams [] levelParams;
+	protected LevelParams [] levelParams;
 	public Random random;
 	Hashtable paramDB;
 	
 	// debugging etc.
-	public boolean debug=false;
+/*	public boolean debug=false;
 	public boolean verbose=false;
+*/	
 	public boolean preview=false;
 	public boolean ignoreVParams;
 	public int stopLevel;
@@ -199,7 +200,7 @@ public class Params {
 	
 	
 	// the seed
-	public int Seed;
+	//public int Seed;
 	
 	// defauls values for tree params
 	public int Levels;
@@ -254,8 +255,8 @@ public class Params {
 	
 	public Params() {
 		
-		debug = false;
-		verbose = true;
+//		debug = false;
+		//verbose = true;
 		ignoreVParams = false;
 		
 		stopLevel = -1;
@@ -267,7 +268,7 @@ public class Params {
 		Smooth = 0.5;
 		
 		// the default seed
-		Seed = 13;
+//		Seed = 13;
 		
 		// create paramDB
 		paramDB = new Hashtable();
@@ -281,12 +282,12 @@ public class Params {
 	public Params(Params other) {
 		
 		// copy values from other
-		debug = other.debug;
-		verbose = other.verbose;
+		//debug = other.debug;
+		//verbose = other.verbose;
 		ignoreVParams = other.ignoreVParams;
 		stopLevel = other.stopLevel;
 		Species = other.Species;
-		Seed = other.Seed;
+//		Seed = other.Seed;
 		Smooth = other.Smooth;
 		
 		// create paramDB
@@ -310,6 +311,11 @@ public class Params {
 			}
 		}
 	}
+
+	public LevelParams getLevelParams(int stemlevel) {
+		return levelParams[Math.min(stemlevel,3)];
+	}
+
 	
 	public void setSpecies(String sp) {
 		Species = sp;
@@ -334,7 +340,7 @@ public class Params {
 	}
 	
 	public void toXML(PrintWriter w) throws ParamError {
-		prepare(); // read parameters from paramDB
+		fromDB(); //prepare(); // read parameters from paramDB
 		w.println("<?xml version='1.0' ?>");
 		w.println();
 		w.println("<arbaro>");
@@ -451,8 +457,8 @@ public class Params {
 		}
 	}
 	
-	public void prepare() throws ParamError {
-		if (debug) { verbose=false; }
+	public void prepare(int seed) throws ParamError {
+		//if (debug) { verbose=false; }
 		
 		// read in parameter values from ParamDB
 		fromDB();
@@ -481,13 +487,13 @@ public class Params {
 		// create one random generator for every level
 		// so you can develop a tree level by level without
 		// influences between the levels
-		long l = levelParams[0].initRandom(Seed);
+		long l = levelParams[0].initRandom(seed);
 		for (int i=1; i<4; i++) {
 			l = levelParams[i].initRandom(l);
 		}
 		
 		// create a random generator for myself (used in stem_radius)
-		random = new Random(Seed);
+		random = new Random(seed);
 		
 		// mesh settings
 		if (Smooth <= 0.2) {
@@ -563,9 +569,9 @@ public class Params {
 		AbstractParam p = (AbstractParam)paramDB.get(name);
 		if (p!=null) {
 			p.setValue(value);
-			if (debug) {
+			/*if (debug) {
 				System.err.println("Params.setParam(): set "+name+" to "+value);
-			}
+			}*/
 			
 		} else {
 			throw new ParamError("Unknown parameter "+name+"!");

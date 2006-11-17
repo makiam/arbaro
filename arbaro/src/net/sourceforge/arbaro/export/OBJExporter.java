@@ -27,21 +27,18 @@ import java.text.NumberFormat;
 import java.util.Enumeration;
 
 import net.sourceforge.arbaro.mesh.*;
-import net.sourceforge.arbaro.params.FloatFormat;
-//import net.sourceforge.arbaro.params.FloatParam;
-//import net.sourceforge.arbaro.params.IntParam;
+import net.sourceforge.arbaro.meshfactory.*;
+import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.Vector;
-//import net.sourceforge.arbaro.tree.Leaf;
-import net.sourceforge.arbaro.tree.DefaultTreeTraversal;
-import net.sourceforge.arbaro.tree.Leaf;
-import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.*;
 
 
 
 
-class OBJLeafExporter extends DefaultTreeTraversal {
+class OBJLeafWriter extends DefaultTreeTraversal {
 	Progress progress;
 	LeafMesh leafMesh;
+	AbstractExporter exporter;
 	public int leafVertexOffset;
 	PrintWriter w;
 	long leavesProgressCount=0;
@@ -52,16 +49,17 @@ class OBJLeafExporter extends DefaultTreeTraversal {
 	/**
 	 * 
 	 */
-	public OBJLeafExporter(PrintWriter pw, LeafMesh leafMesh,
+	public OBJLeafWriter(Tree tree,
+			LeafMesh leafMesh,
+			AbstractExporter exporter,
 			int leafVertexOffset) {
 		super();
-		this.w = pw;
+		this.w = exporter.getWriter();
 		this.leafMesh = leafMesh;
 		this.leafVertexOffset = leafVertexOffset;
 	}
 
 	public boolean enterTree(Tree tree) {
-		progress = tree.getProgress();
 		this.tree = tree;
 		return true;
 	}
@@ -89,7 +87,7 @@ class OBJLeafExporter extends DefaultTreeTraversal {
  * @author wolfram
  *
  */
-class OBJLeafFaceExporter extends OBJLeafExporter {
+class OBJLeafFaceWriter extends OBJLeafWriter {
 	boolean firstLeaf;
 	long faceProgressCount=0;
 	
@@ -107,11 +105,12 @@ class OBJLeafFaceExporter extends OBJLeafExporter {
 	 * @param leafMesh
 	 * @param leafVertexOffset
 	 */
-	public OBJLeafFaceExporter(PrintWriter pw, LeafMesh leafMesh,
+	public OBJLeafFaceWriter(Tree tree, AbstractExporter exporter,
+			LeafMesh leafMesh,
 			int leafVertexOffset, int uvVertexOffset,
 			long smoothingGroup,	
 			boolean outputLeafUVs, boolean outputStemUVs) {
-		super(pw, leafMesh, leafVertexOffset);
+		super(tree, leafMesh, exporter, leafVertexOffset);
 		
 		firstLeaf = true;
 		this.smoothingGroup = smoothingGroup;
@@ -143,17 +142,11 @@ class OBJLeafFaceExporter extends OBJLeafExporter {
 		// increment face offset
 		leafVertexOffset += leafMesh.getShapeVertexCount();
 		
-		incFaceProgressCount();
+		exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
 		
 		return true;
 	}
 
-	private void incFaceProgressCount() {
-		if (faceProgressCount++ % 500 == 0) {
-			progress.incProgress(500);
-			if (tree.params.verbose) System.err.print(".");
-		}
-	}
 	
 	private void writeFace(Face f, long offset, Face uv, long uvOffset, boolean writeUVs, boolean writeNormals) {
 		w.print("f "); 
@@ -176,7 +169,7 @@ class OBJLeafFaceExporter extends OBJLeafExporter {
  * @author wolfram
  *
  */
-class OBJLeafVertexExporter extends OBJLeafExporter {
+class OBJLeafVertexWriter extends OBJLeafWriter {
 	String type;
 	long vertexProgressCount=0;
 	
@@ -185,9 +178,9 @@ class OBJLeafVertexExporter extends OBJLeafExporter {
 	 * @param leafMesh
 	 * @param leafVertexOffset
 	 */
-	public OBJLeafVertexExporter(PrintWriter pw, LeafMesh leafMesh,
+	public OBJLeafVertexWriter(Tree tree, AbstractExporter exporter, LeafMesh leafMesh,
 			int leafVertexOffset, String type) {
-		super(pw, leafMesh, leafVertexOffset);
+		super(tree, leafMesh, exporter, leafVertexOffset);
 		this.type=type;
 	}
 
@@ -195,23 +188,25 @@ class OBJLeafVertexExporter extends OBJLeafExporter {
 		for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
 			
 			if (type=="v") {
-				writeVertex(l.transf.apply(leafMesh.shapeVertexAt(i).point),type);
+				writeVertex(l.getTransformation().apply(leafMesh.shapeVertexAt(i).point),type);
 			} else {
-				writeVertex(l.transf.apply(leafMesh.shapeVertexAt(i).normal),type);
+				writeVertex(l.getTransformation().apply(leafMesh.shapeVertexAt(i).normal),type);
 			}
 		}
 		
-		incVertexProgressCount();
+		exporter.incProgressCount(AbstractExporter.MESH_PROGRESS_STEP);
 		
 		return true;
 	}
-	
+
+	/*
 	private void incVertexProgressCount() {
 		if (vertexProgressCount++ % 100 == 0) {
 			progress.incProgress(100);
-			if (tree.params.verbose) System.err.print(".");
+			if (verbose) System.err.print(".");
 		}
 	}
+	*/
 	
 	private void writeVertex(Vector v, String type) {
 		w.println(type+" "
@@ -227,12 +222,13 @@ class OBJLeafVertexExporter extends OBJLeafExporter {
  * Exports a tree mesh as Wavefront OBJ file 
  *
  */
-public final class OBJExporter extends Exporter {
+final class OBJExporter extends MeshExporter {
 	long vertexProgressCount=0;
 	long faceProgressCount=0;
 	NumberFormat frm = FloatFormat.getInstance();
 	Mesh mesh;
 	LeafMesh leafMesh;
+	Tree tree;
 	long smoothingGroup;
 	int vertexOffset;
 	int uvVertexOffset;
@@ -248,25 +244,27 @@ public final class OBJExporter extends Exporter {
 	 * @param pw
 	 * @param p
 	 */
-	public OBJExporter(Tree tree, PrintWriter pw) {
-		super(tree, pw, tree.getProgress());
+	public OBJExporter(Tree tree, MeshFactory meshFactory) {
+		super(meshFactory);
+		this.tree = tree;
 	}
-
+/*
 	private void incVertexProgressCount() {
 		if (vertexProgressCount++ % 100 == 0) {
 			progress.incProgress(100);
-			if (tree.params.verbose) System.err.print(".");
+			progress.consoleProgress();
 		}
 	}
 	
 	private void incFaceProgressCount() {
 		if (faceProgressCount++ % 500 == 0) {
 			progress.incProgress(500);
-			if (tree.params.verbose) System.err.print(".");
+			progress.consoleProgress();
 		}
 	}
+	*/
 	
-	public void write() throws ExportError {
+	public void doWrite() throws ExportError {
 		smoothingGroup=1;
 
 		long objCount = 
@@ -274,8 +272,8 @@ public final class OBJExporter extends Exporter {
 			+tree.getLeafCount())*(outputNormals? 2 : 1); 
 
 		try {
-			mesh = tree.createStemMeshByLevel(true /*useQuads*/);
-			leafMesh = tree.createLeafMesh(true /*useQuads*/);
+			mesh = meshFactory.createStemMeshByLevel(tree,progress);
+			leafMesh = meshFactory.createLeafMesh();
 
 			// vertices
 			progress.beginPhase("Writing vertices",objCount);
@@ -298,8 +296,8 @@ public final class OBJExporter extends Exporter {
 			progress.beginPhase("Writing faces",objCount);
 			writeStemFaces();
 			//writeLeafFaces();
-			OBJLeafFaceExporter faceExporter = 
-				new OBJLeafFaceExporter(w, leafMesh,
+			OBJLeafFaceWriter faceExporter = 
+				new OBJLeafFaceWriter(tree,this,leafMesh,
 					vertexOffset, uvVertexOffset,smoothingGroup,
 					outputLeafUVs, outputStemUVs);
 			tree.traverseTree(faceExporter);
@@ -337,7 +335,7 @@ public final class OBJExporter extends Exporter {
 					}
 			}
 				
-			incVertexProgressCount();
+			incProgressCount(AbstractExporter.MESH_PROGRESS_STEP);
 		}
 
 	}
@@ -354,8 +352,8 @@ public final class OBJExporter extends Exporter {
 			
 		} else {
 			
-			OBJLeafVertexExporter vertexExporter = 
-				new OBJLeafVertexExporter(w, leafMesh,
+			OBJLeafVertexWriter vertexExporter = 
+				new OBJLeafVertexWriter(tree, this, leafMesh, 
 					vertexOffset, type);
 			tree.traverseTree(vertexExporter);
 			vertexOffset = vertexExporter.leafVertexOffset;
@@ -387,8 +385,8 @@ public final class OBJExporter extends Exporter {
 		// output mesh triangles
 		vertexOffset = 1;
 		//boolean separate_trunk = false;
-		
-		for (int stemLevel = 0; stemLevel<tree.params.Levels; stemLevel++) {
+		int levels = ((IntParam)meshFactory.getParam("Levels")).intValue();
+		for (int stemLevel = 0; stemLevel<levels; stemLevel++) {
 		
 			// => start a new group
 			w.println("g "+
@@ -400,7 +398,7 @@ public final class OBJExporter extends Exporter {
 				parts.hasMoreElements();) { 
 
 				MeshPart mp = (MeshPart)parts.nextElement();
-				uvVertexOffset = 1 + mesh.firstUVIndex(mp.getStem().stemlevel);
+				uvVertexOffset = 1 + mesh.firstUVIndex(mp.getStem().getLevel());
 				w.println("s "+smoothingGroup++);
 				
 				Enumeration faces=mp.allFaces(mesh,vertexOffset,false);
@@ -420,7 +418,7 @@ public final class OBJExporter extends Exporter {
 				
 				//			offset += ((MeshPart)mesh.elementAt(i)).vertexCount();
 				
-				incFaceProgressCount();
+				incProgressCount(AbstractExporter.MESH_PROGRESS_STEP);
 			}
 		}
 	}

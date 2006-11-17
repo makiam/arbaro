@@ -20,10 +20,12 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.meshfactory;
 
 import net.sourceforge.arbaro.export.Progress;
 import net.sourceforge.arbaro.mesh.*;
+import net.sourceforge.arbaro.tree.*;
+import net.sourceforge.arbaro.params.Params;
 
 /**
  * Create a mesh from the tree's stems using then TreeTraversal interface
@@ -32,17 +34,20 @@ import net.sourceforge.arbaro.mesh.*;
  *
  */
 
-public class MeshCreator implements TreeTraversal {
+class MeshCreator implements TreeTraversal {
 	Mesh mesh;
 	Tree tree;
 	Progress progress;
 	int level; // only stems of this level should be created
 	boolean useQuads;
+	Params params;
 	
 	//private Stack meshparts;
 
-	public MeshCreator(Mesh mesh, int level, boolean useQuads, Progress progress) {
+	public MeshCreator(Params params, Mesh mesh, int level, boolean useQuads, 
+			Progress progress) {
 		super();
+		this.params = params;
 		this.mesh=mesh;
 		this.level=level;
 		this.useQuads = useQuads;
@@ -60,23 +65,22 @@ public class MeshCreator implements TreeTraversal {
 		// removing all mesh creation code from Stem, Segment, 
 		// Subsegment
 
-		if (level >= 0 && stem.stemlevel < level) {
+		if (level >= 0 && stem.getLevel() < level) {
 			return true; // look further for stems
 			
-		} else if (level >= 0 && stem.stemlevel > level) {
+		} else if (level >= 0 && stem.getLevel() > level) {
 			return false; // go back to higher level
 			
 		} else { 
 			try {
 				//stem.addToMesh(mesh,false,useQuads);
-				MeshPartCreator traversal = new MeshPartCreator(useQuads);
+				MeshPartCreator traversal = new MeshPartCreator(params, useQuads);
 				if (stem.traverseStem(traversal)) {
 					mesh.addMeshpart(traversal.getMeshPart());
 				}
 				// show progress
-				if (tree.params.verbose) {
-					if (stem.stemlevel<=1 && stem.cloneIndex.size()==0) System.err.print(".");
-				}
+				if (stem.getLevel()<=1 && ! stem.isClone()) 
+					progress.consoleProgress();
 				progress.incProgress(1);
 				return true; // proceed
 				

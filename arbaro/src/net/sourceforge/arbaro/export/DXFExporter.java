@@ -27,6 +27,7 @@ import java.text.NumberFormat;
 //import java.util.Enumeration;
 
 import net.sourceforge.arbaro.mesh.*;
+import net.sourceforge.arbaro.meshfactory.*;
 import net.sourceforge.arbaro.params.FloatFormat;
 //import net.sourceforge.arbaro.tree.Leaf;
 import net.sourceforge.arbaro.tree.DefaultTreeTraversal;
@@ -42,8 +43,8 @@ final class DXFWriter {
 	PrintWriter w;
 	NumberFormat frm = FloatFormat.getInstance();
 	
-	public DXFWriter(PrintWriter pw) {
-		this.w = pw;
+	public DXFWriter(PrintWriter w) {
+		this.w = w;
 	}
 
 	public void writeHeader(String comment, Vector minPoint, Vector maxPoint) {
@@ -164,55 +165,50 @@ final class DXFWriter {
  * Exports the mesh's faces to the DXF file
  *
  */
-class DXFFaceExporter extends DefaultTreeTraversal {
+class DXFFaceWriter extends DefaultTreeTraversal {
 	LeafMesh leafMesh;
 	VFace vFace;
 	String layer;
 	DXFWriter writer;
+	AbstractExporter exporter;
 	Progress progress;
-	Tree tree;
-	long leavesProgressCount=0;
+//	TraversableTree tree;
+//	long leavesProgressCount=0;
+//	boolean verbose;
 	
 
 	/**
 	 * 
 	 */
-	public DXFFaceExporter(PrintWriter pw, String layer) {
+	public DXFFaceWriter(AbstractExporter exporter, MeshFactory meshFactory, String layer) {
 		super();
 		this.layer = layer;
-		this.writer = new DXFWriter(pw);
+		this.exporter = exporter;
+		this.writer = new DXFWriter(exporter.getWriter());
+		this.leafMesh = meshFactory.createLeafMesh();
 		vFace = new VFace(new Vector(),new Vector(),new Vector());
 	}
 	
 	public boolean enterTree(Tree tree) {
-		this.tree = tree;
-		this.leafMesh = tree.createLeafMesh(false);
-		this.progress = tree.getProgress();
+	//	this.tree = tree;
 		return true;
 	}
 
-	public boolean visitLeaf(Leaf l) {
+	public boolean visitLeaf(Leaf leaf) {
 		for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
 
 			Face face = leafMesh.shapeFaceAt(i);
 			for (int k=0; k<3; k++) {
-				vFace.points[k] = l.transf.apply(
+				vFace.points[k] = leaf.getTransformation().apply(
 						leafMesh.shapeVertexAt((int)face.points[k]).point);
 			}
 			
 			writer.writeFace(vFace,layer);
 		}
 		
-		incLeavesProgressCount();
+		exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
 		
 		return true;
-	}
-	
-	private void incLeavesProgressCount() {
-		if (leavesProgressCount++ % 500 == 0) {
-			progress.incProgress(500);
-			if (tree.params.verbose) System.err.print(".");
-		}
 	}
 	
 }
@@ -220,39 +216,25 @@ class DXFFaceExporter extends DefaultTreeTraversal {
 /**
  * Exports a tree mesh as DXF file
  */
-public class DXFExporter extends Exporter {
-	long stemsProgressCount=0;
+class DXFExporter extends MeshExporter {
 	//long leavesProgressCount=0;
 	NumberFormat frm = FloatFormat.getInstance();
+	Tree tree;
 
 	/**
 	 * @param aTree
 	 * @param pw
 	 */
-	public DXFExporter(Tree aTree, PrintWriter pw, Progress prg) {
-		super(aTree, pw, prg);
+	public DXFExporter(Tree tree, MeshFactory meshFactory) {
+		
+		super(meshFactory);
+		//super(tree, pw, progress, verbose);
 	}
 
-	private void incStemsProgressCount() {
-		if (stemsProgressCount++ % 100 == 0) {
-			progress.incProgress(100);
-			if (tree.params.verbose) System.err.print(".");
-		}
-	}
-	/*
-	private void incLeavesProgressCount() {
-		if (leavesProgressCount++ % 500 == 0) {
-			progress.incProgress(500);
-			if (tree.params.verbose) System.err.print(".");
-		}
-	}
-	*/
-
-	
-	public void write() throws ExportError {
+	public void doWrite() throws ExportError {
 		try{
 			DXFWriter writer = new DXFWriter(w);
-			writer.writeHeader("DXF created with Arbaro, tree species: "+tree.getParam("Species"),
+			writer.writeHeader("DXF created with Arbaro, tree species: "+meshFactory.getParam("Species"),
 					tree.getMinPoint(),tree.getMaxPoint());
 			writer.writeTables();
 			writer.writeBlocks();
@@ -279,7 +261,7 @@ public class DXFExporter extends Exporter {
 	private void writeStems(String layer) throws Exception {
 		// FIXME: optimize speed, maybe using enumerations
 
-		Mesh mesh = tree.createStemMesh(false);
+		Mesh mesh = meshFactory.createStemMesh(tree,progress);
 		progress.beginPhase("Writing stem mesh",mesh.size());
 		DXFWriter writer = new DXFWriter(w);
 
@@ -296,7 +278,7 @@ public class DXFExporter extends Exporter {
 				}
 			}
 			
-			incStemsProgressCount();
+			incProgressCount(AbstractExporter.STEM_PROGRESS_STEP);
 		}
 
 		progress.endPhase();
@@ -309,7 +291,7 @@ public class DXFExporter extends Exporter {
 		
 		progress.beginPhase("Writing leaf mesh",tree.getLeafCount());
 
-		DXFFaceExporter exporter = new DXFFaceExporter(w,layer);
+		DXFFaceWriter exporter = new DXFFaceWriter(this,meshFactory,layer);
 		tree.traverseTree(exporter);
 		
 //		Enumeration leaves = tree.allLeaves();

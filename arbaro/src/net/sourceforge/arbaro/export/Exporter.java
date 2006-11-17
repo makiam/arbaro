@@ -26,7 +26,6 @@ package net.sourceforge.arbaro.export;
 // http://www.dcs.ed.ac.uk/home/mxr/gfx/3d-hi.html
 
 import java.io.PrintWriter;
-import net.sourceforge.arbaro.tree.Tree;
 
 class ExportError extends Exception {
     public ExportError(String msg) {
@@ -41,16 +40,8 @@ class ExportError extends Exception {
  * @author Wolfram Diestel
  *
  */
-public abstract class Exporter {
-	protected Tree tree;
-	protected PrintWriter w;
-	protected Progress progress;
-	
-	public Exporter(Tree tree, PrintWriter printwriter, Progress progress) {
-		this.tree = tree;
-		this.w = printwriter;
-		this.progress = progress;
-	}
-	
-	public abstract void write() throws ExportError;
+public interface Exporter {
+	public abstract void write(PrintWriter w, Progress progress) throws ExportError;
+	public abstract PrintWriter getWriter();
 }
+

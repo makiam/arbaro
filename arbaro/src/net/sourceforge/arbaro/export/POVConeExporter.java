@@ -23,26 +23,31 @@
 package net.sourceforge.arbaro.export;
 
 import net.sourceforge.arbaro.params.FloatFormat;
-import net.sourceforge.arbaro.transformation.Matrix;
-import net.sourceforge.arbaro.transformation.Transformation;
-import net.sourceforge.arbaro.transformation.Vector;
+import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.tree.*;
+import net.sourceforge.arbaro.params.*;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
 
-class POVConeLeafExporter implements TreeTraversal {
+class POVConeLeafWriter implements TreeTraversal {
 	Tree tree;
-	Progress progress;
+	//Progress progress;
 	PrintWriter w;
-	private long leavesProgressCount=0;
+	//private long leavesProgressCount=0;
+	String povrayDeclarationPrefix;
+	AbstractExporter exporter;
 	
 	/**
 	 * 
 	 */
-	public POVConeLeafExporter(PrintWriter pw) {
+	public POVConeLeafWriter(AbstractExporter exporter, Params params) {
 		super();
-		this.w = pw;
+		this.exporter = exporter;
+		this.w = exporter.getWriter();
+		this.povrayDeclarationPrefix =
+			params.getSpecies() + "_" + tree.getSeed() + "_";
+		
 	}
 
 	/* (non-Javadoc)
@@ -57,7 +62,6 @@ class POVConeLeafExporter implements TreeTraversal {
 	 */
 	public boolean enterTree(Tree tree) throws TraversalException {
 		this.tree = tree;
-		this.progress = tree.getProgress();
 		return true;
 	}
 
@@ -83,26 +87,28 @@ class POVConeLeafExporter implements TreeTraversal {
 		// prints povray code for the leaf
 		String indent = "    ";
 		
-		w.println(indent + "object { " + povrayDeclarationPrefix() + "leaf " 
-				+ transformationStr(leaf.transf)+"}");
+		w.println(indent + "object { " + povrayDeclarationPrefix + "leaf " 
+				+ transformationStr(leaf.getTransformation())+"}");
 		
 //		increment progress count
-		incLeavesProgressCount();
+		exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
 		
 		return true;
 	}
 
+	/*
 	private void incLeavesProgressCount() {
 		if (leavesProgressCount++%500 == 0) {
 			progress.incProgress(500);
 			if (tree.params.verbose) System.err.print(".");
 		}
 	}
+	*/
 	
-	private String povrayDeclarationPrefix() {
+/*	private String povrayDeclarationPrefix() {
 		return tree.params.Species + "_" + tree.params.Seed + "_";
 	}
-	
+	*/
 	private String transformationStr(Transformation trf) {
 		NumberFormat fmt = FloatFormat.getInstance();
 		Matrix matrix = trf.matrix();
@@ -128,27 +134,37 @@ class POVConeLeafExporter implements TreeTraversal {
  * @author wolfram
  *
  */
-class POVConeSegmentExporter extends DefaultStemTraversal {
+class POVConeSegmentWriter extends DefaultStemTraversal {
 	PrintWriter w;
+	AbstractExporter exporter;
+	int stemlevel;
+	Params par;
 	/**
 	 * 
 	 */
-	public POVConeSegmentExporter(PrintWriter pw) {
+	public POVConeSegmentWriter(AbstractExporter exporter, Params params) {
 		super();
-		this.w = pw;
+		this.exporter = exporter;
+		this.w = exporter.getWriter();
+		this.par = params;
+	}
+	
+	public boolean enterStem(Stem stem) {
+		stemlevel = stem.getLevel();
+		return true;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.StemTraversal#enterSegment(net.sourceforge.arbaro.tree.Segment)
 	 */
 	public boolean enterSegment(Segment s) throws TraversalException {
-		String indent = whitespace(s.lpar.level*2+4);
+		String indent = whitespace(stemlevel*2+4);
 		NumberFormat fmt = FloatFormat.getInstance();
 		
 		// FIXME: for cone output - if starting direction is not 1*y, there is a gap 
 		// between earth and tree base
 		// best would be to add roots to the trunk(?)	  
-		
+	/*	
 		// TODO instead of accessing subsegments this way
 		// it would be nicer to use visitSubsegment, but
 		// how to see when we visit the last but one subsegment?
@@ -167,13 +183,14 @@ class POVConeSegmentExporter extends DefaultStemTraversal {
 						+ fmt.format(ss1.rad-0.0001) + " }");
 			}
 		}
-		
+*/		
 		// put sphere at segment end
-		if ((s.rad2 > 0) && (! s.isLastStemSegment() || 
-				(s.lpar.nTaper>1 && s.lpar.nTaper<=2))) 
+		LevelParams lpar = par.getLevelParams(stemlevel);
+		if ((s.getUpperRadius() > 0) && (! s.isLastStemSegment() || 
+				(lpar.nTaper>1 && lpar.nTaper<=2))) 
 		{  
-			w.println(indent + "sphere { " + vectorStr(s.posTo()) + ", "
-					+ fmt.format(s.rad2-0.0001) + " }");
+			w.println(indent + "sphere { " + vectorStr(s.getUpperPosition()) + ", "
+					+ fmt.format(s.getUpperRadius()-0.0001) + " }");
 		}
 	
 		return true;
@@ -184,8 +201,25 @@ class POVConeSegmentExporter extends DefaultStemTraversal {
 	 */
 	public boolean visitSubsegment(Subsegment subsegment)
 			throws TraversalException {
-		// do nothing with subsegments at the moment
-		return false;
+		if (! subsegment.isLastSubsegment()) {
+			String indent = whitespace(stemlevel*2+4);
+			NumberFormat fmt = FloatFormat.getInstance();
+			LevelParams lpar = par.getLevelParams(stemlevel);
+
+			Subsegment ss1 = subsegment;
+			Subsegment ss2 = subsegment.getNext();
+			w.println(indent + "cone   { " + vectorStr(ss1.getPosition()) + ", "
+					+ fmt.format(ss1.getRadius()) + ", " 
+					+ vectorStr(ss2.getPosition()) + ", " 
+					+ fmt.format(ss2.getRadius()) + " }"); 
+			// for helix subsegs put spheres between
+			if (lpar.nCurveV<0 /*&& i<s.subsegments.size()-2*/) {
+				w.println(indent + "sphere { " 
+						+ vectorStr(ss1.getPosition()) + ", "
+						+ fmt.format(ss1.getRadius()-0.0001) + " }");
+			}
+		}
+		return true;
 	}
 
 	private String vectorStr(Vector v) {
@@ -218,19 +252,22 @@ class POVConeSegmentExporter extends DefaultStemTraversal {
  * @author wolfram
  *
  */
-class POVConeStemExporter implements TreeTraversal {
+class POVConeStemWriter implements TreeTraversal {
 	Tree tree;
-	Progress progress;
+	AbstractExporter exporter;
 	PrintWriter w;
+	Params params;
 	int level;
 	private long stemsProgressCount=0;
 	
 	/**
 	 * 
 	 */
-	public POVConeStemExporter(PrintWriter pw, int level) {
+	public POVConeStemWriter(AbstractExporter exporter, Params params, int level) {
 		super();
-		this.w = pw;
+		this.exporter = exporter;
+		this.w = exporter.getWriter();
+		this.params = params;
 		this.level=level;
 	}
 
@@ -238,18 +275,18 @@ class POVConeStemExporter implements TreeTraversal {
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#enterStem(net.sourceforge.arbaro.tree.Stem)
 	 */
 	public boolean enterStem(Stem stem) throws TraversalException {
-		if (level >= 0 && stem.stemlevel < level) {
+		if (level >= 0 && stem.getLevel() < level) {
 			return true; // look further for stems
 			
-		} else if (level >= 0 && stem.stemlevel > level) {
+		} else if (level >= 0 && stem.getLevel() > level) {
 			return false; // go back to higher level
 			
 		} else {
 			
-			POVConeSegmentExporter exporter = new POVConeSegmentExporter(w);
-			stem.traverseStem(exporter);
+			POVConeSegmentWriter writer = new POVConeSegmentWriter(exporter,params);
+			stem.traverseStem(writer);
 			
-			incStemsProgressCount();
+			exporter.incProgressCount(AbstractExporter.STEM_PROGRESS_STEP);
 			
 			return true;
 		}
@@ -260,7 +297,6 @@ class POVConeStemExporter implements TreeTraversal {
 	 */
 	public boolean enterTree(Tree tree) throws TraversalException {
 		this.tree = tree;
-		this.progress = tree.getProgress();
 		return true;
 	}
 
@@ -287,12 +323,13 @@ class POVConeStemExporter implements TreeTraversal {
 		return false;
 	}
 	
-	private void incStemsProgressCount() {
+/*	private void incStemsProgressCount() {
 		if (stemsProgressCount++%100 == 0) {
 			progress.incProgress(100);
 			if (tree.params.verbose) System.err.print(".");
 		}
 	}
+	*/
 
 }
 
@@ -301,64 +338,71 @@ class POVConeStemExporter implements TreeTraversal {
  * Exports a tree as Povray primitives like cylinders and spheres 
  *
  */
-public class POVConeExporter extends Exporter {
+class POVConeExporter extends AbstractExporter {
+	Tree tree;
+	Params params;
+	private String povrayDeclarationPrefix;
 
 	/**
 	 * 
 	 */
-	public POVConeExporter(Tree tree, PrintWriter pw) {
-		super(tree,pw,tree.getProgress());
+	public POVConeExporter(Tree tree, Params params) {
+		super();
+		this.tree = tree;
+		this.params = params;
+		this.povrayDeclarationPrefix =
+			params.getSpecies() + "_" + tree.getSeed() + "_";
 	}
 	
-	public void write() throws ExportError{
+	public void doWrite() throws ExportError{
 		try {
 			// some declarations in the POV file
 			NumberFormat frm = FloatFormat.getInstance();
 			
 			// tree scale
-			w.println("#declare " + povrayDeclarationPrefix() + "height = " 
+			w.println("#declare " + povrayDeclarationPrefix + "height = " 
 					+ frm.format(tree.getHeight()) + ";");
 			
 			// leaf declaration
-			if (tree.params.Leaves!=0) writeLeafDeclaration();
+			if (tree.getLeafCount()!=0) writeLeafDeclaration();
 	
 			// stems
 			progress.beginPhase("writing stem objects",tree.getStemCount());
 			
-			for (int level=0; level < tree.params.Levels; level++) {
+			for (int level=0; level < params.Levels; level++) {
 				
-				w.println("#declare " + povrayDeclarationPrefix() + "stems_"
+				w.println("#declare " + povrayDeclarationPrefix + "stems_"
 						+ level + " = union {");
 				
-				POVConeStemExporter exporter = new POVConeStemExporter(w,level);
-				tree.traverseTree(exporter);
+				POVConeStemWriter writer = new POVConeStemWriter(this,params,level);
+				tree.traverseTree(writer);
 				
 				w.println("}");
 				
 			}
 			
 			// leaves
-			if (tree.params.Leaves!=0) {
+			if (tree.getLeafCount()!=0) {
 				
 				progress.beginPhase("writing leaf objects",tree.getLeafCount());
 				
-				w.println("#declare " + povrayDeclarationPrefix() + "leaves = union {");
+				w.println("#declare " + povrayDeclarationPrefix + "leaves = union {");
 				
-				POVConeLeafExporter lexporter = new POVConeLeafExporter(w);
+				POVConeLeafWriter lexporter = new POVConeLeafWriter(this,params);
 				tree.traverseTree(lexporter);
 				
 				w.println("}");
 				
 			} else { // empty declaration
-				w.println("#declare " + povrayDeclarationPrefix() + "leaves = sphere {<0,0,0>,0}"); 
+				w.println("#declare " + povrayDeclarationPrefix + "leaves = sphere {<0,0,0>,0}"); 
 			}
 			
 			progress.endPhase();
 			
 			// all stems together
-			w.println("#declare " + povrayDeclarationPrefix() + "stems = union {"); 
-			for (int level=0; level < tree.params.Levels; level++) {
-				w.println("  object {" + povrayDeclarationPrefix() + "stems_" 
+			w.println("#declare " + povrayDeclarationPrefix + "stems = union {"); 
+			for (int level=0; level < params.Levels; level++) {
+				w.println("  object {" + povrayDeclarationPrefix + "stems_" 
 						+ level + "}");
 			}
 			w.println("}");
@@ -378,22 +422,23 @@ public class POVConeExporter extends Exporter {
 	 * 
 	 * @return the prefix string
 	 */
+	/*
 	private String povrayDeclarationPrefix() {
 		return tree.params.Species + "_" + tree.params.Seed + "_";
 	}
-
+*/
 	/**
 	 * Outputs the Povray code for a leaf object
 	 * 
 	 * @param w The output stream
 	 */
 	private void writeLeafDeclaration() {
-		double length = tree.params.LeafScale/Math.sqrt(tree.params.LeafQuality);
-		double width = tree.params.LeafScale*tree.params.LeafScaleX/Math.sqrt(tree.params.LeafQuality);
+		double length = params.LeafScale/Math.sqrt(params.LeafQuality);
+		double width = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
 		w.println("#include \"arbaro.inc\"");
-		w.println("#declare " + povrayDeclarationPrefix() + "leaf = " +
-				"object { Arb_leaf_" + (tree.params.LeafShape.equals("0")? "disc" : tree.params.LeafShape)
-				+ " translate " + (tree.params.LeafStemLen+0.5) + "*y scale <" 
+		w.println("#declare " + povrayDeclarationPrefix + "leaf = " +
+				"object { Arb_leaf_" + (params.LeafShape.equals("0")? "disc" : params.LeafShape)
+				+ " translate " + (params.LeafStemLen+0.5) + "*y scale <" 
 				+ width + "," + length + "," + width + "> }");
 	}	  	
 	

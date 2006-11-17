@@ -112,7 +112,7 @@ public class Mesh extends java.util.Vector {
 			if (parts.hasMoreElements()) {
 				part = (MeshPart)parts.nextElement();
 				if (level>=0) {
-					while (part.stem.stemlevel != level) {
+					while (part.stem.getLevel() != level) {
 						if (parts.hasMoreElements()) 
 							part = (MeshPart)parts.nextElement();
 						else {
@@ -163,7 +163,7 @@ public class Mesh extends java.util.Vector {
 			if (UVFaces) {
 				part = (MeshPart)parts.nextElement();
 //				startIndex += part.uvCount();
-				startIndex = firstUVIndex(part.getStem().stemlevel);
+				startIndex = firstUVIndex(part.stem.getLevel());
 			} else {
 				if (! firstPart) startIndex += part.vertexCount();
 				part = (MeshPart)parts.nextElement();
@@ -204,8 +204,8 @@ public class Mesh extends java.util.Vector {
 	 */
 	public void addMeshpart(MeshPart meshpart) {
 		addElement(meshpart);
-		if (firstMeshPart[meshpart.stem.stemlevel]<0) 
-			firstMeshPart[meshpart.stem.stemlevel] = size()-1;
+		if (firstMeshPart[meshpart.stem.getLevel()]<0) 
+			firstMeshPart[meshpart.stem.getLevel()] = size()-1;
 	}
 	
 	public Enumeration allVertices(boolean UVVertices) {

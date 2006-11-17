@@ -32,18 +32,42 @@ import net.sourceforge.arbaro.transformation.*;
  * 
  * @author Wolfram Diestel
  */
-public class Subsegment { 
+class SubsegmentImpl implements Subsegment { 
 	// a Segment can have one or more Subsegments
 	public Vector pos; 
 	public double height; // height relative to segment's base 
-	public double rad; 
+	public double rad;
+	public SubsegmentImpl next=null;
 	
-	public Subsegment(Vector p, double r, double h) {
+	public Vector getPosition() {
+		return pos;
+	}
+	
+	public double getRadius() {
+		return rad;
+	}
+	
+	public double getHeight() {
+		return height;
+	}
+	
+	public SubsegmentImpl getNext() {
+		return next;
+	}
+	
+	public boolean isLastSubsegment() {
+		return (next==null);
+	}
+	
+	public SubsegmentImpl(Vector p, double r, double h) {
 		pos = p;
 		rad = r;
 		height = h;
 	}
 	
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.tree.TraversableSubsegment#traverseStem(net.sourceforge.arbaro.tree.StemTraversal)
+	 */
 	public boolean traverseStem(StemTraversal traversal) throws TraversalException {
 	    return traversal.visitSubsegment(this);
 	}

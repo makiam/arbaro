@@ -29,7 +29,6 @@ import java.util.NoSuchElementException;
 import net.sourceforge.arbaro.params.FloatFormat;
 import net.sourceforge.arbaro.transformation.Vector;
 import net.sourceforge.arbaro.tree.Segment;
-//import net.sourceforge.arbaro.tree.Stem;
 
 /**
  * A class holding a section of a mesh.

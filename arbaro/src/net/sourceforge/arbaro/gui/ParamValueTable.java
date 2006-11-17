@@ -63,7 +63,7 @@ public final class ParamValueTable extends JPanel {
 	JTable table;
 	HelpInfo helpInfo;
 	
-	Tree tree;
+	Params par;
 	
 	String groupName;
 	int groupLevel;
@@ -307,13 +307,13 @@ public final class ParamValueTable extends JPanel {
 	class ParamTableModel extends AbstractTableModel {
 		public int getColumnCount() { return 2; }
 		public int getRowCount() { 
-			TreeMap params = tree.getParamGroup(groupLevel,groupName);
+			TreeMap params = par.getParamGroup(groupLevel,groupName);
 			return params.size();
 		}
 		public Object getValueAt(int row, int col) {
 			// FIXME: maybe the params should be stored directly in the model
 			
-			TreeMap params = tree.getParamGroup(groupLevel,groupName);
+			TreeMap params = par.getParamGroup(groupLevel,groupName);
 			int r = 0;
 			for (Iterator e=params.values().iterator(); e.hasNext();) {
 				AbstractParam p = (AbstractParam)e.next();
@@ -388,12 +388,12 @@ public final class ParamValueTable extends JPanel {
 	};
 	
 	
-	public ParamValueTable(Tree theTree) {
+	public ParamValueTable(Params params) {
 		super(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder());
 		setBackground(bgClr);
 		
-		tree = theTree;
+		this.par=params;
 		
 		tableModel = new ParamTableModel();
 		table = new JTable(tableModel);
