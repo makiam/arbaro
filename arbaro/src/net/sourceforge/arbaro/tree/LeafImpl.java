@@ -124,7 +124,7 @@ class LeafImpl implements Leaf {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TraversableLeaf#traverseTree(net.sourceforge.arbaro.tree.TreeTraversal)
 	 */
-	public boolean traverseTree(TreeTraversal traversal) throws TraversalException{
+	public boolean traverseTree(TreeTraversal traversal) {
 	    return traversal.visitLeaf(this);
 	}
 };

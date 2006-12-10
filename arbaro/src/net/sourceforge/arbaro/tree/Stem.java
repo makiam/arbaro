@@ -94,11 +94,9 @@ public interface Stem {
 	 }
 	 */
 
-	public abstract boolean traverseTree(TreeTraversal traversal)
-			throws TraversalException;
+	public abstract boolean traverseTree(TreeTraversal traversal);
 
-	public abstract boolean traverseStem(StemTraversal traversal)
-			throws TraversalException;
+	public abstract boolean traverseStem(StemTraversal traversal);
 
 	// use with TreeTraversal
 	public abstract long getLeafCount();

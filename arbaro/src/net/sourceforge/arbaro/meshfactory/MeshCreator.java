@@ -54,7 +54,7 @@ class MeshCreator implements TreeTraversal {
 		this.progress = progress;
 	}
 	
-	public boolean enterStem(Stem stem) throws TraversalException {
+	public boolean enterStem(Stem stem) {
 		// TODO instead of addToMesh, the traversal should
 		// proceed into segments and subsegments itself
 		// removing all mesh creation code from Stem, Segment, 
@@ -67,7 +67,7 @@ class MeshCreator implements TreeTraversal {
 			return false; // go back to higher level
 			
 		} else { 
-			try {
+//			try {
 				//stem.addToMesh(mesh,false,useQuads);
 				MeshPartCreator traversal = new MeshPartCreator(params, useQuads);
 				if (stem.traverseStem(traversal)) {
@@ -79,10 +79,10 @@ class MeshCreator implements TreeTraversal {
 				progress.incProgress(1);
 				return true; // proceed
 				
-			} catch(Exception e) {
-				e.printStackTrace(System.err);
-				throw new TraversalException(e.toString());
-			}
+//			} catch(Exception e) {
+//				e.printStackTrace(System.err);
+//				throw new TraversalException(e.toString());
+//			}
 		}	
 	}
 	

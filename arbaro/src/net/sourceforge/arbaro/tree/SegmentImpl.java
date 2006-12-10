@@ -419,7 +419,7 @@ class SegmentImpl implements Segment {
 	}
 	*/
 	
-	public boolean traverseStem(StemTraversal traversal) throws TraversalException {
+	public boolean traverseStem(StemTraversal traversal) {
 	    if (traversal.enterSegment(this))  // enter this tree?
         {
 	    	

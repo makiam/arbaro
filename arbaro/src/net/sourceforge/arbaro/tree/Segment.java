@@ -74,8 +74,7 @@ public interface Segment {
 	 }
 	 */
 
-	public abstract boolean traverseStem(StemTraversal traversal)
-			throws TraversalException;
+	public abstract boolean traverseStem(StemTraversal traversal);
 
 	/**
 	 * Position at the beginning of the segment

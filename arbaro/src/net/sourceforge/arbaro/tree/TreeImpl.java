@@ -265,7 +265,7 @@ class TreeImpl implements Tree {
 	}
 	
 	
-	public boolean traverseTree(TreeTraversal traversal)  throws TraversalException{
+	public boolean traverseTree(TreeTraversal traversal) {
 	    if (traversal.enterTree(this))  // enter this tree?
         {
              Enumeration stems = trunks.elements();

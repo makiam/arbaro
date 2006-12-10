@@ -38,13 +38,13 @@ class TraversalException extends ArbaroError{
  */
 
 public interface TreeTraversal {
-	   boolean enterTree(Tree tree) throws TraversalException; // going into a Tree
-       boolean leaveTree(Tree tree) throws TraversalException; // coming out of a Tree
-	   boolean enterStem(Stem stem) throws TraversalException; // going into a Stem
-       boolean leaveStem(Stem stem) throws TraversalException; // coming out of a Stem
+	   boolean enterTree(Tree tree); // going into a Tree
+       boolean leaveTree(Tree tree); // coming out of a Tree
+	   boolean enterStem(Stem stem); // going into a Stem
+       boolean leaveStem(Stem stem); // coming out of a Stem
 	/*   boolean enterSegment(Segment segment) throws TraversalException; // going into a Stem
        boolean leaveSegment(Segment segment) throws TraversalException; // coming out of a Stem
        boolean visitSubsegment(Subsegment subsegment) throws TraversalException; // process a Subsegment
        */
-       boolean visitLeaf(Leaf leaf) throws TraversalException; // process a Leaf
+       boolean visitLeaf(Leaf leaf); // process a Leaf
 }

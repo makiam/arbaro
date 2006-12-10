@@ -29,24 +29,23 @@ package net.sourceforge.arbaro.tree;
 
 public class DefaultStemTraversal implements StemTraversal {
 
-	public boolean enterSegment(Segment segment) throws TraversalException {
+	public boolean enterSegment(Segment segment) {
 		return true;
 	}
 
-	public boolean enterStem(Stem stem) throws TraversalException {
+	public boolean enterStem(Stem stem) {
 		return true;
 	}
 
-	public boolean leaveSegment(Segment segment) throws TraversalException {
+	public boolean leaveSegment(Segment segment) {
 		return true;
 	}
 
-	public boolean leaveStem(Stem stem) throws TraversalException {
+	public boolean leaveStem(Stem stem) {
 		return true;
 	}
 
-	public boolean visitSubsegment(Subsegment subsegment)
-			throws TraversalException {
+	public boolean visitSubsegment(Subsegment subsegment) {
 		return true;
 	}
 

@@ -482,12 +482,12 @@ public class TreePreview extends JComponent {
 		public boolean leaveTree(Tree tree) {
 			return true;
 		}
-		public boolean enterStem(Stem stem) throws TraversalException {
+		public boolean enterStem(Stem stem) {
 			stem.traverseStem(
 					new StemTraversal() {
 						public boolean enterStem(Stem stem) { return true; }
 						public boolean leaveStem(Stem stem) { return true; }
-						public boolean enterSegment(Segment seg) throws TraversalException {
+						public boolean enterSegment(Segment seg) {
 							// FIXME: maybe draw rectangles instead of thin lines
 							//drawStripe(g,seg.posFrom(),seg.rad1,seg.postTo(),seg.rad2());
 							drawLine(g,seg.getLowerPosition(),seg.getUpperPosition());

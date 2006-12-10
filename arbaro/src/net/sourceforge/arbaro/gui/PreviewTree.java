@@ -27,7 +27,6 @@ import net.sourceforge.arbaro.params.Params;
 import net.sourceforge.arbaro.transformation.Vector;
 import net.sourceforge.arbaro.tree.Leaf;
 import net.sourceforge.arbaro.tree.Stem;
-import net.sourceforge.arbaro.tree.TraversalException;
 import net.sourceforge.arbaro.tree.TreeGenerator;
 import net.sourceforge.arbaro.tree.TreeTraversal;
 import net.sourceforge.arbaro.tree.Tree;
@@ -76,7 +75,7 @@ public final class PreviewTree implements Tree {
 
 	// delegate interface methods to the tree
 	public boolean traverseTree(TreeTraversal traversal)
-		throws TraversalException {
+	{
 		return tree.traverseTree(traversal);
 	}
 

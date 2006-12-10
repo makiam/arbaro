@@ -62,7 +62,7 @@ class MeshPartCreator implements StemTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.StemTraversal#enterSegment(net.sourceforge.arbaro.tree.Segment)
 	 */
-	public boolean enterSegment(Segment segment) throws TraversalException {
+	public boolean enterSegment(Segment segment) {
 		//segment.addToMeshpart(meshPart);
 
 		this.segment = segment;
@@ -74,7 +74,7 @@ class MeshPartCreator implements StemTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.StemTraversal#enterStem(net.sourceforge.arbaro.tree.Stem)
 	 */
-	public boolean enterStem(Stem stem) throws TraversalException {
+	public boolean enterStem(Stem stem) {
 		this.stem = stem;
 		lpar = par.getLevelParams(stem.getLevel()); //segment.lpar;
 		int smooth_mesh_level = par.smooth_mesh_level;
@@ -87,8 +87,8 @@ class MeshPartCreator implements StemTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.StemTraversal#leaveSegment(net.sourceforge.arbaro.tree.Segment)
 	 */
-	public boolean leaveSegment(Segment segment) throws TraversalException {
-		try {
+	public boolean leaveSegment(Segment segment) {
+//		try {
 			
 			// System.err.println("MESHCREATION, segmindex: "+index);
 	
@@ -105,18 +105,18 @@ class MeshPartCreator implements StemTraversal {
 			}
 			
 			return true;
-		} catch (Exception e) {
-			throw new TraversalException("Mesh creation error at tree pos: " 
-					+ stem.getTreePosition() + " segment "+segment.getIndex()+": "
-					+ e.getMessage());
-		}
+//		} catch (Exception e) {
+//			throw new TraversalException("Mesh creation error at tree pos: " 
+//					+ stem.getTreePosition() + " segment "+segment.getIndex()+": "
+//					+ e.getMessage());
+//		}
 
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.StemTraversal#leaveStem(net.sourceforge.arbaro.tree.Stem)
 	 */
-	public boolean leaveStem(Stem stem) throws TraversalException {
+	public boolean leaveStem(Stem stem) {
 		return (meshPart.size()>0); // only use meshparts with sections
 	}
 	
@@ -190,10 +190,9 @@ class MeshPartCreator implements StemTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.StemTraversal#visitSubsegment(net.sourceforge.arbaro.tree.Subsegment)
 	 */
-	public boolean visitSubsegment(Subsegment ss)
-			throws TraversalException {
+	public boolean visitSubsegment(Subsegment ss) {
 		
-		try {
+//		try {
 			double vLength = stem.getLength()+stem.getBaseRadius()+stem.getPeakRadius();
 			//double vBase = + stem.stemRadius(0);
 			
@@ -226,11 +225,11 @@ class MeshPartCreator implements StemTraversal {
 			
 			return true;
 			
-		} catch (Exception e) {
-			throw new TraversalException("Mesh creation error at tree pos: " 
-					+ stem.getTreePosition() + " subseg of segment "+segment.getIndex()+": "
-					+ e.toString());
-		}		
+//		} catch (Exception e) {
+//			throw new TraversalException("Mesh creation error at tree pos: " 
+//					+ stem.getTreePosition() + " subseg of segment "+segment.getIndex()+": "
+//					+ e.toString());
+//		}		
 	}
 
 }

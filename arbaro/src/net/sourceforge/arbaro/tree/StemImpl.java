@@ -1324,7 +1324,7 @@ class StemImpl implements Stem {
 	}
 	*/
 	
-	public boolean traverseTree(TreeTraversal traversal) throws TraversalException {
+	public boolean traverseTree(TreeTraversal traversal) {
 	    if (traversal.enterStem(this))  // enter this tree?
         {
 	    
@@ -1365,7 +1365,7 @@ class StemImpl implements Stem {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TraversableStem#traverseStem(net.sourceforge.arbaro.tree.StemTraversal)
 	 */
-	public boolean traverseStem(StemTraversal traversal) throws TraversalException {
+	public boolean traverseStem(StemTraversal traversal) {
 	    if (traversal.enterStem(this))  // enter this stem?
         {
 	    

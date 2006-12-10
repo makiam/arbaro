@@ -53,14 +53,14 @@ class POVConeLeafWriter implements TreeTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#enterStem(net.sourceforge.arbaro.tree.Stem)
 	 */
-	public boolean enterStem(Stem stem) throws TraversalException {
+	public boolean enterStem(Stem stem) {
 		return true;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#enterTree(net.sourceforge.arbaro.tree.Tree)
 	 */
-	public boolean enterTree(Tree tree) throws TraversalException {
+	public boolean enterTree(Tree tree) {
 		this.tree = tree;
 		return true;
 	}
@@ -68,14 +68,14 @@ class POVConeLeafWriter implements TreeTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#leaveStem(net.sourceforge.arbaro.tree.Stem)
 	 */
-	public boolean leaveStem(Stem stem) throws TraversalException {
+	public boolean leaveStem(Stem stem) {
 		return true;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#leaveTree(net.sourceforge.arbaro.tree.Tree)
 	 */
-	public boolean leaveTree(Tree tree) throws TraversalException {
+	public boolean leaveTree(Tree tree) {
 		w.flush();
 		return true;
 	}
@@ -83,7 +83,7 @@ class POVConeLeafWriter implements TreeTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#visitLeaf(net.sourceforge.arbaro.tree.Leaf)
 	 */
-	public boolean visitLeaf(Leaf leaf) throws TraversalException {
+	public boolean visitLeaf(Leaf leaf) {
 		// prints povray code for the leaf
 		String indent = "    ";
 		
@@ -157,7 +157,7 @@ class POVConeSegmentWriter extends DefaultStemTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.StemTraversal#enterSegment(net.sourceforge.arbaro.tree.Segment)
 	 */
-	public boolean enterSegment(Segment s) throws TraversalException {
+	public boolean enterSegment(Segment s) {
 		String indent = whitespace(stemlevel*2+4);
 		NumberFormat fmt = FloatFormat.getInstance();
 		
@@ -199,8 +199,7 @@ class POVConeSegmentWriter extends DefaultStemTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.StemTraversal#visitSubsegment(net.sourceforge.arbaro.tree.Subsegment)
 	 */
-	public boolean visitSubsegment(Subsegment subsegment)
-			throws TraversalException {
+	public boolean visitSubsegment(Subsegment subsegment) {
 		if (! subsegment.isLastSubsegment()) {
 			String indent = whitespace(stemlevel*2+4);
 			NumberFormat fmt = FloatFormat.getInstance();
@@ -274,7 +273,7 @@ class POVConeStemWriter implements TreeTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#enterStem(net.sourceforge.arbaro.tree.Stem)
 	 */
-	public boolean enterStem(Stem stem) throws TraversalException {
+	public boolean enterStem(Stem stem) {
 		if (level >= 0 && stem.getLevel() < level) {
 			return true; // look further for stems
 			
@@ -295,7 +294,7 @@ class POVConeStemWriter implements TreeTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#enterTree(net.sourceforge.arbaro.tree.Tree)
 	 */
-	public boolean enterTree(Tree tree) throws TraversalException {
+	public boolean enterTree(Tree tree) {
 		this.tree = tree;
 		return true;
 	}
@@ -303,14 +302,14 @@ class POVConeStemWriter implements TreeTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#leaveStem(net.sourceforge.arbaro.tree.Stem)
 	 */
-	public boolean leaveStem(Stem stem) throws TraversalException {
+	public boolean leaveStem(Stem stem) {
 		return true;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#leaveTree(net.sourceforge.arbaro.tree.Tree)
 	 */
-	public boolean leaveTree(Tree tree) throws TraversalException {
+	public boolean leaveTree(Tree tree) {
 		w.flush();
 		return true;
 	}
@@ -318,7 +317,7 @@ class POVConeStemWriter implements TreeTraversal {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#visitLeaf(net.sourceforge.arbaro.tree.Leaf)
 	 */
-	public boolean visitLeaf(Leaf leaf) throws TraversalException {
+	public boolean visitLeaf(Leaf leaf) {
 		// don't wirte leaves here
 		return false;
 	}

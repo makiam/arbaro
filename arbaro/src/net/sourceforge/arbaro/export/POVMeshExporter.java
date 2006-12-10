@@ -139,10 +139,10 @@ class POVMeshLeafNormalWriter extends POVMeshLeafWriterBase {
 		// TODO Auto-generated constructor stub
 	}
 
-	public boolean visitLeaf(Leaf leaf) throws TraversalException {
+	public boolean visitLeaf(Leaf leaf) {
 		String indent = "    ";
 		
-		try {
+//		try {
 			for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
 				writeVector(leaf.getTransformation().apply(leafMesh.shapeVertexAt(i).normal));
 				
@@ -158,12 +158,12 @@ class POVMeshLeafNormalWriter extends POVMeshLeafWriterBase {
 			
 			exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
 
-			throw new Exception("Not implemented: if using normals for leaves use factor "+
+			throw new RuntimeException("Not implemented: if using normals for leaves use factor "+
 			"3 instead of 2 in progress.beginPhase");
 			
-		} catch (Exception e) {
-			throw new TraversalException(e.toString());
-		}
+//		} catch (Exception e) {
+//			throw new TraversalException(e.toString());
+//		}
 
 		//return true;
 

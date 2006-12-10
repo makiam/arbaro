@@ -68,7 +68,7 @@ class SubsegmentImpl implements Subsegment {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TraversableSubsegment#traverseStem(net.sourceforge.arbaro.tree.StemTraversal)
 	 */
-	public boolean traverseStem(StemTraversal traversal) throws TraversalException {
+	public boolean traverseStem(StemTraversal traversal) {
 	    return traversal.visitSubsegment(this);
 	}
 }

@@ -5,8 +5,7 @@ import net.sourceforge.arbaro.transformation.Vector;
 public interface Tree {
 
 
-	public abstract boolean traverseTree(TreeTraversal traversal)
-			throws TraversalException;
+	public abstract boolean traverseTree(TreeTraversal traversal);
 
 	
 	public abstract long getStemCount();

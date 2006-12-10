@@ -4,8 +4,7 @@ import net.sourceforge.arbaro.transformation.Vector;
 
 public interface Subsegment {
 
-	public abstract boolean traverseStem(StemTraversal traversal)
-			throws TraversalException;
+	public abstract boolean traverseStem(StemTraversal traversal);
 
 	public Vector getPosition();
 

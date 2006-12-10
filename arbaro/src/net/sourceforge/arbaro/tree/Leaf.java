@@ -4,8 +4,7 @@ import net.sourceforge.arbaro.transformation.Transformation;
 
 public interface Leaf {
 
-	public abstract boolean traverseTree(TreeTraversal traversal)
-			throws TraversalException;
+	public abstract boolean traverseTree(TreeTraversal traversal);
 
 	public abstract Transformation getTransformation();
 
