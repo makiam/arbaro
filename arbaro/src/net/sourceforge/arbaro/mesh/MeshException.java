@@ -27,8 +27,8 @@ package net.sourceforge.arbaro.mesh;
  *
  */
 
-public class MeshError extends Exception {
-    public MeshError(String msg) {
+public class MeshException extends RuntimeException {
+    public MeshException(String msg) {
 	super(msg);
     }
 };

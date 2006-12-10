@@ -41,17 +41,41 @@ public final class Progress {
 	long progress;
 	public char consoleChar=' '; // show progress also on Console
 	
+	public boolean debug;
+	
 	public Progress() {
 		maxProgress=100;
 		progress=0;
 	}
 	
+	synchronized private boolean verbose() {
+		return (consoleChar != ' ');
+	}
+	
 	synchronized public void consoleProgress() {
-		if (consoleChar != ' ') {
+		if (verbose()) {
 			System.err.print(consoleChar);
 		}
 	}
 	
+	synchronized public void consoleOutput(String msg) {
+		if (verbose()) {
+			System.err.println(msg);
+		}
+	}
+	
+	synchronized public void debugOutput(String msg) {
+		if (debug) {
+			System.err.println(msg);
+		}
+	}
+	
+	synchronized public void consoleProgress(char c) {
+		if (verbose()) {
+			System.err.print(c);
+		}
+	}
+
 	synchronized public void setConsoleChar(char consoleChar) {
 		this.consoleChar= consoleChar;
 	}

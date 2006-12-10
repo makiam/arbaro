@@ -35,7 +35,7 @@ import net.sourceforge.arbaro.params.FloatFormat;
 
 
 
-class POVMeshLeafWriter extends DefaultTreeTraversal {
+class POVMeshLeafWriterBase extends DefaultTreeTraversal {
 		LeafMesh leafMesh;
 		AbstractExporter exporter;
 		long leafVertexOffset;
@@ -48,7 +48,7 @@ class POVMeshLeafWriter extends DefaultTreeTraversal {
 		/**
 		 * 
 		 */
-		public POVMeshLeafWriter(AbstractExporter exporter, LeafMesh leafMesh,
+		public POVMeshLeafWriterBase(AbstractExporter exporter, LeafMesh leafMesh,
 				long leafVertexOffset) {
 			super();
 			this.w = exporter.getWriter();
@@ -82,7 +82,7 @@ class POVMeshLeafWriter extends DefaultTreeTraversal {
  * @author wolfram
  *
  */
-class POVMeshLeafFaceWriter extends POVMeshLeafWriter {
+class POVMeshLeafFaceWriter extends POVMeshLeafWriterBase {
 	
 	public POVMeshLeafFaceWriter(AbstractExporter exporter, LeafMesh leafMesh,
 			long leafVertexOffset) {
@@ -126,7 +126,7 @@ class POVMeshLeafFaceWriter extends POVMeshLeafWriter {
  * @author wolfram
  *
  */
-class POVMeshLeafNormalWriter extends POVMeshLeafWriter {
+class POVMeshLeafNormalWriter extends POVMeshLeafWriterBase {
 
 	/**
 	 * @param pw
@@ -176,7 +176,7 @@ class POVMeshLeafNormalWriter extends POVMeshLeafWriter {
  * @author wolfram
  *
  */
-class POVMeshLeafUVFaceWriter extends POVMeshLeafWriter {
+class POVMeshLeafUVFaceWriter extends POVMeshLeafWriterBase {
 
 	/**
 	 * @param pw
@@ -223,7 +223,7 @@ class POVMeshLeafUVFaceWriter extends POVMeshLeafWriter {
  * @author wolfram
  *
  */
-class POVMeshLeafVertexWriter extends POVMeshLeafWriter {
+class POVMeshLeafVertexWriter extends POVMeshLeafWriterBase {
 
 	/**
 	 * @param pw
@@ -293,8 +293,7 @@ class POVMeshExporter extends MeshExporter {
 			meshFactory.getParam("Species") + "_" + tree.getSeed() + "_";
 	}
 	
-	public void doWrite() throws ExportError {
-		try {
+	public void doWrite() {
 			// NumberFormat frm = FloatFormat.getInstance();
 	//		progress = meshFactory.getProgress();
 			
@@ -314,12 +313,6 @@ class POVMeshExporter extends MeshExporter {
 			writeLeaves();
 			
 			w.flush();
-		}
-		catch (Exception e) {
-			System.err.println(e);
-			throw new ExportError(e.getMessage());
-			//e.printStackTrace(System.err);
-		}
 	}
 	
 /*	private void incStemsProgressCount() {
@@ -350,7 +343,7 @@ class POVMeshExporter extends MeshExporter {
 	}
 	*/
 	
-	private void writeLeaves() throws Exception {
+	private void writeLeaves() {
 		//    	double leafLength = tree.params.LeafScale/Math.sqrt(tree.params.LeafQuality);
 		//    	double leafWidth = tree.params.LeafScale*tree.params.LeafScaleX/Math.sqrt(tree.params.LeafQuality);
 		//    	LeafMesh mesh = new LeafMesh(tree.params.LeafShape,leafLength,leafWidth,tree.params.LeafStemLen);
@@ -568,7 +561,7 @@ class POVMeshExporter extends MeshExporter {
 	}
 	*/
 	
-	private void writeStems() throws Exception {
+	private void writeStems() {
 		String indent="  ";
 		
 		// FIXME: instead of outputStemNormals = true use separate boolean
@@ -692,7 +685,7 @@ class POVMeshExporter extends MeshExporter {
 	}	
 	
 	public void writeStemFaces(boolean uv, String indent) 
-	throws MeshError {
+	throws MeshException {
 
 		int j=0;
 		for (Enumeration faces=mesh.allFaces(0,uv,-1 /* all levels */);
@@ -716,14 +709,15 @@ class POVMeshExporter extends MeshExporter {
 	}
 	
 	private void writeStemNormals(String indent) 
-	throws MeshError {
+//	throws MeshException 
+	{
 		
 		int i = 0;
 
-		try {
+//		try {
 			for (Enumeration parts=mesh.elements(); 
 				parts.hasMoreElements();) {
-					((MeshPart)parts.nextElement()).setNormals();
+					((MeshPart)parts.nextElement()).setNormals(true /* check */);
 			}
 			// w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
 			
@@ -746,10 +740,10 @@ class POVMeshExporter extends MeshExporter {
 			
 			w.println();
 			
-		} catch (Exception e) {
-			// e.printStackTrace(System.err);
-			throw new MeshError("Error in MeshSection "+i+": "+e); //.getMessage());
-		}	    
+//		} catch (Exception e) {
+//			// e.printStackTrace(System.err);
+//			throw new MeshException("Error in MeshSection "+i+": "+e); //.getMessage());
+//		}	    
 	}
 	
 

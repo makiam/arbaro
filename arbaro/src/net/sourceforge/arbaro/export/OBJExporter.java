@@ -35,7 +35,7 @@ import net.sourceforge.arbaro.tree.*;
 
 
 
-class OBJLeafWriter extends DefaultTreeTraversal {
+class OBJLeafWriterBase extends DefaultTreeTraversal {
 	Progress progress;
 	LeafMesh leafMesh;
 	AbstractExporter exporter;
@@ -49,7 +49,7 @@ class OBJLeafWriter extends DefaultTreeTraversal {
 	/**
 	 * 
 	 */
-	public OBJLeafWriter(Tree tree,
+	public OBJLeafWriterBase(Tree tree,
 			LeafMesh leafMesh,
 			AbstractExporter exporter,
 			int leafVertexOffset) {
@@ -87,7 +87,7 @@ class OBJLeafWriter extends DefaultTreeTraversal {
  * @author wolfram
  *
  */
-class OBJLeafFaceWriter extends OBJLeafWriter {
+class OBJLeafFaceWriter extends OBJLeafWriterBase {
 	boolean firstLeaf;
 	long faceProgressCount=0;
 	
@@ -169,7 +169,7 @@ class OBJLeafFaceWriter extends OBJLeafWriter {
  * @author wolfram
  *
  */
-class OBJLeafVertexWriter extends OBJLeafWriter {
+class OBJLeafVertexWriter extends OBJLeafWriterBase {
 	String type;
 	long vertexProgressCount=0;
 	

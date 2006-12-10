@@ -112,7 +112,7 @@ public class ExporterFactory {
 	}
 
 	public Exporter createExporter(Tree tree, Params params) 
-		throws InvalidExportFormatException {
+		throws InvalidExportFormatError {
 		
 		Exporter exporter = null;
 		MeshFactory meshFactory;
@@ -136,7 +136,7 @@ public class ExporterFactory {
 			((OBJExporter)exporter).outputStemUVs = outputStemUVs;
 			((OBJExporter)exporter).outputLeafUVs = outputLeafUVs;
 		} else {
-			throw new InvalidExportFormatException("Invalid export format");
+			throw new InvalidExportFormatError("Invalid export format");
 		}
 
 		return exporter;

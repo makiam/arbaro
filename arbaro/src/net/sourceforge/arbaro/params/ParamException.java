@@ -22,8 +22,8 @@
 
 package net.sourceforge.arbaro.params;
 
-public class ParamError extends Exception {
-    public ParamError(String msg) {
+public class ParamException extends RuntimeException {
+    public ParamException(String msg) {
 	super(msg);
     }
 };

@@ -135,6 +135,7 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 	public Workplace () {
 		// create tree with paramDB
 		params = new Params();
+		try { params.prepare(13); } catch (Exception e) {};
 		previewTree = new PreviewTree(params);
 		
 		exporterFactory = new ExporterFactory();
@@ -218,7 +219,7 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 					// param changed
 					frame.setTitle("Arbaro ["+params.Species+"]");
 					
-				} catch (ParamError err) {
+				} catch (ParamException err) {
 					System.err.println(err);
 					valueEditor.showError(err);
 				} catch (Exception err) {
@@ -529,8 +530,10 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 			
 			// draw new tree
 			try {
+				params.prepare(13); 
+				previewTree.setParams(params);
 				previewTree.remake();
-			} catch (ParamError err) {
+			} catch (ParamException err) {
 				setModified(false);
 				JOptionPane.showMessageDialog(frame,err.getMessage(),
 						"Parameter Error",
@@ -571,9 +574,11 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 					groupsView.fireStateChanged();
 					frame.setTitle("Arbaro ["+params.Species+"]");
 					// draw opened tree
+					params.prepare(13); 
+					previewTree.setParams(params);
 					previewTree.remake();
 					
-				} catch (ParamError err) {
+				} catch (ParamException err) {
 					setModified(false);
 					JOptionPane.showMessageDialog(frame,err.getMessage(),
 							"Parameter Error",
@@ -628,7 +633,7 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 			params.toXML(out);
 			setModified(false);
 			return true;
-		} catch (ParamError err) {
+		} catch (ParamException err) {
 			JOptionPane.showMessageDialog(frame,err.getMessage(),
 					"Parameter Error",
 					JOptionPane.ERROR_MESSAGE);

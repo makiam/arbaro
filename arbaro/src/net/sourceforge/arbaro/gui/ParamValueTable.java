@@ -367,7 +367,7 @@ public final class ParamValueTable extends JPanel {
 				// propagate change to other components, e.g. the preview
 				fireStateChanged();
 			} catch (Exception e) {
-				if (e.getClass()==ParamError.class) {
+				if (e.getClass()==ParamException.class) {
 					System.err.println(e);
 					showError(e);
 				} else {

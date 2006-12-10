@@ -33,6 +33,7 @@ import net.sourceforge.arbaro.tree.TreeTraversal;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.mesh.Mesh;
 import net.sourceforge.arbaro.meshfactory.MeshFactory;
+import net.sourceforge.arbaro.export.Progress;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -54,7 +55,7 @@ public final class PreviewTree implements Tree {
 	// the previous levels stems 
 	int showLevel=1;
 	Params originalParams;
-	Params params;
+	//Params params;
 	Mesh mesh;
 	Tree tree;
 	
@@ -66,11 +67,13 @@ public final class PreviewTree implements Tree {
 	 */
 	public PreviewTree(Params params) {
 		this.originalParams=params;
-		this.params = params;
+		//this.params = new Params(params);
 	}
 	
-	public Params getParams() { return params; }
-	
+	public Params getParams() { return originalParams; }
+
+	public void setParams(Params params) { this.originalParams = params; }
+
 	// delegate interface methods to the tree
 	public boolean traverseTree(TreeTraversal traversal)
 		throws TraversalException {
@@ -104,7 +107,7 @@ public final class PreviewTree implements Tree {
 
 	public void remake() throws Exception {
 			//clear();
-			params = new Params(originalParams);
+			Params params = new Params(originalParams);
 			params.preview=true;
 //			previewTree = new Tree(originalTree);
 			
@@ -120,12 +123,13 @@ public final class PreviewTree implements Tree {
 				// if (((FloatParam)previewTree.getParam(""+i+"DownAngleV")).doubleValue()>0)
 				params.setParam(""+i+"DownAngleV","0");
 			}
-			
-			TreeGenerator treeFactory = new TreeGenerator(params,null,false,false);
-		    tree = treeFactory.makeTree(null);
+
+			Progress progress = new Progress();
+			TreeGenerator treeGenerator = new TreeGenerator(params);
+		    tree = treeGenerator.makeTree(progress);
 		    
 		    MeshFactory meshFactory = new MeshFactory(params,true /* useQuads */);
-			mesh = meshFactory.createStemMesh(tree,null);
+			mesh = meshFactory.createStemMesh(tree,progress);
 			
 			fireStateChanged();
 	}

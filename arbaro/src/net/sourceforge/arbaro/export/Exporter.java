@@ -27,7 +27,7 @@ package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 
-class ExportError extends Exception {
+class ExportError extends RuntimeException {
     public ExportError(String msg) {
 	super(msg);
     }

@@ -54,11 +54,6 @@ class MeshCreator implements TreeTraversal {
 		this.progress = progress;
 	}
 	
-	public boolean enterSegment(Segment segment) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 	public boolean enterStem(Stem stem) throws TraversalException {
 		// TODO instead of addToMesh, the traversal should
 		// proceed into segments and subsegments itself
@@ -85,6 +80,7 @@ class MeshCreator implements TreeTraversal {
 				return true; // proceed
 				
 			} catch(Exception e) {
+				e.printStackTrace(System.err);
 				throw new TraversalException(e.toString());
 			}
 		}	

@@ -47,7 +47,7 @@ public abstract class AbstractParam {
 		enabled=true;
 	}
 	
-	public abstract void setValue(String val) throws ParamError;
+	public abstract void setValue(String val) throws ParamException;
 	public abstract String getValue();
 	public abstract String getDefaultValue();
 	public abstract void clear();

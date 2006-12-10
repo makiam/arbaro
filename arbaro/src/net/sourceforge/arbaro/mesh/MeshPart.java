@@ -185,9 +185,24 @@ public class MeshPart extends java.util.Vector {
 	 * Sets the normals in all mesh sections
 	 * 
 	 */
-	public void setNormals() {
+	public void setNormals(boolean checkNull) {
 		// normals for begin and end point (first and last section)
-		// are set to a z-Vector by Segment.mesh()
+		// are set to a z-Vector by MeshPartCreator
+		if (checkNull) {
+			MeshSection s = ((MeshSection)elementAt(0));
+			for (int i=0; i<s.size(); i++) {
+				if (((Vertex)s.elementAt(i)).normal == null)
+					System.err.println("No normal set for lower section of mesh part of stem "+stem.getTreePosition());
+			}
+					
+			s = ((MeshSection)elementAt(size()-1));
+			for (int i=0; i<s.size(); i++) {
+				if (((Vertex)s.elementAt(i)).normal == null)
+					System.err.println("No normal set for upper section of mesh part of stem "+stem.getTreePosition());
+			}
+
+		}
+		
 		//System.err.println("MESHSECT 1: "+((MeshSection)elementAt(1)).size());
 		
 		if (size()>1) {
@@ -274,9 +289,9 @@ public class MeshPart extends java.util.Vector {
 	 * @param inx
 	 * @param section
 	 * @return
-	 * @throws MeshError
+	 * @throws MeshException
 	 */
-	public java.util.Vector faces(long inx, MeshSection section) throws MeshError {
+	public java.util.Vector faces(long inx, MeshSection section) throws MeshException {
 		MeshSection next = section.next;
 		java.util.Vector faces = new java.util.Vector();
 		
@@ -311,7 +326,7 @@ public class MeshPart extends java.util.Vector {
 		} else { // section and next must have same point_cnt>1!!!
 			long ninx = inx+section.size();
 			if (section.size() != next.size()) {
-				throw new MeshError("Error: vertice numbers of two sections "
+				throw new MeshException("Error: vertice numbers of two sections "
 						+ "differ ("+inx+","+ninx+")");
 			}
 			for (int i=0; i<section.size(); i++) {
@@ -336,9 +351,9 @@ public class MeshPart extends java.util.Vector {
 	 * 
 	 * @param section
 	 * @return
-	 * @throws MeshError
+	 * @throws MeshException
 	 */
-	public java.util.Vector vFaces(MeshSection section) throws MeshError {
+	public java.util.Vector vFaces(MeshSection section) throws MeshException {
 		MeshSection next = section.next;
 		java.util.Vector faces = new java.util.Vector();
 		
@@ -379,7 +394,7 @@ public class MeshPart extends java.util.Vector {
 			}
 		} else { // section and next must have same point_cnt>1!!!
 			if (section.size() != next.size()) {
-				throw new MeshError("Error: vertice numbers of two sections "
+				throw new MeshException("Error: vertice numbers of two sections "
 						+ "differ ("+section.size()+","+next.size()+")");
 			}
 			for (int i=0; i<section.size(); i++) {
@@ -405,9 +420,9 @@ public class MeshPart extends java.util.Vector {
 	 * @param inx
 	 * @param section
 	 * @return
-	 * @throws MeshError
+	 * @throws MeshException
 	 */
-	public java.util.Vector uvFaces(long inx, MeshSection section, Mesh mesh) throws MeshError {
+	public java.util.Vector uvFaces(long inx, MeshSection section, Mesh mesh) throws MeshException {
 		MeshSection next = section.next;
 		java.util.Vector faces = new java.util.Vector();
 		
@@ -470,7 +485,7 @@ public class MeshPart extends java.util.Vector {
 		
 		else { // section and next must have same point_cnt>1!!!
 			if (section.size() != next.size()) {
-				throw new MeshError("Error: vertex numbers of two sections "
+				throw new MeshException("Error: vertex numbers of two sections "
 						+ "differ ("+inx+","+ninx+")");
 			}
 			for (int i=0; i<section.size(); i++) {

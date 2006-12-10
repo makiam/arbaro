@@ -480,12 +480,12 @@ public class ExportDialog {
 			// get seed, output parameters
 			
 			// FIXME set progress, verbose, debug here?
-			TreeGenerator treeFactory = new TreeGenerator(params,null,false,false);
+			TreeGenerator treeGenerator = new TreeGenerator(params);
 			ExporterFactory exporterFactory = new ExporterFactory();
 			
 			try{
-				treeFactory.setSeed(Integer.parseInt(seedField.getText()));
-				treeFactory.setParam("Smooth",smoothField.getText());
+				treeGenerator.setSeed(Integer.parseInt(seedField.getText()));
+				treeGenerator.setParam("Smooth",smoothField.getText());
 				exporterFactory.setRenderW(Integer.parseInt(widthField.getText()));
 				exporterFactory.setRenderH(Integer.parseInt(heightField.getText()));
 				exporterFactory.setExportFormat(formatBox.getSelectedIndex());
@@ -514,7 +514,7 @@ public class ExportDialog {
 			if (sceneCheckbox.isSelected()) povfile = new File(sceneFileField.getText());
 			String imgFilename = null;
 			if (renderCheckbox.isSelected()) imgFilename = renderFileField.getText();
-			treeCreationTask.start(treeFactory,exporterFactory,incfile,povfile,imgFilename); //fileChooser.getSelectedFile());
+			treeCreationTask.start(treeGenerator,exporterFactory,incfile,povfile,imgFilename); //fileChooser.getSelectedFile());
 			timer.start();
 		}
 	}
@@ -604,7 +604,7 @@ class Progressbar extends JPanel {
 /* this class actually creates the tree and saves it to a POV file
  */
 class TreeCreationTask {
-	TreeGenerator treeFactory;
+	TreeGenerator treeGenerator;
 	ExporterFactory exporterFactory;
 	Progress progress;
 	//Tree tmptree;
@@ -642,7 +642,7 @@ class TreeCreationTask {
 			File outFile, File sceneFile, String imgFilename) {
 		// create new Tree copying the parameters of tree
 		try {
-			this.treeFactory = treeFactory;
+			this.treeGenerator = treeFactory;
 			this.exporterFactory = exporterFactory;
 			
 			writer = new PrintWriter(new FileWriter(outFile)); 
@@ -715,8 +715,8 @@ class TreeCreationTask {
 			try {
 				progress = new Progress();
 				// create the tree
-				Tree tree = treeFactory.makeTree(progress);
-				Params params = treeFactory.getParams();
+				Tree tree = treeGenerator.makeTree(progress);
+				Params params = treeGenerator.getParams();
 				// export the tree
 				Exporter exporter = exporterFactory.createExporter(tree,params);
 				exporter.write(writer,progress);

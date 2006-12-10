@@ -229,7 +229,7 @@ public class MeshSection extends java.util.Vector {
 	 */
 	public Vector normalAt(int i) throws Exception {
 		Vertex v = (Vertex)elementAt(i);
-		if (v.normal == null) throw new MeshError("Error: Normal not set for point "
+		if (v.normal == null) throw new MeshException("Error: Normal not set for point "
 				+vectorStr(v.point));
 		return v.normal;
 	}

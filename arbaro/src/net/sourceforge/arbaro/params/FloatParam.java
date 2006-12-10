@@ -47,19 +47,19 @@ public class FloatParam extends AbstractParam {
 	fireStateChanged();
     }
 
-    public void setValue(String val) throws ParamError {
+    public void setValue(String val) throws ParamException {
     	double d;
     	try {
     		d = Double.parseDouble(val);
     	} catch (NumberFormatException e) {
-    		throw new ParamError("Error setting value of "+name+". \""+val+"\" isn't a valid number.");
+    		throw new ParamException("Error setting value of "+name+". \""+val+"\" isn't a valid number.");
     	}
     	
     	if (d<min) {
-    		throw new ParamError("Value of "+name+" should be greater then or equal to "+min);
+    		throw new ParamException("Value of "+name+" should be greater then or equal to "+min);
     	}
     	if (d>max) {
-    		throw new ParamError("Value of "+name+" should be less then or equal to "+max);
+    		throw new ParamException("Value of "+name+" should be less then or equal to "+max);
     	}
     	value = d;
     	fireStateChanged();

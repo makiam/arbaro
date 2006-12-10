@@ -111,12 +111,12 @@ public class arbaro {
 		println();
 	}
 	
-	private static int getExportFormat(String format) throws InvalidExportFormatException {
+	private static int getExportFormat(String format) throws InvalidExportFormatError {
 		String[] formats = ExporterFactory.getExportFormats();
 		for (int i=0; i<formats.length; i++) {
 			if (formats[i].equals(format)) return i;
 		}
-		throw new InvalidExportFormatException("Invalid export format given.");
+		throw new InvalidExportFormatError("Invalid export format given.");
 	}
 	
 	public static void main (String [] args) throws Exception{
@@ -186,7 +186,10 @@ public class arbaro {
 		}
 		
 		Progress progress = new Progress();
-		TreeGenerator treeFactory = new TreeGenerator(progress,!quiet,debug);
+		progress.debug = debug;
+		if (quiet) progress.consoleChar=' ';
+		else progress.consoleChar='.';
+		TreeGenerator treeGenerator = new TreeGenerator();
 		
 		ExporterFactory exporterFactory = new ExporterFactory();
 		Exporter exporter;
@@ -211,11 +214,11 @@ public class arbaro {
 		}
 		
 		// read parameters
-		if (input == CFGinput) treeFactory.readParamsFromCfg(in);
-		else treeFactory.readParamsFromXML(in);
+		if (input == CFGinput) treeGenerator.readParamsFromCfg(in);
+		else treeGenerator.readParamsFromXML(in);
 		
 		// FIXME: put here or earlier?
-		if (smooth>=0) treeFactory.setParam("Smooth",new Double(smooth).toString());
+		if (smooth>=0) treeGenerator.setParam("Smooth",new Double(smooth).toString());
 		
 		if (quiet) progress.setConsoleChar(' ');
 		else progress.setConsoleChar('.');
@@ -232,11 +235,11 @@ public class arbaro {
 		
 		if (output==XMLoutput) {
 			// save parameters in XML file, don't create tree
-			treeFactory.writeParamsToXML(out);
+			treeGenerator.writeParamsToXML(out);
 		} else {
-			treeFactory.setSeed(seed);
-			Tree tree = treeFactory.makeTree(progress);
-			Params params = treeFactory.getParams();
+			treeGenerator.setSeed(seed);
+			Tree tree = treeGenerator.makeTree(progress);
+			Params params = treeGenerator.getParams();
 			params.stopLevel = levels;
 			exporterFactory.setExportFormat(output);
 			exporterFactory.setOutputStemUVs(uvStems);

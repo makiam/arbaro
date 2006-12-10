@@ -112,7 +112,7 @@ class XMLTreeFileHandler extends DefaultHandler {
 				
 				params.setParam(atts.getValue("name"),atts.getValue("value"));
 			}
-		} catch (ParamError e) {
+		} catch (ParamException e) {
 			errors += e.getMessage()+"\n";
 			// throw new SAXException(e.getMessage());
 		}
@@ -140,13 +140,13 @@ class XMLTreeParser {
 		parser = spf.newSAXParser();
 	}
 	
-	public void parse(InputSource is, Params params) throws SAXException, IOException, ParamError {
+	public void parse(InputSource is, Params params) throws SAXException, IOException, ParamException {
 		// parse an XML tree file
 		//InputSource is = new InputSource(sourceURI);
 		XMLTreeFileHandler xml_handler = new XMLTreeFileHandler(params);
 		parser.parse(is,xml_handler);
 		if (xml_handler.errors != "") {
-			throw new ParamError(xml_handler.errors);
+			throw new ParamException(xml_handler.errors);
 		}
 	}
 }
@@ -306,7 +306,7 @@ public class Params {
 				if (! otherParam.empty()) {
 					p.setValue(otherParam.getValue());
 				} // else use default value
-			} catch (ParamError err) {
+			} catch (ParamException err) {
 				System.err.println("Error copying params: "+err.getMessage());
 			}
 		}
@@ -339,7 +339,7 @@ public class Params {
 		w.println("    <param name='" + name + "' value='"+value+"'/>");
 	}
 	
-	public void toXML(PrintWriter w) throws ParamError {
+	public void toXML(PrintWriter w) {
 		fromDB(); //prepare(); // read parameters from paramDB
 		w.println("<?xml version='1.0' ?>");
 		w.println();
@@ -392,34 +392,34 @@ public class Params {
 	}
 	
 	// help method for loading params
-	private int getIntParam(String name) throws ParamError {
+	private int getIntParam(String name) throws ParamException {
 		IntParam par = (IntParam)paramDB.get(name);
 		if (par != null) {
 			return par.intValue();
 		} else {
-			throw new ParamError("bug: param "+name+" not found!");
+			throw new ParamException("bug: param "+name+" not found!");
 		}
 	}
 	
-	private double getDblParam(String name) throws ParamError {
+	private double getDblParam(String name) {
 		FloatParam par = (FloatParam)paramDB.get(name);
 		if (par != null) {
 			return par.doubleValue();
 		} else {
-			throw new ParamError("bug: param "+name+" not found!");
+			throw new ParamException("bug: param "+name+" not found!");
 		}   
 	}
 	
-	private String getStrParam(String name) throws ParamError {
+	private String getStrParam(String name) throws ParamException {
 		StringParam par = (StringParam)paramDB.get(name);
 		if (par != null) {
 			return par.getValue();
 		} else {
-			throw new ParamError("bug: param "+name+" not found!");
+			throw new ParamException("bug: param "+name+" not found!");
 		}    
 	}
 	
-	void fromDB() throws ParamError {
+	void fromDB() {
 		LeafQuality = getDblParam("LeafQuality");
 		Smooth = getDblParam("Smooth");
 		Levels = getIntParam("Levels");
@@ -457,7 +457,7 @@ public class Params {
 		}
 	}
 	
-	public void prepare(int seed) throws ParamError {
+	public void prepare(int seed) throws ParamException {
 		//if (debug) { verbose=false; }
 		
 		// read in parameter values from ParamDB
@@ -480,7 +480,7 @@ public class Params {
 		for (int l=0; l < Math.min(Levels,4); l++) {
 			LevelParams lp = levelParams[l];
 			if (lp.nSegSplits>0 && lp.nSplitAngle==0) {
-				throw new ParamError("nSplitAngle may not be 0.");
+				throw new ParamException("nSplitAngle may not be 0.");
 			}
 		}
 		
@@ -565,7 +565,7 @@ public class Params {
 		return 0; // shouldn't reach here
 	}
 	
-	public void setParam(String name, String value) throws ParamError {
+	public void setParam(String name, String value) throws ParamException {
 		AbstractParam p = (AbstractParam)paramDB.get(name);
 		if (p!=null) {
 			p.setValue(value);
@@ -574,7 +574,7 @@ public class Params {
 			}*/
 			
 		} else {
-			throw new ParamError("Unknown parameter "+name+"!");
+			throw new ParamException("Unknown parameter "+name+"!");
 		}
 	}
 	
@@ -1084,12 +1084,12 @@ public class Params {
 		parser.parse(is,this);
 	}
 	
-	public void readFromXML(InputStream is) throws ParamError {
+	public void readFromXML(InputStream is) throws ParamException {
 		try {
 			XMLTreeParser parser = new XMLTreeParser();
 			parser.parse(new InputSource(is),this);
 		} catch (Exception e) {
-			throw new ParamError(e.getMessage());
+			throw new ParamException(e.getMessage());
 		}
 	}
 	

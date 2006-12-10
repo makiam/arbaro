@@ -159,27 +159,27 @@ public class LevelParams {
 	}
 	
 	// help method for loading params
-	private int intParam(String name) throws ParamError {
+	private int intParam(String name) throws ParamException {
 		name = "" + level + name.substring(1);
 		IntParam par = (IntParam)paramDB.get(name);
 		if (par != null) {
 			return par.intValue();
 		} else {
-			throw new ParamError("bug: param "+name+" not found!");
+			throw new ParamException("bug: param "+name+" not found!");
 		}   
 	}
 	
-	private double dblParam(String name) throws ParamError {
+	private double dblParam(String name) throws ParamException {
 		name = "" + level + name.substring(1);
 		FloatParam par = (FloatParam)paramDB.get(name);
 		if (par != null) {
 			return par.doubleValue();
 		} else {
-			throw new ParamError("bug: param "+name+" not found!");
+			throw new ParamException("bug: param "+name+" not found!");
 		}   
 	}
 	
-	void fromDB(boolean leafLevelOnly) throws ParamError {
+	void fromDB(boolean leafLevelOnly) throws ParamException {
 		if (! leafLevelOnly) {
 			nTaper = dblParam("nTaper");
 			nCurveRes = intParam("nCurveRes");

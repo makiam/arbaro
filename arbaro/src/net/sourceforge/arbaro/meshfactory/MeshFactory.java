@@ -49,11 +49,11 @@ public class MeshFactory {
 		return params.getParam(name);
 	}
 	
-	public void ParamsToXML(PrintWriter w) throws ParamError {
+	public void ParamsToXML(PrintWriter w) throws ParamException {
 		params.toXML(w);
 	}
 	
-	public Mesh createStemMesh(Tree tree, Progress progress) throws Exception {
+	public Mesh createStemMesh(Tree tree, Progress progress) {
 		progress.beginPhase("Creating mesh",tree.getStemCount());
 		
 		if (progress.consoleChar != ' ') {
@@ -66,7 +66,7 @@ public class MeshFactory {
 		}
 		
 		
-		Mesh mesh = new Mesh(params.Levels);
+		Mesh mesh = new Mesh(((IntParam)params.getParam("Levels")).intValue());
 /*		for (int t=0; t<trunks.size(); t++) {
 			((Stem)trunks.elementAt(t)).addToMesh(mesh,true,useQuads);
 		}
