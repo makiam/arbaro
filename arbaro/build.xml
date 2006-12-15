@@ -2,7 +2,7 @@
 
  <project name="Arbaro" default="jars" basedir=".">
 
- <property name="release" value="1_9_5"/>
+ <property name="release" value="1_9_6"/>
  	
  <property name="src" location="src"/>
  <property name="build" location="bin"/>
@@ -24,10 +24,13 @@
   		<include name="net/sourceforge/arbaro/arbaro_gui.class"/>
   		<include name="net/sourceforge/arbaro/export/*.class"/>
   		<include name="net/sourceforge/arbaro/mesh/*.class"/>
+		<include name="net/sourceforge/arbaro/meshfactory/*.class"/>
   	  	<include name="net/sourceforge/arbaro/params/*.class"/>
   	  	<include name="net/sourceforge/arbaro/transformation/*.class"/>
   	  	<include name="net/sourceforge/arbaro/tree/*.class"/>
   	  	<include name="net/sourceforge/arbaro/gui/*.class"/>
+  	</jar>
+    	<jar destfile="${dist}/arbaro.jar" update="yes" basedir="${src}">
   	  	<include name="net/sourceforge/arbaro/gui/images/*"/>
   	  	<include name="net/sourceforge/arbaro/gui/images/actions/*"/>
   	</jar>
@@ -36,6 +39,7 @@
 		<include name="net/sourceforge/arbaro/arbaro.class"/>
 		<include name="net/sourceforge/arbaro/export/*.class"/>
 		<include name="net/sourceforge/arbaro/mesh/*.class"/>
+		<include name="net/sourceforge/arbaro/meshfactory/*.class"/>
 	  	<include name="net/sourceforge/arbaro/params/*.class"/>
 	  	<include name="net/sourceforge/arbaro/transformation/*.class"/>
 	  	<include name="net/sourceforge/arbaro/tree/*.class"/>
