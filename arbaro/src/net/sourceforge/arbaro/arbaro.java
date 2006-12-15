@@ -65,6 +65,8 @@ public class arbaro {
 		println();
 		println("     -q|--quiet          Only error messages are output to stderr no progress");
 		println();
+		println("     -qq|--reallyquiet   No messages are output to stderr");
+		println();
 		println("     -d|--debug          Much debugging ouput should be interesting for developers only");
 		println();
 		println("     -o|--output <file>  Output tree code to this file instead of STDOUT");
@@ -123,6 +125,7 @@ public class arbaro {
 		//	try {
 		
 		boolean quiet = false;
+		boolean reallyQuiet = false;
 		boolean debug = false;
 		boolean uvLeaves = false;
 		boolean uvStems = false;
@@ -144,6 +147,9 @@ public class arbaro {
 				usage();
 				System.exit(0);
 			} else if (args[i].equals("-q") || args[i].equals("--quiet")) {
+				quiet = true;
+			} else if (args[i].equals("-qq") || args[i].equals("--reallyquiet")) {
+				reallyQuiet = true;
 				quiet = true;
 			} else if (args[i].equals("-o") || args[i].equals("--output")) {
 				output_file = args[++i];
@@ -185,10 +191,17 @@ public class arbaro {
 			printProgramName();
 		}
 		
-		Progress progress = new Progress();
-		progress.debug = debug;
-		if (quiet) progress.consoleChar=' ';
-		else progress.consoleChar='.';
+		if (debug)
+			Console.setOutputLevel(Console.DEBUG);
+		else if (reallyQuiet)
+			Console.setOutputLevel(Console.REALLY_QUIET);
+		else if (quiet)
+			Console.setOutputLevel(Console.QUIET);
+		else
+			Console.setOutputLevel(Console.VERBOSE);
+		
+//		if (quiet) progress.consoleChar=' ';
+//		else progress.consoleChar='.';
 		TreeGenerator treeGenerator = new TreeGenerator();
 		
 		ExporterFactory exporterFactory = new ExporterFactory();
@@ -200,16 +213,13 @@ public class arbaro {
 		
 		InputStream in;
 		if (input_file == null) {
-			if (! quiet) { 
-				System.err.println("No tree definition file given.");
-				System.err.println("Reading parameters from STDIN...");
-			}
+			Console.verboseOutput("No tree definition file given.");
+			Console.verboseOutput("Reading parameters from STDIN...");
+
 			in = System.in;
 		} else {
-			if (! quiet) { 
-				System.err.println("Reading parameters from "
+			Console.verboseOutput("Reading parameters from "
 					+ input_file + "...");
-			}
 			in = new FileInputStream(input_file);
 		}
 		
@@ -219,9 +229,6 @@ public class arbaro {
 		
 		// FIXME: put here or earlier?
 		if (smooth>=0) treeGenerator.setParam("Smooth",new Double(smooth).toString());
-		
-		if (quiet) progress.setConsoleChar(' ');
-		else progress.setConsoleChar('.');
 		
 		//tree.setSeed(seed);
 		//params.stopLevel = levels;
@@ -238,6 +245,7 @@ public class arbaro {
 			treeGenerator.writeParamsToXML(out);
 		} else {
 			treeGenerator.setSeed(seed);
+			Progress progress = new Progress();
 			Tree tree = treeGenerator.makeTree(progress);
 			Params params = treeGenerator.getParams();
 			params.stopLevel = levels;
