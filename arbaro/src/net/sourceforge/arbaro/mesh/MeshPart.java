@@ -27,6 +27,7 @@ import java.util.Enumeration;
 //import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.tree.Stem;
+import net.sourceforge.arbaro.export.Console;
 
 /**
  * 
@@ -37,6 +38,8 @@ import net.sourceforge.arbaro.tree.Stem;
  *
  */
 public class MeshPart extends java.util.Vector {
+	private static final long serialVersionUID = 1L;
+
 	Stem stem;
 	boolean useNormals;
 	boolean useQuads;
@@ -77,7 +80,7 @@ public class MeshPart extends java.util.Vector {
 		private boolean UVFaces;
 		private boolean useQuads;
 		private int startIndex;
-		private int sectionSize;
+//		private int sectionSize;
 		
 		public FaceEnumerator(Mesh mesh, int startInx, boolean uv, boolean quads) {
 			UVFaces = uv;
@@ -93,12 +96,21 @@ public class MeshPart extends java.util.Vector {
 			int uvVertexOffset=0; 
 			if (uv && stem.isClone()) {
 				MeshPart mp = ((MeshPart)mesh.elementAt(mesh.firstMeshPart[stem.getLevel()]));
-				for (MeshSection ms=((MeshSection)mp.elementAt(1)); // ignore root vertex
-					ms.next.segment.getIndex() < sec.segment.getIndex();
-					ms = ms.next) {
+				
+				MeshSection ms = ((MeshSection)mp.elementAt(1)); // ignore root vertex
+				
+				for (int i=0; i<stem.getCloneSectionOffset(); i++) {
 					
 					uvVertexOffset += ms.size()==1? 1 : ms.size()+1;
+					ms = ms.next;
 				}
+//				
+//				for (MeshSection ms=((MeshSection)mp.elementAt(1)); // ignore root vertex
+//					ms.next.segment.getIndex() < sec.segment.getIndex();
+//					ms = ms.next) {
+//					
+//					uvVertexOffset += ms.size()==1? 1 : ms.size()+1;
+//				}
 				
 				startIndex += uvVertexOffset;
 			}
@@ -192,13 +204,13 @@ public class MeshPart extends java.util.Vector {
 			MeshSection s = ((MeshSection)elementAt(0));
 			for (int i=0; i<s.size(); i++) {
 				if (((Vertex)s.elementAt(i)).normal == null)
-					System.err.println("No normal set for lower section of mesh part of stem "+stem.getTreePosition());
+					Console.errorOutput("No normal set for lower section of mesh part of stem "+stem.getTreePosition());
 			}
 					
 			s = ((MeshSection)elementAt(size()-1));
 			for (int i=0; i<s.size(); i++) {
 				if (((Vertex)s.elementAt(i)).normal == null)
-					System.err.println("No normal set for upper section of mesh part of stem "+stem.getTreePosition());
+					Console.errorOutput("No normal set for upper section of mesh part of stem "+stem.getTreePosition());
 			}
 
 		}
@@ -215,7 +227,7 @@ public class MeshPart extends java.util.Vector {
 			//System.err.println("MeshSection "+i+" vert: "+m.size());
 			
 		} else {
-			System.err.println("WARNING: degnerated MeshPart with only "+size()+" sections at"+
+			Console.errorOutput("WARNING: degnerated MeshPart with only "+size()+" sections at"+
 					" tree position "+stem.getTreePosition()+".");
 		}
 		
@@ -436,14 +448,20 @@ public class MeshPart extends java.util.Vector {
 
 		// if it's a clone calculate a vertex offset
 		// finding the corresponding segment in the parent stem's mesh
-		int uvVertexOffset=0; 
+		int uvVertexOffset=0;
+		
 		if (stem.isClone()) {
 			MeshPart mp = ((MeshPart)mesh.elementAt(mesh.firstMeshPart[stem.getLevel()]));
-			for (MeshSection ms=((MeshSection)mp.elementAt(1)); // ignore root vertex
-				ms.next.segment.getIndex() < section.segment.getIndex();
-				ms = ms.next) {
+			MeshSection ms = ((MeshSection)mp.elementAt(1)); // ignore root vertex
+					
+			for (int i=0; i<stem.getCloneSectionOffset(); i++) {
+				
+//			for (MeshSection ms=((MeshSection)mp.elementAt(1)); // ignore root vertex
+//				ms.next.segment.getIndex() < section.segment.getIndex();
+//				ms = ms.next) {
 				
 				uvVertexOffset += ms.size()==1? 1 : ms.size()+1;
+				ms = ms.next;
 			}
 			
 		}

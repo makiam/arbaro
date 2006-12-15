@@ -43,6 +43,8 @@ import java.util.NoSuchElementException;
 // because only the longest have the maximum number
 // of substems.
 public class Mesh extends java.util.Vector {
+	private static final long serialVersionUID = 1L;
+
 	final boolean debugMesh = false;
 	public int[] firstMeshPart; // first mesh part of each level 
 		
@@ -227,7 +229,7 @@ public class Mesh extends java.util.Vector {
 	/**
 	 * Returns the total number of vertices in the mesh.
 	 * 
-	 * @return
+	 * @return total number of vertices in the mesh
 	 */
 	public int vertexCount() {
 		// count all meshpoints of all parts
@@ -244,7 +246,7 @@ public class Mesh extends java.util.Vector {
 	 * created for the mesh. Povray wants to know this
 	 * before the faces itself.
 	 * 
-	 * @return
+	 * @return total number of faces, that has to be created for the mesh
 	 */
 	public int faceCount()  {
 		int cnt = 0;
@@ -259,7 +261,7 @@ public class Mesh extends java.util.Vector {
 	 * created for the mesh. Povray wants to know this
 	 * before the uv vectors itself.
 	 * 
-	 * @return
+	 * @return total number of uv-vectors, that has to be created for the mesh
 	 */
 	public int uvCount()  {
 		int cnt = 0;
@@ -273,7 +275,8 @@ public class Mesh extends java.util.Vector {
 	/**
 	 * Returns the index of the first uv-vector, of the given level
 	 * 
-	 * @return
+	 * @param level level
+	 * @return index of the first uv-vector, of the given level
 	 */
 	public int firstUVIndex(int level) {
 		int cnt = 0;

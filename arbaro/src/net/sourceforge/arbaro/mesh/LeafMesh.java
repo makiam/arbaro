@@ -276,7 +276,7 @@ public class LeafMesh {
 	 * Returns the i-th vertex.
 	 * 
 	 * @param i
-	 * @return
+	 * @return i-th vertex
 	 */
 	public Vertex shapeVertexAt(int i) {
 		return shape.vertices[i];
@@ -286,7 +286,7 @@ public class LeafMesh {
 	 * Returns the i-th uv-vector.
 	 * 
 	 * @param i
-	 * @return
+	 * @return i-th uv-vector
 	 */
 	public UVVector shapeUVAt(int i) {
 		return shape.vertices[i].uv;
@@ -296,7 +296,7 @@ public class LeafMesh {
 	 * Returns the i-th face (triangle).
 	 * 
 	 * @param i
-	 * @return
+	 * @return i-th face (triangle)
 	 */
 	public Face shapeFaceAt(int i) {
 		return shape.faces[i];
@@ -305,7 +305,7 @@ public class LeafMesh {
 	/**
 	 * Returns the number of vertices the leaf mesh consist of.
 	 * 
-	 * @return
+	 * @return number of vertices the leaf mesh consist of
 	 */
 	public int getShapeVertexCount() {
 		return shape.getVertexCount();
@@ -315,7 +315,7 @@ public class LeafMesh {
 	/**
 	 * Returns the number ov faces the leaf mesh consists of.
 	 * 
-	 * @return
+	 * @return number ov faces the leaf mesh consists of
 	 */
 	public int getShapeFaceCount() {
 		return shape.getFaceCount();

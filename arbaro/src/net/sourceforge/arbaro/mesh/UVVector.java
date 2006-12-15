@@ -32,9 +32,6 @@ public final class UVVector {
 	public double u;
 	public double v;
 
-	/**
-	 * 
-	 */
 	public UVVector(double u_, double v_) {
 		u=u_;
 		v=v_;

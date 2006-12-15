@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.params.FloatFormat;
 import net.sourceforge.arbaro.transformation.Vector;
-import net.sourceforge.arbaro.tree.Segment;
+import net.sourceforge.arbaro.export.Console;
 
 /**
  * A class holding a section of a mesh.
@@ -45,11 +45,12 @@ import net.sourceforge.arbaro.tree.Segment;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class MeshSection extends java.util.Vector {
+	private static final long serialVersionUID = 1L;
 	
 	public MeshSection previous;
 	public MeshSection next;
 	public double mapV; // v-coordinate of uv-map
-	public Segment segment;
+//	public Segment segment;
 	
 	private class UVVertexEnumerator implements Enumeration {
 		private int i;
@@ -84,7 +85,8 @@ public class MeshSection extends java.util.Vector {
 		private boolean uv;
 		private Face face;
 
-		public FaceEnumerator(int startIndex, boolean UVFaces, boolean useQuads) {
+		public FaceEnumerator(int startIndex, boolean UVFaces, 
+				boolean useQuads) {
 			if (next==null) return;
 			
 			i=0;
@@ -108,7 +110,7 @@ public class MeshSection extends java.util.Vector {
 			if (size() == 1 && next.size() == 1) {
 				// normaly this shouldn't occur, only for very small radius?
 				// I should warn about this
-				System.err.println("WARNING: two adjacent mesh sections with only one point.");
+				Console.errorOutput("WARNING: two adjacent mesh sections with only one point.");
 			}
 			
 //			System.err.println("new section enum");
@@ -150,10 +152,10 @@ public class MeshSection extends java.util.Vector {
 	}
 
 	
-	public MeshSection(/*Stem st,*/ int ptcnt, double v, Segment seg) {
+	public MeshSection(/*Stem st,*/ int ptcnt, double v) { //, Segment seg) {
 		super(ptcnt);
 		mapV = v;
-		segment = seg; 
+//		segment = seg; 
 		/*stem = st;*/
 	}
 	
@@ -161,6 +163,7 @@ public class MeshSection extends java.util.Vector {
 	 * Adds a point to the mesh section
 	 * 
 	 * @param pt
+	 * @param mapU 
 	 */
 	public void addPoint(Vector pt, double mapU) {
 		addElement(new Vertex(pt,null,new UVVector(mapU,mapV)));
@@ -170,7 +173,7 @@ public class MeshSection extends java.util.Vector {
 	 * Returns the location point of the vertex i.
 	 * 
 	 * @param i
-	 * @return
+	 * @return location point of the vertex i
 	 */
 	public Vector pointAt(int i) {
 		return ((Vertex)elementAt(i)).point;
@@ -183,7 +186,8 @@ public class MeshSection extends java.util.Vector {
 			return elements();
 	}
 	
-	public Enumeration allFaces(int startIndex, boolean UVFaces, boolean useQuads) {
+	public Enumeration allFaces(int startIndex, boolean UVFaces, 
+			boolean useQuads) {
 		return new FaceEnumerator(startIndex, UVFaces, useQuads);
 	}
 	
@@ -191,7 +195,7 @@ public class MeshSection extends java.util.Vector {
 	 * Returns the texture's uv-coordinates of the point.
 	 * 
 	 * @param i
-	 * @return
+	 * @return texture's uv-coordinates of the point
 	 */
 	public UVVector uvAt(int i) {
 		if (i<size())
@@ -211,7 +215,8 @@ public class MeshSection extends java.util.Vector {
 	/**
 	 * Returns the number of faces between this section and the next one.
 	 * 
-	 * @return
+	 * @param useQuads 
+	 * @return number of faces between this section and the next one
 	 */
 	public int faceCount(boolean useQuads) {
 		if (size() == 1) return next.size();
@@ -224,7 +229,7 @@ public class MeshSection extends java.util.Vector {
 	 * Returns the normal of the vertex i.
 	 * 
 	 * @param i
-	 * @return
+	 * @return normal of the vertex i
 	 * @throws Exception
 	 */
 	public Vector normalAt(int i) throws Exception {
@@ -246,7 +251,7 @@ public class MeshSection extends java.util.Vector {
 	 * Returns the point number i.
 	 * 
 	 * @param i
-	 * @return
+	 * @return point number i
 	 */
 	public Vector here(int i) {
 		
@@ -257,7 +262,7 @@ public class MeshSection extends java.util.Vector {
 	 * Returns the point to the left of the point number i
 	 * 
 	 * @param i
-	 * @return
+	 * @return point to the left of the point number i
 	 */
 	public Vector left(int i) {
 		return ((Vertex)elementAt((i-1+size())%size())).point;
@@ -267,7 +272,7 @@ public class MeshSection extends java.util.Vector {
 	 * Returns the point to the right of the point number i
 	 * 
 	 * @param i
-	 * @return
+	 * @return point to the right of the point number i
 	 */
 	public Vector right(int i) {
 		return ((Vertex)elementAt((i+1)%size())).point;
@@ -277,7 +282,7 @@ public class MeshSection extends java.util.Vector {
 	 * Returns the point on top of the point number i (from the next section).
 	 * The next section has the same number of points or only one point.
 	 * @param i
-	 * @return
+	 * @return point on top of the point number i
 	 */
 	public Vector up(int i) {
 		return ((Vertex)(next.elementAt(i%next.size()))).point;
@@ -287,7 +292,7 @@ public class MeshSection extends java.util.Vector {
 	 * Returns the point below the point number i (from the previous section).
 	 * The next section has the same number of points or only one point.
 	 * @param i
-	 * @return
+	 * @return point below the point number i
 	 */
 	public Vector down(int i) {
 		return ((Vertex)(previous.elementAt(i%previous.size()))).point;
@@ -299,7 +304,7 @@ public class MeshSection extends java.util.Vector {
 	 * @param a  
 	 * @param b 
 	 * @param c
-	 * @return 
+	 * @return normal of the plane built by the vectors a-b and c-b
 	 */
 	public Vector normal(Vector a, Vector b, Vector c) {
 		Vector u = (a.sub(b)).normalize();

@@ -28,6 +28,8 @@ package net.sourceforge.arbaro.mesh;
  */
 
 public class MeshException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
+
     public MeshException(String msg) {
 	super(msg);
     }
