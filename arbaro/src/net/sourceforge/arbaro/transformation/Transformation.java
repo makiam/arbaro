@@ -67,19 +67,19 @@ public class Transformation {
 	 * Returns the product of two transformations, .i.e. the tranformation
 	 * resulting of the two transformations applied one after the other
 	 * 
-	 * @param T
+	 * @param T1
 	 * @return
 	 */
-	public Transformation prod(Transformation T) {
-		return new Transformation(matrix.prod(T.matrix()),
-				matrix.prod(T.vector()).add(vector));
+	public Transformation prod(Transformation T1) {
+		return new Transformation(matrix.prod(T1.matrix()),
+				matrix.prod(T1.vector()).add(vector));
 	}
 	
 	/**
 	 * Applies the transformation to a vector
 	 * 
 	 * @param v
-	 * @return
+	 * @return resulting vector
 	 */
 	public Vector apply(Vector v) {
 		return matrix.prod(v).add(vector);
@@ -89,7 +89,7 @@ public class Transformation {
 	 * Returns the X-column of the rotation matrix. This
 	 * is the projection on to the x-axis
 	 * 
-	 * @return
+	 * @return X-column of the rotation matrix
 	 */
 	public Vector getX() {
 		return matrix.col(X);
@@ -99,7 +99,7 @@ public class Transformation {
 	 * Returns the Y-column of the rotation matrix. This
 	 * is the projection on to the y-axis
 	 * 
-	 * @return
+	 * @return Y-column of the rotation matrix
 	 */
 	public Vector getY() {
 		return matrix.col(Y);
@@ -109,7 +109,7 @@ public class Transformation {
 	 * Returns the Z-column of the rotation matrix. This
 	 * is the projection on to the z-axis
 	 * 
-	 * @return
+	 * @return Z-column of the rotation matrix
 	 */
 	public Vector getZ() {
 		return matrix.col(Z);
@@ -119,7 +119,7 @@ public class Transformation {
 	 * Returns the translation vector of the transformation.
 	 * (for convenience, same as vector()) 
 	 * 
-	 * @return
+	 * @return translation vector of the transformation
 	 */
 	public Vector getT() { 
 		return vector;
@@ -161,39 +161,39 @@ public class Transformation {
 	
 	public Transformation rotz(double angle) {
 		// local rotation about z-axis
-		angle = angle*Math.PI/180;
-		Matrix rm = new Matrix(Math.cos(angle),-Math.sin(angle),0,
-				Math.sin(angle),Math.cos(angle),0,
+		double radAngle = angle*Math.PI/180;
+		Matrix rm = new Matrix(Math.cos(radAngle),-Math.sin(radAngle),0,
+				Math.sin(radAngle),Math.cos(radAngle),0,
 				0,0,1);
 		return new Transformation(matrix.prod(rm),vector);
 	}
 	
 	public Transformation roty(double angle) {
 		// local rotation about z-axis
-		angle = angle*Math.PI/180;
-		Matrix rm = new Matrix(Math.cos(angle),0,-Math.sin(angle),
+		double radAngle = angle*Math.PI/180;
+		Matrix rm = new Matrix(Math.cos(radAngle),0,-Math.sin(radAngle),
 				0,1,0,
-				Math.sin(angle),0,Math.cos(angle));
+				Math.sin(radAngle),0,Math.cos(radAngle));
 		return new Transformation(matrix.prod(rm),vector);
 	}
 	
 	public Transformation rotx(double angle) {
 		// local rotation about the x axis
-		angle = angle*Math.PI/180;
+		double radAngle = angle*Math.PI/180;
 		Matrix rm = new Matrix(1,0,0,
-				0,Math.cos(angle),-Math.sin(angle),
-				0,Math.sin(angle),Math.cos(angle));
+				0,Math.cos(radAngle),-Math.sin(radAngle),
+				0,Math.sin(radAngle),Math.cos(radAngle));
 		return new Transformation(matrix.prod(rm),vector);
 	}
 	
 	public Transformation rotxz(double delta, double rho) {
 		// local rotation about the x and z axees - for the substems
-		delta = delta*Math.PI/180;
-		rho = rho*Math.PI/180;
-		double sir = Math.sin(rho);
-		double cor = Math.cos(rho);
-		double sid = Math.sin(delta);
-		double cod = Math.cos(delta);
+		double radDelta = delta*Math.PI/180;
+		double radRho = rho*Math.PI/180;
+		double sir = Math.sin(radRho);
+		double cor = Math.cos(radRho);
+		double sid = Math.sin(radDelta);
+		double cod = Math.cos(radDelta);
 		
 		Matrix rm = new Matrix(cor,-sir*cod,sir*sid,
 				sir,cor*cod,-cor*sid,
@@ -205,13 +205,13 @@ public class Transformation {
 		// local rotation away from the local z-axis 
 		// about an angle delta using an axis given by rho 
 		// - used for splitting and random rotations
-		delta = delta*Math.PI/180;
-		rho = rho*Math.PI/180;
+		double radDelta = delta*Math.PI/180;
+		double radRho = rho*Math.PI/180;
 		
-		double a = Math.cos(rho);
-		double b = Math.sin(rho);
-		double si = Math.sin(delta);
-		double co = Math.cos(delta);
+		double a = Math.cos(radRho);
+		double b = Math.sin(radRho);
+		double si = Math.sin(radDelta);
+		double co = Math.cos(radDelta);
 		
 		Matrix rm = new Matrix((co+a*a*(1-co)),(b*a*(1-co)),(b*si),
 				(a*b*(1-co)),(co+b*b*(1-co)),(-a*si),
@@ -223,15 +223,15 @@ public class Transformation {
 		return new Transformation(matrix,vector.add(v));
 	}
 	
-	public Transformation rotaxis(double angle,Vector axis) {
+	public Transformation rotaxis(double angle, Vector axis) {
 		// rotation about an axis
-		angle = angle*Math.PI/180;
-		axis=axis.normalize();
-		double a = axis.getX();
-		double b = axis.getY();
-		double c = axis.getZ();
-		double si = Math.sin(angle);
-		double co = Math.cos(angle);
+		double radAngle = angle*Math.PI/180;
+		Vector normAxis=axis.normalize();
+		double a = normAxis.getX();
+		double b = normAxis.getY();
+		double c = normAxis.getZ();
+		double si = Math.sin(radAngle);
+		double co = Math.cos(radAngle);
 		
 		Matrix rm = new Matrix(
 				(co+a*a*(1-co)),(-c*si+b*a*(1-co)),(b*si+c*a*(1-co)),
@@ -242,8 +242,8 @@ public class Transformation {
 	
 	public Transformation inverse() {
 		// get inverse transformation M+t -> M'-M'*t"
-		Matrix T = matrix.transpose();
-		return new Transformation(T,T.prod(vector.mul(-1)));
+		Matrix T1 = matrix.transpose();
+		return new Transformation(T1,T1.prod(vector.mul(-1)));
 	}
 };
 
