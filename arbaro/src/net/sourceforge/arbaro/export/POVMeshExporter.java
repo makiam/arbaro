@@ -27,9 +27,7 @@ import java.util.Enumeration;
 import java.text.NumberFormat;
 
 import net.sourceforge.arbaro.tree.*;
-import net.sourceforge.arbaro.params.Params;
 import net.sourceforge.arbaro.mesh.*;
-import net.sourceforge.arbaro.meshfactory.*;
 import net.sourceforge.arbaro.transformation.Vector;
 import net.sourceforge.arbaro.params.FloatFormat;
 
@@ -286,11 +284,11 @@ class POVMeshExporter extends MeshExporter {
 	
 	static final NumberFormat fmt = FloatFormat.getInstance();
 	
-	public POVMeshExporter(Tree tree, MeshFactory meshFactory) {
-		super(meshFactory);
+	public POVMeshExporter(Tree tree, MeshGenerator meshGenerator) {
+		super(meshGenerator);
 		this.tree = tree;
 		this.povrayDeclarationPrefix =
-			meshFactory.getParam("Species") + "_" + tree.getSeed() + "_";
+			tree.getSpecies() + "_" + tree.getSeed() + "_";
 	}
 	
 	public void doWrite() {
@@ -302,7 +300,7 @@ class POVMeshExporter extends MeshExporter {
 			w.println();
 			w.println(net.sourceforge.arbaro.arbaro.programName);
 			w.println();
-			meshFactory.ParamsToXML(w);
+			tree.paramsToXML(w);
 			w.println("************************************************/");
 			
 			// tree scale
@@ -348,7 +346,7 @@ class POVMeshExporter extends MeshExporter {
 		//    	double leafWidth = tree.params.LeafScale*tree.params.LeafScaleX/Math.sqrt(tree.params.LeafQuality);
 		//    	LeafMesh mesh = new LeafMesh(tree.params.LeafShape,leafLength,leafWidth,tree.params.LeafStemLen);
 		
-		leafMesh = meshFactory.createLeafMesh();
+		leafMesh = MeshGenerator.createLeafMesh(tree,false /* don't use Quads */);
 
 		int passes = 2; 
 		if (outputLeafNormals) passes++;
@@ -413,13 +411,13 @@ class POVMeshExporter extends MeshExporter {
 		progress.endPhase();
 	}	
 	
-	/**
-	 * 	Outputs Povray code points section of the mesh2 object for the leaves
-	 *  
-	 * @param w the output stream
-	 * @param mesh the mesh object
-	 * @throws Exception
-	 */
+//	/**
+//	 * 	Outputs Povray code points section of the mesh2 object for the leaves
+//	 *  
+//	 * @param w the output stream
+//	 * @param mesh the mesh object
+//	 * @throws Exception
+//	 */
 	/*
 	private void writeLeavesPoints() throws Exception {
 		Enumeration leaves = tree.allLeaves();
@@ -446,13 +444,13 @@ class POVMeshExporter extends MeshExporter {
 	}
 	*/
 	
-	/**
-	 * Outputs Povray code points section of the mesh2 object for the leaves
-	 * 
-	 * @param w the output stream
-	 * @param mesh the mesh object
-	 * @throws Exception
-	 */
+//	/**
+//	 * Outputs Povray code points section of the mesh2 object for the leaves
+//	 * 
+//	 * @param w the output stream
+//	 * @param mesh the mesh object
+//	 * @throws Exception
+//	 */
 	/*
 	private void writeLeavesFaces() throws Exception {
 		Enumeration leaves = tree.allLeaves();
@@ -486,13 +484,13 @@ class POVMeshExporter extends MeshExporter {
 	}
 	*/
 
-	/**
-	 * Outputs Povray code uv indices section of the mesh2 object for the leaves
-	 * 
-	 * @param w the output stream
-	 * @param mesh the mesh object
-	 * @throws Exception
-	 */
+//	/**
+//	 * Outputs Povray code uv indices section of the mesh2 object for the leaves
+//	 * 
+//	 * @param w the output stream
+//	 * @param mesh the mesh object
+//	 * @throws Exception
+//	 */
 	/*
 	private void writeLeavesUVFaces() throws Exception {
 		Enumeration leaves = tree.allLeaves();
@@ -526,13 +524,13 @@ class POVMeshExporter extends MeshExporter {
 	}
 	*/
 	
-	/**
-	 * Outputs Povray code normals section of the mesh2 object for the leaves
-	 *  
-	 * @param w the output stream
-	 * @param mesh the mesh object
-	 * @throws Exception
-	 */
+//	/**
+//	 * Outputs Povray code normals section of the mesh2 object for the leaves
+//	 *  
+//	 * @param w the output stream
+//	 * @param mesh the mesh object
+//	 * @throws Exception
+//	 */
 	/*
 	private void writeLeavesNormals() throws Exception {
 		Enumeration leaves = tree.allLeaves();
@@ -568,7 +566,7 @@ class POVMeshExporter extends MeshExporter {
 		// for every level
 		outputStemNormals = true;
 		
-		mesh = meshFactory.createStemMesh(tree,progress);
+		mesh = meshGenerator.createStemMesh(tree,progress);
 		long vertex_cnt = mesh.vertexCount();
 		long face_cnt = mesh.faceCount();
 		long uv_cnt = mesh.uvCount();
@@ -586,14 +584,14 @@ class POVMeshExporter extends MeshExporter {
 		
 		// output section points
 		w.println(indent+"  vertex_vectors { " + vertex_cnt);
-		writeStemPoints(indent);
+		writeStemPoints(/*indent*/);
 		w.println(indent + "  }");
 		
 		
 		// output normals
 		if (outputStemNormals) {
 			w.println(indent + "  normal_vectors { " + vertex_cnt); 
-			writeStemNormals(indent);
+			writeStemNormals(/*indent*/);
 			w.println(indent+"  }");
 		}
 		
@@ -603,7 +601,7 @@ class POVMeshExporter extends MeshExporter {
 //			for (int i=0; i<mesh.firstMeshPart.length; i++) {
 //				if (mesh.firstMeshPart[i]>=0) {
 //					writeStemUVs((MeshPart)mesh.elementAt(mesh.firstMeshPart[i]),indent);
-					writeStemUVs(indent);
+					writeStemUVs(/*indent*/);
 					w.println();
 //				}
 				//FIXME incStemsProgressCount();
@@ -613,7 +611,7 @@ class POVMeshExporter extends MeshExporter {
 		
 		// output mesh triangles
 		w.println(indent + "  face_indices { " + face_cnt);
-			writeStemFaces(false,indent);
+			writeStemFaces(false/*,indent*/);
 			w.println();
 			
 //FIXME			incStemsProgressCount();
@@ -625,7 +623,7 @@ class POVMeshExporter extends MeshExporter {
 		if (outputStemUVs) {
 			/*offset = 0;*/
 			w.println(indent + "  uv_indices {  " + face_cnt);
-			writeStemFaces(true,indent);
+			writeStemFaces(true/*,indent*/);
 			w.println();
 			
 			//				incStemsProgressCount();
@@ -661,7 +659,7 @@ class POVMeshExporter extends MeshExporter {
 	}
 	
 	
-	private void writeStemPoints(String indent) {
+	private void writeStemPoints(/*String indent*/) {
 		// w.println(indent + "  /* stem " + mp.getTreePosition() + "*/ ");
 
 		int i = 0;
@@ -684,7 +682,7 @@ class POVMeshExporter extends MeshExporter {
 		w.println();
 	}	
 	
-	public void writeStemFaces(boolean uv, String indent) 
+	public void writeStemFaces(boolean uv/*, String indent*/) 
 	throws MeshException {
 
 		int j=0;
@@ -708,7 +706,7 @@ class POVMeshExporter extends MeshExporter {
 		}
 	}
 	
-	private void writeStemNormals(String indent) 
+	private void writeStemNormals(/*String indent*/) 
 //	throws MeshException 
 	{
 		
@@ -748,7 +746,7 @@ class POVMeshExporter extends MeshExporter {
 	
 
 	
-	private void writeStemUVs(/*MeshPart mp,*/ String indent) 
+	private void writeStemUVs(/*MeshPart mp, String indent*/) 
 	{
 		// it is enough to create one
 		// set of uv-Vectors for each stem level,

@@ -26,8 +26,6 @@
 
 package net.sourceforge.arbaro.export;
 
-import java.io.PrintWriter;
-
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.params.*;
 

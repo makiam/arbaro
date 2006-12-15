@@ -23,20 +23,19 @@
 package net.sourceforge.arbaro.export;
 
 
-import net.sourceforge.arbaro.meshfactory.*;
-import net.sourceforge.arbaro.export.*;
+import net.sourceforge.arbaro.mesh.MeshGenerator;
 
 /**
  * @author wolfram
  *
  */
 abstract class MeshExporter extends AbstractExporter {
-	protected MeshFactory meshFactory;
+	protected MeshGenerator meshGenerator;
 	/**
 	 * 
 	 */
-	public MeshExporter(MeshFactory meshFactory) {
-		this.meshFactory = meshFactory;
+	public MeshExporter(MeshGenerator meshGenerator) {
+		this.meshGenerator = meshGenerator;
 	}
 	
 	/*

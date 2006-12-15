@@ -29,6 +29,7 @@ import net.sourceforge.arbaro.params.*;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
+import java.util.Enumeration;
 
 class POVConeLeafWriter implements TreeTraversal {
 	Tree tree;
@@ -130,119 +131,119 @@ class POVConeLeafWriter implements TreeTraversal {
 
 }
 
-/**
- * @author wolfram
- *
- */
-class POVConeSegmentWriter extends DefaultStemTraversal {
-	PrintWriter w;
-	AbstractExporter exporter;
-	int stemlevel;
-	Params par;
-	/**
-	 * 
-	 */
-	public POVConeSegmentWriter(AbstractExporter exporter, Params params) {
-		super();
-		this.exporter = exporter;
-		this.w = exporter.getWriter();
-		this.par = params;
-	}
-	
-	public boolean enterStem(Stem stem) {
-		stemlevel = stem.getLevel();
-		return true;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.StemTraversal#enterSegment(net.sourceforge.arbaro.tree.Segment)
-	 */
-	public boolean enterSegment(Segment s) {
-		String indent = whitespace(stemlevel*2+4);
-		NumberFormat fmt = FloatFormat.getInstance();
-		
-		// FIXME: for cone output - if starting direction is not 1*y, there is a gap 
-		// between earth and tree base
-		// best would be to add roots to the trunk(?)	  
-	/*	
-		// TODO instead of accessing subsegments this way
-		// it would be nicer to use visitSubsegment, but
-		// how to see when we visit the last but one subsegment?
-		// may be need an index in Subsegment
-		for (int i=0; i<s.subsegments.size()-1; i++) {
-			Subsegment ss1 = (Subsegment)s.subsegments.elementAt(i);
-			Subsegment ss2 = (Subsegment)s.subsegments.elementAt(i+1);
-			w.println(indent + "cone   { " + vectorStr(ss1.pos) + ", "
-					+ fmt.format(ss1.rad) + ", " 
-					+ vectorStr(ss2.pos) + ", " 
-					+ fmt.format(ss2.rad) + " }"); 
-			// for helix subsegs put spheres between
-			if (s.lpar.nCurveV<0 && i<s.subsegments.size()-2) {
-				w.println(indent + "sphere { " 
-						+ vectorStr(ss1.pos) + ", "
-						+ fmt.format(ss1.rad-0.0001) + " }");
-			}
-		}
-*/		
-		// put sphere at segment end
-		LevelParams lpar = par.getLevelParams(stemlevel);
-		if ((s.getUpperRadius() > 0) && (! s.isLastStemSegment() || 
-				(lpar.nTaper>1 && lpar.nTaper<=2))) 
-		{  
-			w.println(indent + "sphere { " + vectorStr(s.getUpperPosition()) + ", "
-					+ fmt.format(s.getUpperRadius()-0.0001) + " }");
-		}
-	
-		return true;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.StemTraversal#visitSubsegment(net.sourceforge.arbaro.tree.Subsegment)
-	 */
-	public boolean visitSubsegment(Subsegment subsegment) {
-		if (! subsegment.isLastSubsegment()) {
-			String indent = whitespace(stemlevel*2+4);
-			NumberFormat fmt = FloatFormat.getInstance();
-			LevelParams lpar = par.getLevelParams(stemlevel);
-
-			Subsegment ss1 = subsegment;
-			Subsegment ss2 = subsegment.getNext();
-			w.println(indent + "cone   { " + vectorStr(ss1.getPosition()) + ", "
-					+ fmt.format(ss1.getRadius()) + ", " 
-					+ vectorStr(ss2.getPosition()) + ", " 
-					+ fmt.format(ss2.getRadius()) + " }"); 
-			// for helix subsegs put spheres between
-			if (lpar.nCurveV<0 /*&& i<s.subsegments.size()-2*/) {
-				w.println(indent + "sphere { " 
-						+ vectorStr(ss1.getPosition()) + ", "
-						+ fmt.format(ss1.getRadius()-0.0001) + " }");
-			}
-		}
-		return true;
-	}
-
-	private String vectorStr(Vector v) {
-		NumberFormat fmt = FloatFormat.getInstance();
-		return "<"+fmt.format(v.getX())+","
-		+fmt.format(v.getZ())+","
-		+fmt.format(v.getY())+">";
-	}
-	
-	/**
-	 * Returns a number of spaces
-	 * 
-	 * @param len number of spaces
-	 * @return string made from spaces
-	 */
-	private String whitespace(int len) {
-		char[] ws = new char[len];
-		for (int i=0; i<len; i++) {
-			ws[i] = ' ';
-		}
-		return new String(ws);
-	}
-}
-
+///**
+// * @author wolfram
+// *
+// */
+//class POVConeSegmentWriter extends DefaultStemTraversal {
+//	PrintWriter w;
+//	AbstractExporter exporter;
+//	int stemlevel;
+//	Params par;
+//	/**
+//	 * 
+//	 */
+//	public POVConeSegmentWriter(AbstractExporter exporter, Params params) {
+//		super();
+//		this.exporter = exporter;
+//		this.w = exporter.getWriter();
+//		this.par = params;
+//	}
+//	
+//	public boolean enterStem(Stem stem) {
+//		stemlevel = stem.getLevel();
+//		return true;
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see net.sourceforge.arbaro.tree.StemTraversal#enterSegment(net.sourceforge.arbaro.tree.Segment)
+//	 */
+//	public boolean enterSegment(Segment s) {
+//		String indent = whitespace(stemlevel*2+4);
+//		NumberFormat fmt = FloatFormat.getInstance();
+//		
+//		// FIXME: for cone output - if starting direction is not 1*y, there is a gap 
+//		// between earth and tree base
+//		// best would be to add roots to the trunk(?)	  
+//	/*	
+//		// TODO instead of accessing subsegments this way
+//		// it would be nicer to use visitSubsegment, but
+//		// how to see when we visit the last but one subsegment?
+//		// may be need an index in Subsegment
+//		for (int i=0; i<s.subsegments.size()-1; i++) {
+//			Subsegment ss1 = (Subsegment)s.subsegments.elementAt(i);
+//			Subsegment ss2 = (Subsegment)s.subsegments.elementAt(i+1);
+//			w.println(indent + "cone   { " + vectorStr(ss1.pos) + ", "
+//					+ fmt.format(ss1.rad) + ", " 
+//					+ vectorStr(ss2.pos) + ", " 
+//					+ fmt.format(ss2.rad) + " }"); 
+//			// for helix subsegs put spheres between
+//			if (s.lpar.nCurveV<0 && i<s.subsegments.size()-2) {
+//				w.println(indent + "sphere { " 
+//						+ vectorStr(ss1.pos) + ", "
+//						+ fmt.format(ss1.rad-0.0001) + " }");
+//			}
+//		}
+//*/		
+//		// put sphere at segment end
+//		LevelParams lpar = par.getLevelParams(stemlevel);
+//		if ((s.getUpperRadius() > 0) && (! s.isLastStemSegment() || 
+//				(lpar.nTaper>1 && lpar.nTaper<=2))) 
+//		{  
+//			w.println(indent + "sphere { " + vectorStr(s.getUpperPosition()) + ", "
+//					+ fmt.format(s.getUpperRadius()-0.0001) + " }");
+//		}
+//	
+//		return true;
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see net.sourceforge.arbaro.tree.StemTraversal#visitSubsegment(net.sourceforge.arbaro.tree.Subsegment)
+//	 */
+//	public boolean visitSubsegment(Subsegment subsegment) {
+//		if (! subsegment.isLastSubsegment()) {
+//			String indent = whitespace(stemlevel*2+4);
+//			NumberFormat fmt = FloatFormat.getInstance();
+//			LevelParams lpar = par.getLevelParams(stemlevel);
+//
+//			Subsegment ss1 = subsegment;
+//			Subsegment ss2 = subsegment.getNext();
+//			w.println(indent + "cone   { " + vectorStr(ss1.getPosition()) + ", "
+//					+ fmt.format(ss1.getRadius()) + ", " 
+//					+ vectorStr(ss2.getPosition()) + ", " 
+//					+ fmt.format(ss2.getRadius()) + " }"); 
+//			// for helix subsegs put spheres between
+//			if (lpar.nCurveV<0 /*&& i<s.subsegments.size()-2*/) {
+//				w.println(indent + "sphere { " 
+//						+ vectorStr(ss1.getPosition()) + ", "
+//						+ fmt.format(ss1.getRadius()-0.0001) + " }");
+//			}
+//		}
+//		return true;
+//	}
+//
+//	private String vectorStr(Vector v) {
+//		NumberFormat fmt = FloatFormat.getInstance();
+//		return "<"+fmt.format(v.getX())+","
+//		+fmt.format(v.getZ())+","
+//		+fmt.format(v.getY())+">";
+//	}
+//	
+//	/**
+//	 * Returns a number of spaces
+//	 * 
+//	 * @param len number of spaces
+//	 * @return string made from spaces
+//	 */
+//	private String whitespace(int len) {
+//		char[] ws = new char[len];
+//		for (int i=0; i<len; i++) {
+//			ws[i] = ' ';
+//		}
+//		return new String(ws);
+//	}
+//}
+//
 
 
 /**
@@ -257,7 +258,7 @@ class POVConeStemWriter implements TreeTraversal {
 	PrintWriter w;
 	Params params;
 	int level;
-	private long stemsProgressCount=0;
+//	private long stemsProgressCount=0;
 	
 	/**
 	 * 
@@ -282,8 +283,46 @@ class POVConeStemWriter implements TreeTraversal {
 			
 		} else {
 			
-			POVConeSegmentWriter writer = new POVConeSegmentWriter(exporter,params);
-			stem.traverseStem(writer);
+//			POVConeSegmentWriter writer = new POVConeSegmentWriter(exporter,params);
+//			stem.traverseStem(writer);
+
+			String indent = whitespace(stem.getLevel()*2+4);
+			NumberFormat fmt = FloatFormat.getInstance();
+			Enumeration sections = stem.sections();
+			LevelParams lpar = params.getLevelParams(stem.getLevel());
+			
+			if (sections.hasMoreElements()) {
+				StemSection from = (StemSection)sections.nextElement();
+				StemSection to = null;
+			
+				while (sections.hasMoreElements()) {
+					to = (StemSection)sections.nextElement();
+
+					w.println(indent + "cone   { " + vectorStr(from.getPosition()) + ", "
+							+ fmt.format(from.getRadius()) + ", " 
+							+ vectorStr(to.getPosition()) + ", " 
+							+ fmt.format(to.getRadius()) + " }");
+					
+					// put spheres where z-directions changes
+					if (! from.getZ().equals(to.getZ())) {
+					
+						w.println(indent + "sphere { " 
+									+ vectorStr(from.getPosition()) + ", "
+									+ fmt.format(to.getRadius()-0.0001) + " }");
+					}
+				
+					from = to;
+				}
+			
+				// put sphere at stem end
+				if ((to.getRadius() > 0.0001) || 
+						(lpar.nTaper>1 && lpar.nTaper<=2)) 
+				{  
+					w.println(indent + "sphere { " + vectorStr(to.getPosition()) + ", "
+							+ fmt.format(to.getRadius()-0.0001) + " }");
+				}
+			
+			}
 			
 			exporter.incProgressCount(AbstractExporter.STEM_PROGRESS_STEP);
 			
@@ -291,6 +330,27 @@ class POVConeStemWriter implements TreeTraversal {
 		}
 	}
 
+	private String vectorStr(Vector v) {
+		NumberFormat fmt = FloatFormat.getInstance();
+		return "<"+fmt.format(v.getX())+","
+		+fmt.format(v.getZ())+","
+		+fmt.format(v.getY())+">";
+	}
+
+	/**
+	 * Returns a number of spaces
+	 * 
+	 * @param len number of spaces
+	 * @return string made from spaces
+	 */
+	private String whitespace(int len) {
+		char[] ws = new char[len];
+		for (int i=0; i<len; i++) {
+			ws[i] = ' ';
+		}
+		return new String(ws);
+	}
+	
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeTraversal#enterTree(net.sourceforge.arbaro.tree.Tree)
 	 */

@@ -48,7 +48,7 @@ abstract class AbstractExporter implements Exporter {
 	public void newProgress(boolean consoleProgress) {
 		progress = new Progress();
 		if (consoleProgress) 
-			progress.setConsoleChar('.');
+			Console.setOutputLevel(Console.VERBOSE);
 	}
 	
 	public PrintWriter getWriter() { return w; }
@@ -67,7 +67,7 @@ abstract class AbstractExporter implements Exporter {
 	protected void incProgressCount(int step) {
 		if (progressCount++ % step == 0) {
 			progress.incProgress(step);
-			progress.consoleProgress();
+			Console.progressChar();
 		}
 	}
 

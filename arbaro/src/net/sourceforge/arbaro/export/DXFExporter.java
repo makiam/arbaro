@@ -27,7 +27,6 @@ import java.text.NumberFormat;
 //import java.util.Enumeration;
 
 import net.sourceforge.arbaro.mesh.*;
-import net.sourceforge.arbaro.meshfactory.*;
 import net.sourceforge.arbaro.params.FloatFormat;
 //import net.sourceforge.arbaro.tree.Leaf;
 import net.sourceforge.arbaro.tree.DefaultTreeTraversal;
@@ -180,17 +179,17 @@ class DXFFaceWriter extends DefaultTreeTraversal {
 	/**
 	 * 
 	 */
-	public DXFFaceWriter(AbstractExporter exporter, MeshFactory meshFactory, String layer) {
+	public DXFFaceWriter(AbstractExporter exporter, MeshGenerator meshFactory, String layer) {
 		super();
 		this.layer = layer;
 		this.exporter = exporter;
 		this.writer = new DXFWriter(exporter.getWriter());
-		this.leafMesh = meshFactory.createLeafMesh();
 		vFace = new VFace(new Vector(),new Vector(),new Vector());
 	}
 	
 	public boolean enterTree(Tree tree) {
 	//	this.tree = tree;
+		this.leafMesh = MeshGenerator.createLeafMesh(tree,false);
 		return true;
 	}
 
@@ -225,16 +224,17 @@ class DXFExporter extends MeshExporter {
 	 * @param aTree
 	 * @param pw
 	 */
-	public DXFExporter(Tree tree, MeshFactory meshFactory) {
+	public DXFExporter(Tree tree, MeshGenerator meshFactory) {
 		
 		super(meshFactory);
+		this.tree = tree;
 		//super(tree, pw, progress, verbose);
 	}
 
 	public void doWrite() throws ExportError {
 		try{
 			DXFWriter writer = new DXFWriter(w);
-			writer.writeHeader("DXF created with Arbaro, tree species: "+meshFactory.getParam("Species"),
+			writer.writeHeader("DXF created with Arbaro, tree species: "+tree.getSpecies(),
 					tree.getMinPoint(),tree.getMaxPoint());
 			writer.writeTables();
 			writer.writeBlocks();
@@ -252,7 +252,7 @@ class DXFExporter extends MeshExporter {
 			w.flush();
 		}
 		catch (Exception e) {
-			System.err.println(e);
+			Console.errorOutput(e.toString());
 			throw new ExportError(e.getMessage());
 			//e.printStackTrace(System.err);
 		}
@@ -261,7 +261,7 @@ class DXFExporter extends MeshExporter {
 	private void writeStems(String layer) throws Exception {
 		// FIXME: optimize speed, maybe using enumerations
 
-		Mesh mesh = meshFactory.createStemMesh(tree,progress);
+		Mesh mesh = meshGenerator.createStemMesh(tree,progress);
 		progress.beginPhase("Writing stem mesh",mesh.size());
 		DXFWriter writer = new DXFWriter(w);
 
@@ -291,7 +291,7 @@ class DXFExporter extends MeshExporter {
 		
 		progress.beginPhase("Writing leaf mesh",tree.getLeafCount());
 
-		DXFFaceWriter exporter = new DXFFaceWriter(this,meshFactory,layer);
+		DXFFaceWriter exporter = new DXFFaceWriter(this,meshGenerator,layer);
 		tree.traverseTree(exporter);
 		
 //		Enumeration leaves = tree.allLeaves();

@@ -26,78 +26,49 @@
 
 package net.sourceforge.arbaro.export;
 
-class ProgressError extends Exception{
-	public ProgressError(String msg) {
-		super(msg);
-	}
-};
+//class ProgressError extends Exception{
+//	private static final long serialVersionUID = 1L;
+//	
+//	public ProgressError(String msg) {
+//		super(msg);
+//	}
+//};
 
 /**
  * Shows progress while creating and exporting a tree
  */
 public final class Progress {
+
 	String phase;
 	long maxProgress;
 	long progress;
-	public char consoleChar=' '; // show progress also on Console
-	
-	public boolean debug;
 	
 	public Progress() {
 		maxProgress=100;
 		progress=0;
 	}
 	
-	synchronized private boolean verbose() {
-		return (consoleChar != ' ');
-	}
-	
-	synchronized public void consoleProgress() {
-		if (verbose()) {
-			System.err.print(consoleChar);
-		}
-	}
-	
-	synchronized public void consoleOutput(String msg) {
-		if (verbose()) {
-			System.err.println(msg);
-		}
-	}
-	
-	synchronized public void debugOutput(String msg) {
-		if (debug) {
-			System.err.println(msg);
-		}
-	}
-	
-	synchronized public void consoleProgress(char c) {
-		if (verbose()) {
-			System.err.print(c);
-		}
-	}
-
-	synchronized public void setConsoleChar(char consoleChar) {
-		this.consoleChar= consoleChar;
-	}
 	
 	synchronized public void beginPhase(String ph, long max) {
 		phase = ph;
 		maxProgress = max;
 		progress = 0;
 		
-		if (consoleChar != ' ') System.err.println(ph);
+		Console.verboseOutput(ph);
 	}
 	
 	synchronized public void endPhase() {
 		progress = maxProgress;
 		
-		if (consoleChar != ' ') System.err.println();
+		Console.verboseOutput("");
 	}
 	
-	synchronized public void setProgress(long prog) throws ProgressError {
+	synchronized public void setProgress(long prog) /*throws ProgressError*/ {
 		if (prog>maxProgress)
-			throw new ProgressError("Error in progress. The progress "+prog+ 
-					" shouldn't exceed "+maxProgress+".");
+			progress = maxProgress;
+		else
+//			throw new ProgressError("Error in progress. The progress "+prog+ 
+//					" shouldn't exceed "+maxProgress+".");
 		progress = prog;
 	}
 	
@@ -107,12 +78,11 @@ public final class Progress {
 	
 	synchronized public int getPercent() {
 		if (maxProgress<=0) return -1; // indeterminate
-		else {
-			int percent = (int)(progress/(float)maxProgress*100);
-			if (percent<0) return 0;
-			else if (percent>100) return 100;
-			else return percent;
-		}
+	
+		int percent = (int)(progress/(float)maxProgress*100);
+		if (percent<0) return 0;
+		else if (percent>100) return 100;
+		else return percent;
 	}
 	
 	synchronized public String getPhase() {

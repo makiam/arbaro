@@ -27,7 +27,6 @@ import java.text.NumberFormat;
 import java.util.Enumeration;
 
 import net.sourceforge.arbaro.mesh.*;
-import net.sourceforge.arbaro.meshfactory.*;
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.Vector;
 import net.sourceforge.arbaro.tree.*;
@@ -54,6 +53,7 @@ class OBJLeafWriterBase extends DefaultTreeTraversal {
 			AbstractExporter exporter,
 			int leafVertexOffset) {
 		super();
+		this.exporter = exporter;
 		this.w = exporter.getWriter();
 		this.leafMesh = leafMesh;
 		this.leafVertexOffset = leafVertexOffset;
@@ -244,7 +244,7 @@ final class OBJExporter extends MeshExporter {
 	 * @param pw
 	 * @param p
 	 */
-	public OBJExporter(Tree tree, MeshFactory meshFactory) {
+	public OBJExporter(Tree tree, MeshGenerator meshFactory) {
 		super(meshFactory);
 		this.tree = tree;
 	}
@@ -272,8 +272,8 @@ final class OBJExporter extends MeshExporter {
 			+tree.getLeafCount())*(outputNormals? 2 : 1); 
 
 		try {
-			mesh = meshFactory.createStemMeshByLevel(tree,progress);
-			leafMesh = meshFactory.createLeafMesh();
+			mesh = meshGenerator.createStemMeshByLevel(tree,progress);
+			leafMesh = MeshGenerator.createLeafMesh(tree,meshGenerator.useQuads);
 
 			// vertices
 			progress.beginPhase("Writing vertices",objCount);
@@ -306,7 +306,7 @@ final class OBJExporter extends MeshExporter {
 			w.flush();
 			
 		}	catch (Exception e) {
-			System.err.println(e);
+			e.printStackTrace(System.err);
 			throw new ExportError(e.getMessage());
 			//e.printStackTrace(System.err);
 		}
@@ -385,8 +385,8 @@ final class OBJExporter extends MeshExporter {
 		// output mesh triangles
 		vertexOffset = 1;
 		//boolean separate_trunk = false;
-		int levels = ((IntParam)meshFactory.getParam("Levels")).intValue();
-		for (int stemLevel = 0; stemLevel<levels; stemLevel++) {
+//		int levels = tree.getLevels();
+		for (int stemLevel = 0; stemLevel<tree.getLevels(); stemLevel++) {
 		
 			// => start a new group
 			w.println("g "+

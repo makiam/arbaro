@@ -22,7 +22,7 @@
 
 package net.sourceforge.arbaro.export;
 
-import net.sourceforge.arbaro.meshfactory.*;
+import net.sourceforge.arbaro.mesh.MeshGenerator;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.params.Params;
 
@@ -115,23 +115,23 @@ public class ExporterFactory {
 		throws InvalidExportFormatError {
 		
 		Exporter exporter = null;
-		MeshFactory meshFactory;
+		MeshGenerator meshFactory;
 		boolean useQuads = false;
 		
 		if (exportFormat == POV_CONES) {
 			exporter = new POVConeExporter(tree,params);
 		}
 		else if (exportFormat == POV_MESH) {
-			meshFactory = new MeshFactory(params,useQuads);
+			meshFactory = new MeshGenerator(params,useQuads);
 			exporter = new POVMeshExporter(tree,meshFactory);
 			((POVMeshExporter)exporter).outputStemUVs = outputStemUVs;
 			((POVMeshExporter)exporter).outputLeafUVs = outputLeafUVs;
 		} else if (exportFormat == DXF) {
-			meshFactory = new MeshFactory(params,useQuads);
+			meshFactory = new MeshGenerator(params,useQuads);
 			exporter = new DXFExporter(tree,meshFactory);
 		} else if (exportFormat == OBJ) {
 			useQuads = true;
-			meshFactory = new MeshFactory(params,useQuads);
+			meshFactory = new MeshGenerator(params,useQuads);
 			exporter = new OBJExporter(tree,meshFactory);
 			((OBJExporter)exporter).outputStemUVs = outputStemUVs;
 			((OBJExporter)exporter).outputLeafUVs = outputLeafUVs;
