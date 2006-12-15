@@ -23,14 +23,12 @@
 package net.sourceforge.arbaro.tree;
 
 import java.io.PrintWriter;
-import java.io.InputStream;
 import java.lang.Math;
 import java.util.Enumeration;
 
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.export.*;
-import net.sourceforge.arbaro.mesh.*;
 
 /**
  * A class for creation of threedimensional tree objects.
@@ -201,8 +199,8 @@ class TreeImpl implements Tree {
 		maxPoint = new Vector(-Double.MAX_VALUE,-Double.MAX_VALUE,-Double.MAX_VALUE);
 		minPoint = new Vector(Double.MAX_VALUE,Double.MAX_VALUE,Double.MAX_VALUE);
 		
-		progress.consoleOutput("Tree species: " + params.Species + ", Seed: " + seed);
-		progress.consoleOutput("making " + params.Species + "(" + seed + ") ");
+		Console.verboseOutput("Tree species: " + params.Species + ", Seed: " + seed);
+		Console.verboseOutput("making " + params.Species + "(" + seed + ") ");
 		
 		// create the trunk and all its stems and leaves
 		Transformation transf = new Transformation();
@@ -235,7 +233,7 @@ class TreeImpl implements Tree {
 		setStemCount(stemCounter.getStemCount());
 		
 		// making finished
-		progress.consoleProgress();
+		Console.progressChar();
 		progress.endPhase();
 	}
 	
@@ -431,11 +429,11 @@ class TreeImpl implements Tree {
 	 * @param out The output stream
 	 * @throws ParamError
 	 */
-	/*
-	public void toXML(PrintWriter out) throws ParamError {
+	
+	public void paramsToXML(PrintWriter out)  {
 		params.toXML(out);
 	}
-	*/
+	
 	
 //	/**
 //	 * Sets the species name of the tree
@@ -446,15 +444,15 @@ class TreeImpl implements Tree {
 //		params.setSpecies(sp);
 //	}
 //	
-//	/**
-//	 * Returns the species name of the tree
-//	 * 
-//	 * @return the species name
-//	 */
-//	public String getSpecies() {
-//		return params.getSpecies();
-//	}
-//	
+	/**
+	 * Returns the species name of the tree
+	 * 
+	 * @return the species name
+	 */
+	public String getSpecies() {
+		return params.getSpecies();
+	}
+	
 	/**
 	 * Returns the random seed for the tree
 	 * 
@@ -519,6 +517,26 @@ class TreeImpl implements Tree {
 	}
 	*/
 	
+	
+	public int getLevels() {
+		return params.Levels;
+	}
+	
+	public String getLeafShape() {
+		return params.LeafShape;
+	}
+	
+	public double getLeafWidth() {
+		return params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
+	}
+	
+	public double getLeafLength() {
+		return params.LeafScale/Math.sqrt(params.LeafQuality);
+	}
+	
+	public double getLeafStemLength() {
+		return params.LeafStemLen;
+	}
 	
 	/**
 	 * Sets the output type for the Povray code 

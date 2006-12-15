@@ -5,6 +5,12 @@ import net.sourceforge.arbaro.transformation.Vector;
 
 public interface Stem {
 
+	public abstract java.util.Enumeration sections();
+	
+	// offset for clones, because uv-Coordinates should
+	// be at same coordinates for stems and theire clones
+	public int getCloneSectionOffset();
+	
 	public abstract Vector getMinPoint();
 
 	public abstract Vector getMaxPoint();
@@ -96,12 +102,14 @@ public interface Stem {
 
 	public abstract boolean traverseTree(TreeTraversal traversal);
 
-	public abstract boolean traverseStem(StemTraversal traversal);
+	// public abstract boolean traverseStem(StemTraversal traversal);
 
 	// use with TreeTraversal
 	public abstract long getLeafCount();
 
 	public abstract boolean isClone();
+	
+	public abstract boolean isSmooth();
 
 	public Transformation getTransformation();
 

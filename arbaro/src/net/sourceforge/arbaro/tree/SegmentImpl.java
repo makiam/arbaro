@@ -22,17 +22,16 @@
 
 package net.sourceforge.arbaro.tree;
 
-import java.util.Enumeration;
-
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.export.Console;
 
 /**
  * A segment class, multiple segments form a stem.
  * 
  * @author Wolfram Diestel
  */
-class SegmentImpl implements Segment {
+class SegmentImpl implements StemSection {
 	
 	Params par;
 	public LevelParams lpar;
@@ -77,7 +76,9 @@ class SegmentImpl implements Segment {
 	
 	public void addSubsegment(SubsegmentImpl ss) {
 		if (subsegments.size() > 0) {
-			((SubsegmentImpl)subsegments.elementAt(subsegments.size()-1)).next = ss; 
+			SubsegmentImpl p = ((SubsegmentImpl)subsegments.elementAt(subsegments.size()-1)); 
+			p.next = ss;
+			ss.prev = p; 
 		}
 		subsegments.add(ss);
 	}
@@ -114,7 +115,7 @@ class SegmentImpl implements Segment {
 		// subsegs should be extended over more then one segments?
 		else if (lpar.level==0 && par.Flare!=0 && index==0) {
 			
-			if (stem.tree.progress.debug)
+			if (Console.debug())
 				stem.DBG("Segment.make() - flare");
 			
 			makeFlare(10);
@@ -136,13 +137,13 @@ class SegmentImpl implements Segment {
 	
 	private void makeSubsegments(int cnt) {
 		Vector dir = getUpperPosition().sub(getLowerPosition());
-		for (int i=0; i<cnt+1; i++) {
+		for (int i=1; i<cnt+1; i++) {
 			double pos = i*length/cnt;
 			// System.err.println("SUBSEG:stem_radius");
 			double rad = stem.stemRadius(index*length + pos);
 			// System.err.println("SUBSEG: pos: "+ pos+" rad: "+rad+" inx: "+index+" len: "+length);
 			
-			subsegments.addElement(new SubsegmentImpl(getLowerPosition().add(dir.mul(pos/length)),rad, pos));
+			addSubsegment(new SubsegmentImpl(getLowerPosition().add(dir.mul(pos/length)),rad, pos, this));
 		}
 	}
 	
@@ -156,13 +157,13 @@ class SegmentImpl implements Segment {
 	
 	private void makeSphericalEnd(int cnt) {
 		Vector dir = getUpperPosition().sub(getLowerPosition());
-		for (int i=0; i<cnt; i++) {
+		for (int i=1; i<cnt; i++) {
 			double pos = length-length/Math.pow(2,i);
 			double rad = stem.stemRadius(index*length + pos);
 			//stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-			subsegments.addElement(new SubsegmentImpl(getLowerPosition().add(dir.mul(pos/length)),rad, pos));
+			addSubsegment(new SubsegmentImpl(getLowerPosition().add(dir.mul(pos/length)),rad, pos, this));
 		}
-		subsegments.addElement(new SubsegmentImpl(getUpperPosition(),rad2,length));
+		addSubsegment(new SubsegmentImpl(getUpperPosition(),rad2,length, this));
 	}
 	
 	/**
@@ -175,12 +176,12 @@ class SegmentImpl implements Segment {
 	
 	private void makeFlare(int cnt) {
 		Vector dir = getUpperPosition().sub(getLowerPosition());
-		subsegments.addElement(new SubsegmentImpl(getLowerPosition(),rad1,0));
-		for (int i=cnt-1; i>=0; i--) {
+		addSubsegment(new SubsegmentImpl(getLowerPosition(),rad1,0,this));
+		for (int i=cnt-2; i>=0; i--) {
 			double pos = length/Math.pow(2,i);
 			double rad = stem.stemRadius(index*length+pos);
 			//self.stem.DBG("FLARE: pos: %f, rad: %f\n"%(pos,rad))
-			subsegments.addElement(new SubsegmentImpl(getLowerPosition().add(dir.mul(pos/length)),rad, pos));
+			addSubsegment(new SubsegmentImpl(getLowerPosition().add(dir.mul(pos/length)),rad, pos,this));
 		}
 	}
 	
@@ -198,18 +199,18 @@ class SegmentImpl implements Segment {
 		// this is the radius of the helix
 		double rad = Math.sqrt(1.0/(Math.cos(angle)*Math.cos(angle)) - 1)*length/Math.PI/2.0;
 		
-		if (stem.tree.progress.debug)
+		if (Console.debug())
 			stem.DBG("Segment.make_helix angle: "+angle+" len: "+length+" rad: "+rad);
 		
 		//self.stem.DBG("HELIX: rad: %f, len: %f\n" % (rad,len))
-		for (int i=0; i<cnt+1; i++) {
+		for (int i=1; i<cnt+1; i++) {
 			Vector pos = new Vector(rad*Math.cos(2*Math.PI*i/cnt)-rad,
 					rad*Math.sin(2*Math.PI*i/cnt),
 					i*length/cnt);
 			//self.stem.DBG("HELIX: pos: %s\n" % (str(pos)))
 			// this is the stem radius
 			double srad = stem.stemRadius(index*length + i*length/cnt);
-			subsegments.addElement(new SubsegmentImpl(transf.apply(pos), srad, i*length/cnt));
+			addSubsegment(new SubsegmentImpl(transf.apply(pos), srad, i*length/cnt,this));
 		}
 	}
 	
@@ -248,6 +249,11 @@ class SegmentImpl implements Segment {
 		return transf.getT();
 	}
 	
+	public Vector getPosition() {
+		// self.stem.DBG("segmenttr0: %s, t: %s\n"%(self.transf_pred,self.transf_pred.t()))
+		return transf.getT();
+	}
+	
 	/**
 	 * Position of the end of the segment
 	 * 
@@ -270,6 +276,19 @@ class SegmentImpl implements Segment {
 		return rad1;
 	}
 	
+	public double getRadius() {
+		return rad1;
+	}
+	
+	public double getDistance() {
+		return index*length;
+	}
+	
+	public Vector getZ() {
+		return transf.getZ();
+	}
+
+
 	public double getUpperRadius() {
 		return rad2;
 	}
@@ -278,9 +297,17 @@ class SegmentImpl implements Segment {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TraversableSegment#isFirstStemSegment()
 	 */
-	public boolean isFirstStemSegment() {
-		return index == 0;
-	}
+//	public boolean isFirstStemSegment() {
+//		return index == 0; // not true for clones!
+//	}
+//	
+//	public boolean isFirst() {
+//		return index == 0;
+//	}
+//	
+//	public boolean isLast() {
+//		return false; // last StemSection always is the last Subsegment of the last Segment
+//	}
 	
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TraversableSegment#isLastStemSegment()
@@ -295,6 +322,68 @@ class SegmentImpl implements Segment {
 	}
 	
 	
+	public Vector[] getSectionPoints() {
+		int pt_cnt = lpar.mesh_points;
+		Vector[] points;
+//	private void createSectionMeshpoints(StemSection sec,double rad, 
+//			boolean donttrf, double vMap) {
+		//h = (self.index+where)*self.stem.segment_len
+		//rad = self.stem.stem_radius(h)
+		// self.stem.DBG("MESH: pos: %s, rad: %f\n"%(str(pos),rad))
+		
+		// System.err.println("Segment-create meshpts, pos: "+pos+" rad: "+rad);
+		
+		//LevelParams lpar = params.levelParams[stem.getLevel()]; //segment.lpar;
+//		Vector pos = sec.getPosition();
+		Transformation trf = getTransformation(); //segment.getTransformation().translate(pos.sub(segment.getLowerPosition()));
+		//self.stem.TRF("MESH:",trf)
+		double rad = this.rad1;
+		
+		// if radius = 0 create only one point
+		if (rad<0.000001) {
+			points = new Vector[1];
+			points[0] = trf.apply(new Vector(0,0,0));
+		} else { //create pt_cnt points
+			points = new Vector[pt_cnt];
+			//stem.DBG("MESH+LOBES: lobes: %d, depth: %f\n"%(self.tree.Lobes, self.tree.LobeDepth))
+			
+			for (int i=0; i<pt_cnt; i++) {
+				double angle = i*360.0/pt_cnt;
+				// for Lobes ensure that points are near lobes extrema, but not exactly there
+				// otherwise there are to sharp corners at the extrema
+				if (lpar.level==0 && par.Lobes != 0) {
+					angle -= 10.0/par.Lobes;
+				}
+				
+				// create some point on the unit circle
+				Vector pt = new Vector(Math.cos(angle*Math.PI/180),Math.sin(angle*Math.PI/180),0);
+				// scale it to stem radius
+				if (lpar.level==0 && (par.Lobes != 0 || par._0ScaleV !=0)) {
+					// self.stem.DBG("MESH+LOBES: angle: %f, sinarg: %f, rad: %f\n"%(angle, \
+					//self.tree.Lobes*angle*pi/180.0, \
+					//	rad*(1.0+self.tree.LobeDepth*cos(self.tree.Lobes*angle*pi/180.0))))
+					double rad1 = rad * (1 + 
+							par.random.uniform(-par._0ScaleV,par._0ScaleV)/
+							getSubsegmentCount());
+					pt = pt.mul(rad1*(1.0+par.LobeDepth*Math.cos(par.Lobes*angle*Math.PI/180.0))); 
+				} else {
+					pt = pt.mul(rad); // faster - no radius calculations
+				}
+				// apply transformation to it
+				// (for the first trunk segment transformation shouldn't be applied to
+				// the lower meshpoints, otherwise there would be a gap between 
+				// ground and trunk)
+				// FIXME: for helical stems may be/may be not a random rotation 
+				// should applied additionally?
+				
+				pt = trf.apply(pt);
+				points[i] = pt;
+			}
+		}
+		
+		return points;
+	}
+
 	
 	/**
 	 * Creates the mesh points for a cross section somewhere in the segment
@@ -419,18 +508,19 @@ class SegmentImpl implements Segment {
 	}
 	*/
 	
-	public boolean traverseStem(StemTraversal traversal) {
-	    if (traversal.enterSegment(this))  // enter this tree?
-        {
-	    	
-	        Enumeration s = subsegments.elements();
-            while (s.hasMoreElements())
-               if (! ((Subsegment)s.nextElement()).traverseStem(traversal))
-                       break;	
-        }
-
-        return traversal.leaveSegment(this);
-	}
+	
+//	public boolean traverseStem(StemTraversal traversal) {
+//	    if (traversal.enterSegment(this))  // enter this tree?
+//        {
+//	    	
+//	        Enumeration s = subsegments.elements();
+//            while (s.hasMoreElements())
+//               if (! ((Subsegment)s.nextElement()).traverseStem(traversal))
+//                       break;	
+//        }
+//
+//        return traversal.leaveSegment(this);
+//	}
 };
 
 

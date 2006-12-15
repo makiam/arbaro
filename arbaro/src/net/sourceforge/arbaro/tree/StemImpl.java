@@ -23,17 +23,23 @@
 package net.sourceforge.arbaro.tree;
 
 import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.export.Console;
 
 class ArbaroException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
+
 	public ArbaroException(String errmsg) {
 		super(errmsg);
 	}
 };
 
 class NotYetImplementedError extends ArbaroException{
+	private static final long serialVersionUID = 1L;
+
 	public NotYetImplementedError(String errmsg) {
 		super(errmsg);
 	} 
@@ -142,6 +148,7 @@ class StemEnumerator implements Enumeration {
  * 
  */
 class StemImpl implements Stem {
+	
 	TreeImpl tree;
 	Params par;
 	LevelParams lpar;
@@ -196,6 +203,56 @@ class StemImpl implements Stem {
 	
 	int index; // substem number
 	java.util.Vector cloneIndex; // clone number (Integers)
+
+	private class SectionsEnumerator implements Enumeration {
+		private Enumeration segments;
+		private Enumeration subsegments;
+		//private int level;
+		
+		//	    private class SubstemEnumerator extends StemEnumerator {
+		//	    	public SubstemEnumerator(int level) {
+		//	    		super(level,substems.elements());
+		//	    	}
+		//	    }
+		//
+		//	    private class CloneEnumerator extends StemEnumerator {
+		//	    	public CloneEnumerator(int level) {
+		//	    		super(level,clones.elements());
+		//	    	}
+		//	    }
+		
+		public SectionsEnumerator(StemImpl stem) {
+			segments = stem.segments.elements();
+		}
+		
+		public boolean hasMoreElements() {
+			return (subsegments != null && subsegments.hasMoreElements()) ||
+			(segments.hasMoreElements());
+		}
+		
+		public Object nextElement() {
+			if (subsegments == null) {
+				// first segment, return it as base section
+				SegmentImpl s = (SegmentImpl)segments.nextElement();
+				subsegments = s.subsegments.elements();
+//				subsegments.nextElement(); // ignore first subsegment,
+				               // because it's identical with segment base
+				return s;
+			} else {
+				if (subsegments.hasMoreElements())
+					return subsegments.nextElement();
+				else if (segments.hasMoreElements()) {
+					SegmentImpl s = (SegmentImpl)segments.nextElement();
+					subsegments = s.subsegments.elements();
+//					subsegments.nextElement(); // ignore first subsegment,
+		               // because it's identical with segment base
+					return subsegments.nextElement();
+				} else {
+					throw new NoSuchElementException("SectionsEnumerator");
+				}
+			}
+		}
+	}
 	
 	/*
 	private class AllStemsEnumerator implements Enumeration {
@@ -278,6 +335,10 @@ class StemImpl implements Stem {
 		}
 	}
 	*/
+	
+	public java.util.Enumeration sections() {
+		return new SectionsEnumerator(this);
+	}
 	
 	/**
 	 * Returns an enumeration of the stem itself an all
@@ -408,7 +469,7 @@ class StemImpl implements Stem {
 	
 	public void DBG(String dbgstr) {
 		// print debug string to stderr if debugging is enabled
-		tree.progress.debugOutput(getTreePosition() + ":" + dbgstr);
+		Console.debugOutput(getTreePosition() + ":" + dbgstr);
 	}
 	
 	/* (non-Javadoc)
@@ -499,7 +560,7 @@ class StemImpl implements Stem {
 	 * a.s.o. recursively
 	 */
 	
-	public void make() {
+	public boolean make() {
 		
 		// makes the stem with all its segments, substems, clones and leaves
 		segmentCount = lpar.nCurveRes;
@@ -511,7 +572,7 @@ class StemImpl implements Stem {
 			minMaxTest(new Vector(baseWidth,baseWidth,0));
 		}
 
-		if (tree.progress.debug)
+		if (Console.debug())
 			DBG("Stem.make(): len: "+length+" sgm_cnt: "+ segmentCount+" base_rad: "+baseRadius);
 		
 		// FIXME: should pruning occur for the trunk too?
@@ -526,8 +587,10 @@ class StemImpl implements Stem {
 		{
 			prepareSubstemParams();
 			makeSegments(0,segmentCount);
+			return true;
 		} else {
 			DBG("length "+length+" (after pruning?) to small - stem not created");
+			return false;
 		}
 		
 //		tree.minMaxTest(maxPoint);
@@ -574,7 +637,7 @@ class StemImpl implements Stem {
 			baseRadius = stemBaseRadius();
 			
 			if (length>MIN_STEM_LEN && baseRadius < MIN_STEM_RADIUS)
-				System.err.println("WARNING: stem radius ("+baseRadius+") too small for stem "+getTreePosition());
+				Console.errorOutput("WARNING: stem radius ("+baseRadius+") too small for stem "+getTreePosition());
 			
 			// test once more
 			if (length > MIN_STEM_LEN) segm = makeSegments(0,segmentCount);
@@ -606,7 +669,7 @@ class StemImpl implements Stem {
 			double parlen = parent.length;
 			double baselen = par.BaseSize*par.scale_tree;
 			double ratio  = (parlen-offset)/(parlen-baselen);
-			if (tree.progress.debug)
+			if (Console.debug())
 				DBG("Stem.stem_length(): parlen: "+parlen+" offset: "+offset+" baselen: "+baselen+" ratio: "+ratio);
 			return parlen * parent.lengthChildMax * par.getShapeRatio(ratio);
 		} else { // higher levels
@@ -616,14 +679,15 @@ class StemImpl implements Stem {
 	
 	// makes the segments of the stem
 	int makeSegments(int start_seg,int end_seg) {
+//		if (start_seg>end_seg) throw new ArbaroException("Error in segment creation end_seg<start_seg.");
 		
 		if (stemlevel==1) tree.updateGenProgress();
 		
 		//if (par.verbose) {
 		if (! pruneTest) {
 			if (stemlevel==0) System.err.print("=");
-			else if (stemlevel==1 && start_seg==0) tree.progress.consoleProgress('/');
-			else if (stemlevel==2 && start_seg==0) tree.progress.consoleProgress();
+			else if (stemlevel==1 && start_seg==0) Console.progressChar('/');
+			else if (stemlevel==2 && start_seg==0) Console.progressChar();
 		}
 		//}
 		
@@ -633,12 +697,12 @@ class StemImpl implements Stem {
 			if (stemlevel==0) tree.updateGenProgress();
 			
 			if (! pruneTest) {// && par.verbose) {
-				if (stemlevel==0) tree.progress.consoleProgress('|');
+				if (stemlevel==0) Console.progressChar('|');
 			}
 			
 			// curving
 			trf=newDirection(trf,s);
-			if (tree.progress.debug)
+			if (Console.debug())
 				TRF("Stem.make_segments(): after new_direction ",trf);
 			
 			// segment radius
@@ -718,7 +782,7 @@ class StemImpl implements Stem {
 		// down and rotation angle shouldn't be falsified 
 		if (nsegm == 0) return trf;
 		
-		if (tree.progress.debug)
+		if (Console.debug())
 			TRF("Stem.new_direction() before curving",trf);
 		
 		// get curving angle
@@ -735,7 +799,7 @@ class StemImpl implements Stem {
 		}
 		delta += splitCorrection;
 		
-		if (tree.progress.debug)
+		if (Console.debug())
 			DBG("Stem.new_direction(): delta: "+delta);
 		
 		trf = trf.rotx(delta);
@@ -821,7 +885,7 @@ class StemImpl implements Stem {
 	 */
 	
 	public double stemRadius(double h) {
-		if (tree.progress.debug)
+		if (Console.debug())
 			DBG("Stem.stem_radius("+h+") base_rad:"+baseRadius);
 		
 		double angle = 0; //FIXME: add an argument "angle" for Lobes, 
@@ -906,7 +970,7 @@ class StemImpl implements Stem {
 			substem_cnt = stems_max;
 			substemsPerSegment = substem_cnt / (float)segmentCount / (1-par.BaseSize);
 			
-			if (tree.progress.debug)
+			if (Console.debug())
 				DBG("Stem.prepare_substem_params(): stems_max: "+ substem_cnt 
 					+ " substems_per_segment: " + substemsPerSegment);
 			
@@ -962,7 +1026,7 @@ class StemImpl implements Stem {
 		// creates substems for the current segment
 		LevelParams lpar_1 = par.getLevelParams(stemlevel+1);
 		
-		if (tree.progress.debug)
+		if (Console.debug())
 			DBG("Stem.make_substems(): substems_per_segment "+substemsPerSegment);
 		
 		double subst_per_segm;
@@ -1022,8 +1086,12 @@ class StemImpl implements Stem {
 			StemImpl substem = new StemImpl(tree,this,stemlevel+1,trf,offset);
 			substem.index=substems.size();
 			DBG("Stem.make_substems(): make new substem");
-			substem.make();
-			substems.addElement(substem);
+			if (substem.make()) {
+				substems.addElement(substem);
+//			
+//if (substem.segments.size()==0) 
+//	throw new ArbaroException("No segments created for substem "+substem.getTreePosition());
+			}			
 		}
 	}
 	
@@ -1060,7 +1128,7 @@ class StemImpl implements Stem {
 			downangle = lpar_1.nDownAngle +
 			lpar_1.nDownAngleV*(1 - 2 * par.getShapeRatio((length-offset)/len,0));
 		}  
-		if (tree.progress.debug)
+		if (Console.debug())
 			DBG("Stem.substem_direction(): down: "+downangle+" rot: "+rotangle);
 		
 		return trf.rotxz(downangle,rotangle);
@@ -1365,20 +1433,20 @@ class StemImpl implements Stem {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TraversableStem#traverseStem(net.sourceforge.arbaro.tree.StemTraversal)
 	 */
-	public boolean traverseStem(StemTraversal traversal) {
-	    if (traversal.enterStem(this))  // enter this stem?
-        {
-	    
-            if (segments != null) {
-            		Enumeration s = segments.elements();
-            		while (s.hasMoreElements())
-            			if (! ((Segment)s.nextElement()).traverseStem(traversal))
-            				break;
-            }
-        }
-	    
-	    	return traversal.leaveStem(this);
-    	}
+//	public boolean traverseStem(StemTraversal traversal) {
+//	    if (traversal.enterStem(this))  // enter this stem?
+//        {
+//	    
+//            if (segments != null) {
+//            		Enumeration s = segments.elements();
+//            		while (s.hasMoreElements())
+//            			if (! ((Segment)s.nextElement()).traverseStem(traversal))
+//            				break;
+//            }
+//        }
+//	    
+//	    	return traversal.leaveStem(this);
+//    	}
     	
 	/**
 	 *  Returns the total number of all the substems and substems of substems a.s.o.
@@ -1447,6 +1515,37 @@ class StemImpl implements Stem {
 	public boolean isClone(){
 		return cloneIndex.size()>0;
 	}
+	
+	public boolean isSmooth() {
+		return stemlevel<=par.smooth_mesh_level;
+	}
+
+	public int getCloneSectionOffset() {
+		if (! isClone()) return 0;
+		else {
+			// find out how many sections the parent stem
+			// has below the first segment of this stem
+			int segInx = ((SegmentImpl)segments.elementAt(0)).index;
+			
+			return clonedFrom.getSectionCountBelow(segInx);
+		}
+	}
+
+	protected int getSectionCountBelow(int index) {
+		int count=1; // first segments base section
+	
+		Enumeration segs = segments.elements();
+		while (segs.hasMoreElements()) {
+		
+			SegmentImpl s = ((SegmentImpl)segs.nextElement());
+			if (s.index < index) count += s.subsegments.size();
+			else return count;
+		}
+		
+		return count;
+	}
+	
+
 	
 	/**
 	 * For every stem there is a box (as minPoint, maxPoint), 

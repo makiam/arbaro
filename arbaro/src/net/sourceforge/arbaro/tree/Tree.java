@@ -1,6 +1,7 @@
 package net.sourceforge.arbaro.tree;
 
 import net.sourceforge.arbaro.transformation.Vector;
+import java.io.PrintWriter;
 
 public interface Tree {
 
@@ -24,5 +25,19 @@ public interface Tree {
 
 
 	public double getWidth();
+	
+	public void paramsToXML(PrintWriter w);
+	
+	public String getSpecies();
+	
+	public int getLevels();
+	
+	public String getLeafShape();
+	
+	public double getLeafWidth();
+	
+	public double getLeafLength();
+	
+	public double getLeafStemLength();
 	
 }
