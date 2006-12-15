@@ -27,7 +27,8 @@ package net.sourceforge.arbaro.params;
  * getState() and setState() to save and restore the random seed
  */
 public class Random extends java.util.Random {
-	
+	private static final long serialVersionUID = 1L;
+
 	public Random(long seed) {
 		super(seed);
 	}

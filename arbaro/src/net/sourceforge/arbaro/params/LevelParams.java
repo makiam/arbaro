@@ -126,13 +126,13 @@ public class LevelParams {
 	
 	// help methods for output of params
 	private void writeParamXml(PrintWriter w, String name, int value) {
-		name = "" + level + name.substring(1);
-		w.println("    <param name='" + name + "' value='"+value+"'/>");
+		String fullname = "" + level + name.substring(1);
+		w.println("    <param name='" + fullname + "' value='"+value+"'/>");
 	}
 	
 	private void writeParamXML(PrintWriter w, String name, double value) {
-		name = "" + level + name.substring(1);
-		w.println("    <param name='" + name + "' value='"+value+"'/>");
+		String fullname = "" + level + name.substring(1);
+		w.println("    <param name='" + fullname + "' value='"+value+"'/>");
 	}
 	
 	void toXML(PrintWriter w, boolean leafLevelOnly) {
@@ -160,23 +160,23 @@ public class LevelParams {
 	
 	// help method for loading params
 	private int intParam(String name) throws ParamException {
-		name = "" + level + name.substring(1);
-		IntParam par = (IntParam)paramDB.get(name);
+		String fullname = "" + level + name.substring(1);
+		IntParam par = (IntParam)paramDB.get(fullname);
 		if (par != null) {
 			return par.intValue();
-		} else {
-			throw new ParamException("bug: param "+name+" not found!");
-		}   
+		} 
+			
+		throw new ParamException("bug: param "+fullname+" not found!");
 	}
 	
 	private double dblParam(String name) throws ParamException {
-		name = "" + level + name.substring(1);
-		FloatParam par = (FloatParam)paramDB.get(name);
+		String fullname = "" + level + name.substring(1);
+		FloatParam par = (FloatParam)paramDB.get(fullname);
 		if (par != null) {
 			return par.doubleValue();
-		} else {
-			throw new ParamException("bug: param "+name+" not found!");
-		}   
+		} 
+			
+		throw new ParamException("bug: param "+fullname+" not found!");
 	}
 	
 	void fromDB(boolean leafLevelOnly) throws ParamException {

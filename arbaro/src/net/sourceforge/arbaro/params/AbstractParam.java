@@ -23,6 +23,7 @@
 package net.sourceforge.arbaro.params;
 
 import javax.swing.event.*;
+import net.sourceforge.arbaro.export.Console;
 
 public abstract class AbstractParam {
 	public static final int GENERAL = -999; // no level - general params
@@ -37,7 +38,8 @@ public abstract class AbstractParam {
 	protected ChangeEvent changeEvent = null;
 	protected EventListenerList listenerList = new EventListenerList();
 	
-	public AbstractParam(String nam, String grp, int lev, int ord, String sh, String lng) {
+	public AbstractParam(String nam, String grp, int lev, int ord, 
+			String sh, String lng) {
 		name = nam;
 		group = grp;
 		level = lev;
@@ -55,8 +57,8 @@ public abstract class AbstractParam {
 	
 	public static boolean loading=false;
 	
-	protected static void warn(String warning) {
-		if (! loading) System.err.println("WARNING: "+warning);
+	protected void warn(String warning) {
+		if (! loading) Console.errorOutput("WARNING: "+warning);
 	}
 	
 	public void setEnabled(boolean en) {
@@ -91,9 +93,9 @@ public abstract class AbstractParam {
 	public String toString() { 
 		if (! empty()) {
 			return getValue();
-		} else {
-			return getDefaultValue();
-		}
+		} 
+		// else 
+		return getDefaultValue();
 	}
 	
 	public String getLongDesc() {

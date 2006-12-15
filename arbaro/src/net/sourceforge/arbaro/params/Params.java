@@ -22,6 +22,8 @@
 
 package net.sourceforge.arbaro.params;
 
+import net.sourceforge.arbaro.export.Console;
+
 import java.io.PrintWriter;
 import java.io.InputStream;
 import java.io.IOException;
@@ -307,7 +309,7 @@ public class Params {
 					p.setValue(otherParam.getValue());
 				} // else use default value
 			} catch (ParamException err) {
-				System.err.println("Error copying params: "+err.getMessage());
+				Console.errorOutput("Error copying params: "+err.getMessage());
 			}
 		}
 	}
@@ -610,8 +612,8 @@ public class Params {
 		int [] deflt = {deflt0,deflt1,deflt2,deflt3};
 		order++;
 		for (int i=0; i<4; i++) {
-			name = "" + i + name.substring(1);
-			paramDB.put(name,new IntParam(name,min,max,deflt[i],group,i,
+			String fullname = "" + i + name.substring(1);
+			paramDB.put(fullname,new IntParam(fullname,min,max,deflt[i],group,i,
 					order,short_desc,long_desc));
 		}
 	}
@@ -628,8 +630,8 @@ public class Params {
 		double [] deflt = {deflt0,deflt1,deflt2,deflt3};
 		order++;
 		for (int i=0; i<4; i++) {
-			name = "" + i + name.substring(1);
-			paramDB.put(name,new FloatParam(name,min,max,deflt[i],group,i,
+			String fullname = "" + i + name.substring(1);
+			paramDB.put(fullname,new FloatParam(fullname,min,max,deflt[i],group,i,
 					order,short_desc,long_desc));
 		}
 	}
