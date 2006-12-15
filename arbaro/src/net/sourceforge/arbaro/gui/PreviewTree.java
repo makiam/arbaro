@@ -25,14 +25,14 @@ package net.sourceforge.arbaro.gui;
 import net.sourceforge.arbaro.params.IntParam;
 import net.sourceforge.arbaro.params.Params;
 import net.sourceforge.arbaro.transformation.Vector;
-import net.sourceforge.arbaro.tree.Leaf;
-import net.sourceforge.arbaro.tree.Stem;
 import net.sourceforge.arbaro.tree.TreeGenerator;
 import net.sourceforge.arbaro.tree.TreeTraversal;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.mesh.Mesh;
-import net.sourceforge.arbaro.meshfactory.MeshFactory;
+import net.sourceforge.arbaro.mesh.MeshGenerator;
 import net.sourceforge.arbaro.export.Progress;
+
+import java.io.PrintWriter;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -93,6 +93,22 @@ public final class PreviewTree implements Tree {
 	
 	public double getWidth() { return tree.getWidth(); }
 	
+	public void paramsToXML(PrintWriter w) {
+		throw new UnsupportedOperationException("Not implemented.");
+	}
+	
+	public String getSpecies() { return tree.getSpecies(); }
+	
+	public int getLevels() { return tree.getLevels(); }
+	
+	public String getLeafShape() { return tree.getLeafShape(); }
+	
+	public double getLeafWidth() { return tree.getLeafWidth(); }
+	
+	public double getLeafLength() { return tree.getLeafLength(); }
+	
+	public double getLeafStemLength() { return tree.getLeafStemLength(); };
+	
 	
 	public void setShowLevel(int l) {
 		int Levels = ((IntParam)(originalParams.getParam("Levels"))).intValue(); 
@@ -127,7 +143,7 @@ public final class PreviewTree implements Tree {
 			TreeGenerator treeGenerator = new TreeGenerator(params);
 		    tree = treeGenerator.makeTree(progress);
 		    
-		    MeshFactory meshFactory = new MeshFactory(params,true /* useQuads */);
+		    MeshGenerator meshFactory = new MeshGenerator(params,true /* useQuads */);
 			mesh = meshFactory.createStemMesh(tree,progress);
 			
 			fireStateChanged();

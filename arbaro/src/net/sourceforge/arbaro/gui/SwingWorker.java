@@ -31,11 +31,12 @@ public abstract class SwingWorker {
         synchronized void clear() { thread = null; }
     }
 
-    private ThreadVar threadVar;
+    ThreadVar threadVar;
 
     /** 
      * Get the value produced by the worker thread, or null if it 
      * hasn't been constructed yet.
+     * @return value produced by the worker thread
      */
     protected synchronized Object getValue() { 
         return value; 
@@ -44,12 +45,13 @@ public abstract class SwingWorker {
     /** 
      * Set the value produced by worker thread 
      */
-    private synchronized void setValue(Object x) { 
+    synchronized void setValue(Object x) { 
         value = x; 
     }
 
     /** 
      * Compute the value to be returned by the <code>get</code> method. 
+     * @return value to be returned by the <code>get</code> method
      */
     public abstract Object construct();
 

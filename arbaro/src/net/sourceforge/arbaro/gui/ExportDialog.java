@@ -153,7 +153,7 @@ public class ExportDialog {
 		frame.pack();
 	}
 
-	private void formatSettings(int outputFormat) {
+	void formatSettings(int outputFormat) {
 		switch (outputFormat) {
 		case ExporterFactory.POV_MESH: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
@@ -562,6 +562,8 @@ public class ExportDialog {
 }
 
 class Progressbar extends JPanel {
+	private static final long serialVersionUID = 1L;
+
 	JLabel label;
 	JProgressBar progressbar;
 	

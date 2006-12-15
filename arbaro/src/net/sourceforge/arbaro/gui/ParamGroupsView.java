@@ -34,6 +34,8 @@ import net.sourceforge.arbaro.params.AbstractParam;
 
 
 class GroupNode extends DefaultMutableTreeNode {
+	private static final long serialVersionUID = 1L;
+	
 	String groupName;
 	String groupLabel;
 	int groupLevel;
@@ -62,7 +64,8 @@ class GroupNode extends DefaultMutableTreeNode {
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public final class ParamGroupsView extends JTree {
-	
+	private static final long serialVersionUID = 1L;
+
 	
 	
 //	private final static String[] levels = {"general parameters",

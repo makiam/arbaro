@@ -40,13 +40,13 @@ import java.awt.Color;
 import net.sourceforge.arbaro.tree.*;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.mesh.*;
-import net.sourceforge.arbaro.meshfactory.*;
 import net.sourceforge.arbaro.params.Params;
 
 /**
  * An image showing parts of the edited tree
  */
 public class TreePreview extends JComponent {
+	private static final long serialVersionUID = 1L;
 	
 	PreviewTree previewTree;
 	int perspective;
@@ -109,7 +109,7 @@ public class TreePreview extends JComponent {
 			else
 				g.fillRect(0,0,getWidth(),getHeight()-1);
 			//g.drawRect(10,10,getWidth()-20,getHeight()-20);
-			initTransform(g);
+			initTransform(/*g*/);
 			if (draft) previewTree.traverseTree(new StemDrawer(g)); //drawStems(g);
 			else {
 				drawMesh(g);
@@ -184,7 +184,7 @@ public class TreePreview extends JComponent {
 		origin=orig;
 	}
 	
-	private void initTransform(Graphics g) throws Exception {
+	private void initTransform(/*Graphics g*/) throws Exception {
 		// Perform transformation
 		transform = new AffineTransform();
 		double dw=1;
@@ -373,10 +373,9 @@ public class TreePreview extends JComponent {
 		public LeafDrawer(Graphics g, Params params) {
 			this.g = g;
 			g.setColor(leafColor);
-			
-			m = new MeshFactory(params,true /* useQuads */).createLeafMesh();
 		}
 		public boolean enterTree(Tree tree) {
+			m = MeshGenerator.createLeafMesh(tree,true /* useQuads */);
 			return true;
 		}
 		public boolean leaveTree(Tree tree) {
@@ -446,7 +445,7 @@ public class TreePreview extends JComponent {
 	}
 */
 	
-	private void drawLine(Graphics g,Vector p, Vector q) {
+	void drawLine(Graphics g,Vector p, Vector q) {
 		// FIXME: maybe eliminate class instantiations
 		// from this method for performance reasons:
 		// use static point arrays for transformations
@@ -470,12 +469,14 @@ public class TreePreview extends JComponent {
 	}
 	
 	private class StemDrawer implements TreeTraversal {
+		Stem stem;
 		Graphics g;
 
 		public StemDrawer(Graphics g) {
 			this.g = g;
 			g.setColor(otherLevelColor);
 		}
+
 		public boolean enterTree(Tree tree) {
 			return true;
 		}
@@ -483,20 +484,20 @@ public class TreePreview extends JComponent {
 			return true;
 		}
 		public boolean enterStem(Stem stem) {
-			stem.traverseStem(
-					new StemTraversal() {
-						public boolean enterStem(Stem stem) { return true; }
-						public boolean leaveStem(Stem stem) { return true; }
-						public boolean enterSegment(Segment seg) {
-							// FIXME: maybe draw rectangles instead of thin lines
-							//drawStripe(g,seg.posFrom(),seg.rad1,seg.postTo(),seg.rad2());
-							drawLine(g,seg.getLowerPosition(),seg.getUpperPosition());
-							return true; 
-						}
-						public boolean leaveSegment(Segment seg) { return true; }
-						public boolean visitSubsegment(Subsegment ss) { return true; }
-					}
-					);
+			Enumeration sections = stem.sections();
+			
+			if (sections.hasMoreElements()) {
+				StemSection from; StemSection to;
+				from = (StemSection)sections.nextElement();
+			
+				while (sections.hasMoreElements()) {
+					to = (StemSection)sections.nextElement();
+					// FIXME: maybe draw rectangles instead of thin lines
+					//drawStripe(g,seg.posFrom(),seg.rad1,seg.postTo(),seg.rad2());
+					drawLine(g,from.getPosition(),to.getPosition());
+					from = to;
+				}
+			}
 
 			return true;
 		}

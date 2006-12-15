@@ -53,13 +53,10 @@ import javax.swing.table.*;
 import javax.swing.AbstractCellEditor;
 
 import net.sourceforge.arbaro.params.*;
-import net.sourceforge.arbaro.tree.Tree;
-
-
-
 
 public final class ParamValueTable extends JPanel {
-	
+	private static final long serialVersionUID = 1L;
+
 	JTable table;
 	HelpInfo helpInfo;
 	
@@ -88,7 +85,8 @@ public final class ParamValueTable extends JPanel {
 	/********************** LeafShapeBox *****************************/
 
 	class LeafShapeBox extends JComboBox {
-		
+		private static final long serialVersionUID = 1L;
+
 		public LeafShapeBox() {
 			super();
 			setEditable(true);
@@ -122,7 +120,8 @@ public final class ParamValueTable extends JPanel {
 	/********************** ShapeBox *****************************/
 
 	class ShapeBox extends JComboBox {
-		
+		private static final long serialVersionUID = 1L;
+
 		//	ParamFrame parent;
 //		ParamValueTable parent;
 		
@@ -135,7 +134,13 @@ public final class ParamValueTable extends JPanel {
 
 		ImageIcon [] shapeIcons;
 		
-		/** Returns an ImageIcon, or null if the path was invalid. */
+		/**
+		 * Returns an ImageIcon, or null if the path was invalid.
+		 * 
+		 * @param path 
+		 * @param description 
+		 * @return ImageIcon, or null if the path was invalid
+		 */
 		protected ImageIcon createImageIcon(String path,
 				String description) {
 			java.net.URL imgURL = ShapeBox.class.getResource(path);
@@ -147,12 +152,12 @@ public final class ParamValueTable extends JPanel {
 			}
 		}
 		
-		public ShapeBox(ParamValueTable pnt) {
+		public ShapeBox(/*ParamValueTable pnt*/) {
 			super();
 //			parent = pnt;
-			ShapeRenderer renderer= new ShapeRenderer();
-			//renderer.setPreferredSize(new Dimension(200, 130));
-			setRenderer(renderer);
+			ShapeRenderer sr= new ShapeRenderer();
+			//sr.setPreferredSize(new Dimension(200, 130));
+			setRenderer(sr);
 			//ShapeParam param = (ShapeParam)tree.getParam("Shape");
 			
 			//fill
@@ -175,6 +180,8 @@ public final class ParamValueTable extends JPanel {
 		}
 	    
 		class ShapeRenderer extends JLabel implements ListCellRenderer {
+			private static final long serialVersionUID = 1L;
+
 			public ShapeRenderer() {
 				setOpaque(true);
 			}
@@ -211,28 +218,34 @@ public final class ParamValueTable extends JPanel {
 	
 	
 	class CellEditor extends AbstractCellEditor implements TableCellEditor {
+		private static final long serialVersionUID = 1L;
+
 		AbstractParam param;
 		JTextField paramField;
 		ShapeBox shapeBox;
 		LeafShapeBox leafShapeBox;
 		JComponent editor;
 		
-		public CellEditor(ParamValueTable parent) {
+		void editingStopped() {
+			fireEditingStopped();
+		}
+		
+		public CellEditor(/*ParamValueTable parent*/) {
 			super();
 			paramField = new JTextField();
 			// paramField.setHorizontalAlignment(JTextField.RIGHT);
 			
-			shapeBox = new ShapeBox(parent);
+			shapeBox = new ShapeBox(/*parent*/);
 			shapeBox.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent e) {
-	    			fireEditingStopped();
+	    			editingStopped();
 	    		}
 	    	});
 			
 			leafShapeBox = new LeafShapeBox();
 			leafShapeBox.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent e) {
-	    			fireEditingStopped();
+	    			editingStopped();
 	    		}
 	    	});
 			
@@ -279,6 +292,8 @@ public final class ParamValueTable extends JPanel {
 	}
 	
 	class CellRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
 	    public CellRenderer() { super(); }
 
 	    public void setValue(Object value) {
@@ -305,6 +320,8 @@ public final class ParamValueTable extends JPanel {
 
 	
 	class ParamTableModel extends AbstractTableModel {
+		private static final long serialVersionUID = 1L;
+
 		public int getColumnCount() { return 2; }
 		public int getRowCount() { 
 			TreeMap params = par.getParamGroup(groupLevel,groupName);
@@ -406,7 +423,7 @@ public final class ParamValueTable extends JPanel {
 		TableColumn valueColumn = table.getColumnModel().getColumn(1);
 		valueColumn.setHeaderValue("Value");
 		
-		valueColumn.setCellEditor(new CellEditor(this));
+		valueColumn.setCellEditor(new CellEditor(/*this*/));
 		valueColumn.setCellRenderer(new CellRenderer());
 		//		valueColumn.setCellRenderer(new CellRenderer());
 		
@@ -519,6 +536,8 @@ public final class ParamValueTable extends JPanel {
 	
 	
 	class HelpInfo extends JLabel {
+		private static final long serialVersionUID = 1L;
+
 		String longText;
 		boolean errorShowing=false;
 		

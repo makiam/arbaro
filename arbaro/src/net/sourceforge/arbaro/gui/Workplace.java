@@ -119,7 +119,13 @@ import net.sourceforge.arbaro.export.ExporterFactory;
     final static ImageIcon substemIcon = createImageIcon("images/substem.png","Branching");
 	final static ImageIcon aboutIcon = createImageIcon("images/arbaro64.png","Arbaro");
 
-    /** Returns an ImageIcon, or null if the path was invalid. */
+    /**
+     * Returns an ImageIcon, or null if the path was invalid.
+     * 
+     * @param path 
+     * @param description 
+     * @return ImageIcon, or null if the path was invalid
+     */
     protected static ImageIcon createImageIcon(String path,
     		String description) {
     	java.net.URL imgURL = Workplace.class.getResource(path);
@@ -509,6 +515,8 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 	}
 	
 	class FileNewAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
 		public FileNewAction() {
 			super("New",createImageIcon("images/actions/New24.png","New"));
         	putValue(SHORT_DESCRIPTION, "New file");
@@ -526,11 +534,11 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 			AbstractParam.loading=false;
 
 			groupsView.fireStateChanged();
+			params.prepare(13); 
 			frame.setTitle("Arbaro ["+params.Species+"]");
 			
 			// draw new tree
 			try {
-				params.prepare(13); 
 				previewTree.setParams(params);
 				previewTree.remake();
 			} catch (ParamException err) {
@@ -546,6 +554,8 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 	};
 	
 	class FileOpenAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
 		public FileOpenAction() {
 			super("Open...",createImageIcon("images/actions/Open24.png","Open"));
         	putValue(SHORT_DESCRIPTION, "Open file");
@@ -572,9 +582,10 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 					setModified(false);
 
 					groupsView.fireStateChanged();
-					frame.setTitle("Arbaro ["+params.Species+"]");
-					// draw opened tree
 					params.prepare(13); 
+					frame.setTitle("Arbaro ["+params.Species+"]");
+
+					// draw opened tree
 					previewTree.setParams(params);
 					previewTree.remake();
 					
@@ -651,6 +662,8 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 	}	
 	
 	class FileSaveAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
 		public FileSaveAction() {
 			super("Save",createImageIcon("images/actions/Save24.png","Save"));
         	putValue(SHORT_DESCRIPTION, "Save file");
@@ -669,6 +682,8 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 	};
 	
 	class FileSaveAsAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
 		public FileSaveAsAction() {
 			super("Save as...",createImageIcon("images/actions/SaveAs24.png","SaveAs"));
         	putValue(SHORT_DESCRIPTION, "Save file as");
@@ -683,6 +698,8 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 	}
 	
 	class ExportTreeAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
 		public ExportTreeAction() {
 			super("Export tree...",createImageIcon("images/actions/Create24.png","Export"));
         	putValue(SHORT_DESCRIPTION, "Create and export tree");
@@ -695,6 +712,8 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 	}
 
 	class RenderTreeAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
 		public RenderTreeAction() {
 			super("Render tree...",createImageIcon("images/actions/Render24.png","Render"));
         	putValue(SHORT_DESCRIPTION, "Create, export and render tree");
@@ -708,6 +727,8 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 	
 	
 	class SetupArbaroAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
 		public SetupArbaroAction() {
 			super("Setup...",createImageIcon("images/actions/Preferences24.png","Setup"));
         	putValue(SHORT_DESCRIPTION, "Setup Arbaro");
@@ -720,6 +741,8 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 	}
 	
 	class QuitAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
 		public QuitAction() {
 			super("Quit",null);
         	putValue(SHORT_DESCRIPTION, "Quit Arbaro");
@@ -750,6 +773,8 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 //	}
 	
 	class HelpAboutAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
 		public HelpAboutAction() {
 			super("About Arbaro...",createImageIcon("images/actions/About24.png","About"));
         	putValue(SHORT_DESCRIPTION, "About Arbaro");

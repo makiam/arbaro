@@ -27,6 +27,8 @@ import java.util.Properties;
 
 
 class Config extends Properties {
+	private static final long serialVersionUID = 1L;
+
 	String configFileName;
 	
 	public Config() {
