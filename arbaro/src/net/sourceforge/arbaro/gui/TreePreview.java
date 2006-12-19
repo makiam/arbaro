@@ -375,7 +375,7 @@ public class TreePreview extends JComponent {
 			g.setColor(leafColor);
 		}
 		public boolean enterTree(Tree tree) {
-			m = MeshGenerator.createLeafMesh(tree,true /* useQuads */);
+			m = ((PreviewTree)tree).getLeafMesh(); //meshGenerator.createLeafMesh(tree,true /* useQuads */);
 			return true;
 		}
 		public boolean leaveTree(Tree tree) {

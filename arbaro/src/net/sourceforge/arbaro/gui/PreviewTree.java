@@ -29,6 +29,7 @@ import net.sourceforge.arbaro.tree.TreeGenerator;
 import net.sourceforge.arbaro.tree.TreeTraversal;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.mesh.Mesh;
+import net.sourceforge.arbaro.mesh.LeafMesh;
 import net.sourceforge.arbaro.mesh.MeshGenerator;
 import net.sourceforge.arbaro.export.Progress;
 
@@ -56,6 +57,10 @@ public final class PreviewTree implements Tree {
 	Params originalParams;
 	//Params params;
 	Mesh mesh;
+	LeafMesh leafMesh;
+	MeshGenerator meshGenerator;
+	TreeGenerator treeGenerator;
+	
 	Tree tree;
 	
 	protected ChangeEvent changeEvent = null;
@@ -64,8 +69,11 @@ public final class PreviewTree implements Tree {
 	/**
 	 * @param other
 	 */
-	public PreviewTree(Params params) {
+	public PreviewTree(Params params, MeshGenerator meshGenerator,
+			TreeGenerator treeGenerator) {
 		this.originalParams=params;
+		this.meshGenerator = meshGenerator;
+		this.treeGenerator = treeGenerator;
 		//this.params = new Params(params);
 	}
 	
@@ -109,6 +117,7 @@ public final class PreviewTree implements Tree {
 	
 	public double getLeafStemLength() { return tree.getLeafStemLength(); };
 	
+	public String getVertexInfo(int level) { return tree.getVertexInfo(level); };
 	
 	public void setShowLevel(int l) {
 		int Levels = ((IntParam)(originalParams.getParam("Levels"))).intValue(); 
@@ -140,17 +149,20 @@ public final class PreviewTree implements Tree {
 			}
 
 			Progress progress = new Progress();
-			TreeGenerator treeGenerator = new TreeGenerator(params);
 		    tree = treeGenerator.makeTree(progress);
 		    
-		    MeshGenerator meshFactory = new MeshGenerator(params,true /* useQuads */);
-			mesh = meshFactory.createStemMesh(tree,progress);
+			mesh = meshGenerator.createStemMesh(tree,progress);
+			leafMesh = meshGenerator.createLeafMesh(tree,true);
 			
 			fireStateChanged();
 	}
 	
 	public Mesh getMesh() {
 		return mesh;
+	}
+
+	public LeafMesh getLeafMesh() {
+		return leafMesh;
 	}
 
 	public void addChangeListener(ChangeListener l) {

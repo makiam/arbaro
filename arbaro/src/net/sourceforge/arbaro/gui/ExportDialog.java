@@ -29,6 +29,7 @@ import javax.swing.*;
 
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.tree.TreeGenerator;
+import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
 import net.sourceforge.arbaro.export.*;
 import net.sourceforge.arbaro.params.Params;
 
@@ -45,7 +46,7 @@ public class ExportDialog {
 	// Tree tree;
 	Params params;
 	int seed;
-	ExporterFactory exporterFactory;
+//	ExporterFactory exporterFactory;
 
 	File treefile = null;
 	JFileChooser fileChooser;
@@ -73,13 +74,13 @@ public class ExportDialog {
 	
 	String fileSep = System.getProperty("file.separator");
 	
-	public ExportDialog(JFrame parent, int seed, ExporterFactory exporterFactory, Params params, Config cfg, boolean render) {
+	public ExportDialog(JFrame parent, int seed, /*ExporterFactory exporterFactory,*/ Params params, Config cfg, boolean render) {
 		
 		//tree = tr;
 		this.params = params;
 		this.config = cfg;
 		this.render = render;
-		this.exporterFactory = exporterFactory;
+//		this.exporterFactory = exporterFactory;
 		this.seed = seed;
 		
 		frame = new JFrame("Create and export tree");
@@ -90,17 +91,17 @@ public class ExportDialog {
 		fileChooser = new JFileChooser();
 
 		// FIXME use path from preferences
-		fileChooser.setCurrentDirectory(new File(exporterFactory.getOutputPath()));
+		fileChooser.setCurrentDirectory(new File(ExporterFactory.getOutputPath()));
 //		System.getProperty("user.dir")+fileSep+"pov"));
 		sceneFileChooser = new JFileChooser();
-		sceneFileChooser.setCurrentDirectory(new File(exporterFactory.getOutputPath()));
+		sceneFileChooser.setCurrentDirectory(new File(ExporterFactory.getOutputPath()));
 //				System.getProperty("user.dir")+fileSep+"pov"));
 		renderFileChooser = new JFileChooser();
-		renderFileChooser.setCurrentDirectory(new File(exporterFactory.getOutputPath()));
+		renderFileChooser.setCurrentDirectory(new File(ExporterFactory.getOutputPath()));
 //		System.getProperty("user.dir")+fileSep+"pov"));
 		
 		timer = new Timer(INTERVAL, new TimerListener());
-		treeCreationTask = new TreeCreationTask(config);
+		treeCreationTask = new TreeCreationTask(frame,config);
 		
 		createGUI();
 		frame.setVisible(true);
@@ -302,9 +303,9 @@ public class ExportDialog {
 		
 		ctext.gridy = line;
 		uvStemsCheckbox = new JCheckBox("for Stems");
-		uvStemsCheckbox.setSelected(exporterFactory.getOutputStemUVs());
+		uvStemsCheckbox.setSelected(ExporterFactory.getOutputStemUVs());
 		uvLeavesCheckbox = new JCheckBox("for Leaves");
-		uvLeavesCheckbox.setSelected(exporterFactory.getOutputLeafUVs());
+		uvLeavesCheckbox.setSelected(ExporterFactory.getOutputLeafUVs());
 		JPanel uv = new JPanel();
 		uv.add(uvStemsCheckbox);
 		uv.add(uvLeavesCheckbox);
@@ -450,7 +451,7 @@ public class ExportDialog {
 		panel.add(label);
 		
 		ctext.gridy = line;
-		widthField.setText(""+exporterFactory.getRenderW());
+		widthField.setText(""+ExporterFactory.getRenderW());
 		widthField.setMinimumSize(new Dimension(80,19));
 		grid.setConstraints(widthField,ctext);
 		panel.add(widthField);
@@ -462,7 +463,7 @@ public class ExportDialog {
 		panel.add(label);
 		
 		ctext.gridy = line;
-		heightField.setText(""+exporterFactory.getRenderH());
+		heightField.setText(""+ExporterFactory.getRenderH());
 		heightField.setMinimumSize(new Dimension(80,19));
 		grid.setConstraints(heightField,ctext);
 		panel.add(heightField);
@@ -480,21 +481,23 @@ public class ExportDialog {
 			// get seed, output parameters
 			
 			// FIXME set progress, verbose, debug here?
-			TreeGenerator treeGenerator = new TreeGenerator(params);
-			ExporterFactory exporterFactory = new ExporterFactory();
+			TreeGenerator treeGenerator = new ShieldedGUITreeGenerator(frame,
+					TreeGeneratorFactory.createTreeGenerator(params));
+//			ExporterFactory exporterFactory = new ExporterFactory();
 			
 			try{
 				treeGenerator.setSeed(Integer.parseInt(seedField.getText()));
 				treeGenerator.setParam("Smooth",smoothField.getText());
-				exporterFactory.setRenderW(Integer.parseInt(widthField.getText()));
-				exporterFactory.setRenderH(Integer.parseInt(heightField.getText()));
-				exporterFactory.setExportFormat(formatBox.getSelectedIndex());
-				exporterFactory.setOutputStemUVs(uvStemsCheckbox.isSelected());
-				exporterFactory.setOutputLeafUVs(uvLeavesCheckbox.isSelected());
+				ExporterFactory.setRenderW(Integer.parseInt(widthField.getText()));
+				ExporterFactory.setRenderH(Integer.parseInt(heightField.getText()));
+				ExporterFactory.setExportFormat(formatBox.getSelectedIndex());
+				ExporterFactory.setOutputStemUVs(uvStemsCheckbox.isSelected());
+				ExporterFactory.setOutputLeafUVs(uvLeavesCheckbox.isSelected());
 				//FIXME fileChooser.getPath() ???
 				//tree.setOutputPath(fileField.getText());
-			} catch (Exception err) {
-				err.printStackTrace();
+			} catch (Exception exc) {
+				Console.printException(exc);
+				ShowException.msgBox(frame,"Export initialization error",exc);
 			}
 			// setup progress dialog
 //			progressMonitor = new ProgressMonitor(frame,"","",0,100);
@@ -514,7 +517,7 @@ public class ExportDialog {
 			if (sceneCheckbox.isSelected()) povfile = new File(sceneFileField.getText());
 			String imgFilename = null;
 			if (renderCheckbox.isSelected()) imgFilename = renderFileField.getText();
-			treeCreationTask.start(treeGenerator,exporterFactory,incfile,povfile,imgFilename); //fileChooser.getSelectedFile());
+			treeCreationTask.start(treeGenerator,/*exporterFactory,*/incfile,povfile,imgFilename); //fileChooser.getSelectedFile());
 			timer.start();
 		}
 	}
@@ -607,7 +610,7 @@ class Progressbar extends JPanel {
  */
 class TreeCreationTask {
 	TreeGenerator treeGenerator;
-	ExporterFactory exporterFactory;
+//	ExporterFactory exporterFactory;
 	Progress progress;
 	//Tree tmptree;
 	PrintWriter writer;
@@ -616,10 +619,12 @@ class TreeCreationTask {
 	String renderFilename = null;
 	boolean isNotActive;
 	String povrayexe;
+	Component parent;
 	
 	final class TreeWorker extends SwingWorker {
+		
 		public Object construct() {
-			return new DoTask();
+			return new DoTask(parent);
 		}
 		
 		public void finished() {
@@ -630,7 +635,8 @@ class TreeCreationTask {
 	
 	TreeWorker worker;
 	
-	public TreeCreationTask(Config config) {
+	public TreeCreationTask(Component parent, Config config) {
+		this.parent = parent;
 		povrayexe = config.getProperty("povray.executable");
 		if (povrayexe == null) {
 			System.err.println("Warning: Povray executable not set up, trying \""+
@@ -640,12 +646,12 @@ class TreeCreationTask {
 		isNotActive=true;
 	};
 	
-	public void start(TreeGenerator treeFactory, ExporterFactory exporterFactory, 
+	public void start(TreeGenerator treeFactory/*, ExporterFactory exporterFactory*/, 
 			File outFile, File sceneFile, String imgFilename) {
 		// create new Tree copying the parameters of tree
 		try {
 			this.treeGenerator = treeFactory;
-			this.exporterFactory = exporterFactory;
+//			this.exporterFactory = exporterFactory;
 			
 			writer = new PrintWriter(new FileWriter(outFile)); 
 			if (sceneFile != null) {
@@ -660,8 +666,8 @@ class TreeCreationTask {
 			worker.start();
 			
 		} catch (Exception e) {
-			System.err.println(e);
-			e.printStackTrace(System.err);
+			Console.printException(e);
+			//ShowException(frame,"Tree creation initialization error",e);
 		}
 	}
 	
@@ -692,8 +698,8 @@ class TreeCreationTask {
 				
 				String [] povcmd = { povrayexe,
 						"+L"+scene_file.getParent(),
-						"+w"+exporterFactory.getRenderW(),
-						"+h"+exporterFactory.getRenderH(),
+						"+w"+ExporterFactory.getRenderW(),
+						"+h"+ExporterFactory.getRenderH(),
 						"+o"+renderFilename,
 						scene_file.getPath()};
 				System.err.println(povcmd);
@@ -713,19 +719,21 @@ class TreeCreationTask {
 			}
 		}
 		
-		DoTask() {
+		DoTask(Component parent) {
 			try {
 				progress = new Progress();
 				// create the tree
 				Tree tree = treeGenerator.makeTree(progress);
-				Params params = treeGenerator.getParams();
+//				Params params = treeGenerator.getParams();
 				// export the tree
-				Exporter exporter = exporterFactory.createExporter(tree,params);
+				Exporter exporter = new ShieldedGUIExporter(	parent,
+						ExporterFactory.createExporter(tree));
 				exporter.write(writer,progress);
 				
 				// export Povray scene ?
 				if (scenewriter != null) {
-					exporter = exporterFactory.createSceneExporter(tree,params);
+					exporter = new ShieldedGUIExporter(parent,
+							ExporterFactory.createSceneExporter(tree));
 					exporter.write(scenewriter,progress);
 				}
 				

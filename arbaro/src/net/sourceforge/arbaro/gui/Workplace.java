@@ -55,7 +55,11 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.sourceforge.arbaro.mesh.MeshGenerator;
+import net.sourceforge.arbaro.mesh.MeshGeneratorFactory;
 import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.tree.TreeGenerator;
+import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
 import net.sourceforge.arbaro.export.ExporterFactory;
 
 /**
@@ -86,7 +90,7 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 
 	//Tree tree;
 	Params params;
-	ExporterFactory exporterFactory;
+//	ExporterFactory exporterFactory;
 	int seed = 13;
 	
 	PreviewTree previewTree;
@@ -142,12 +146,23 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 		// create tree with paramDB
 		params = new Params();
 		try { params.prepare(13); } catch (Exception e) {};
-		previewTree = new PreviewTree(params);
+
 		
-		exporterFactory = new ExporterFactory();
+//		exporterFactory = new ExporterFactory();
 		
 		// create frame
 		frame = new JFrame("Arbaro");
+
+		// create preview Tree
+		MeshGenerator meshGenerator = new ShieldedGUIMeshGenerator(frame,
+	    		MeshGeneratorFactory.createMeshGenerator(true /*useQuads*/));
+
+		TreeGenerator treeGenerator = new ShieldedGUITreeGenerator(frame,
+				TreeGeneratorFactory.createTreeGenerator(params));
+
+		previewTree = new PreviewTree(params,meshGenerator,treeGenerator);
+		
+		
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -183,10 +198,10 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 		// TODO instead of exporterFactory a classes exportOptions and
 		// renderOptions should be used here
 		seed = Integer.parseInt(config.getProperty("tree.seed",""+seed));
-		exporterFactory.setExportFormat(Integer.parseInt(config.getProperty("export.format",""+exporterFactory.getExportFormat())));
-		exporterFactory.setRenderW(Integer.parseInt(config.getProperty("povray.width",""+exporterFactory.getRenderW())));
-		exporterFactory.setRenderH(Integer.parseInt(config.getProperty("povray.height",""+exporterFactory.getRenderH())));
-		exporterFactory.setOutputPath(config.getProperty("export.path",exporterFactory.getOutputPath()));
+		ExporterFactory.setExportFormat(Integer.parseInt(config.getProperty("export.format",""+ExporterFactory.getExportFormat())));
+		ExporterFactory.setRenderW(Integer.parseInt(config.getProperty("povray.width",""+ExporterFactory.getRenderW())));
+		ExporterFactory.setRenderH(Integer.parseInt(config.getProperty("povray.height",""+ExporterFactory.getRenderH())));
+		ExporterFactory.setOutputPath(config.getProperty("export.path",ExporterFactory.getOutputPath()));
 	}
 	
 	void createGUI() {
@@ -707,7 +722,7 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 		}
 		public void actionPerformed(ActionEvent e) {
 			valueEditor.stopEditing();
-			new ExportDialog(frame,seed,exporterFactory,params,config,false);
+			new ExportDialog(frame,seed,/*ExporterFactory,*/params,config,false);
 		}
 	}
 
@@ -721,7 +736,7 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 		}
 		public void actionPerformed(ActionEvent e) {
 			valueEditor.stopEditing();
-			new ExportDialog(frame,seed,exporterFactory,params,config,true);
+			new ExportDialog(frame,seed,/*exporterFactory,*/params,config,true);
 		}
 	}
 	
