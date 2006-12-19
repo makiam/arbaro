@@ -25,49 +25,41 @@ package net.sourceforge.arbaro.export;
 import java.io.PrintWriter;
 
 /**
- * @author wolfram
+ * Exporter Facade with exception handling
  *
  */
-abstract class AbstractExporter implements Exporter {
+public class ShieldedExporter implements Exporter {
+    
+	private Exporter exporter;
 	
-	protected static final int LEAF_PROGRESS_STEP = 500;
-	protected static final int STEM_PROGRESS_STEP = 100;
-	protected static final int MESH_PROGRESS_STEP = 500;
-
-	
-	protected PrintWriter w;
-
-	Progress progress;
-	long progressCount = 0;
-	
-
-	public Progress getProgress() {
-		return progress;
-	}
-	
-	public void newProgress(boolean consoleProgress) {
-		progress = new Progress();
-		if (consoleProgress) 
-			Console.setOutputLevel(Console.VERBOSE);
-	}
-	
-	public PrintWriter getWriter() { return w; }
-
-	public void write(PrintWriter w, Progress progress) {
-		this.w=w;
-		this.progress = progress;
-		
-		progress.beginPhase("writing tree code",-1);
-		doWrite();
-		progress.endPhase();
+	public ShieldedExporter(Exporter exporter) {
+		this.exporter = exporter;
 	}
 
-	protected abstract void doWrite();
+	protected void showException(Exception e) {
+		Console.printException(e);
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.export.Exporter#getWriter()
+	 */
+	public PrintWriter getWriter() {
+		try {
+			return exporter.getWriter();
+		} catch (Exception e) {
+			showException(e);
+			return null;
+		}
+	}
 
-	protected void incProgressCount(int step) {
-		if (progressCount++ % step == 0) {
-			progress.incProgress(step);
-			Console.progressChar();
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.export.Exporter#write(java.io.PrintWriter, net.sourceforge.arbaro.export.Progress)
+	 */
+	public void write(PrintWriter w, Progress progress)  {
+		try {
+			exporter.write(w,progress);
+		} catch (Exception e) {
+			showException(e);
 		}
 	}
 

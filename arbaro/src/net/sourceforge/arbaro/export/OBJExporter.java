@@ -244,8 +244,8 @@ final class OBJExporter extends MeshExporter {
 	 * @param pw
 	 * @param p
 	 */
-	public OBJExporter(Tree tree, MeshGenerator meshFactory) {
-		super(meshFactory);
+	public OBJExporter(Tree tree, MeshGenerator meshGenerator) {
+		super(meshGenerator);
 		this.tree = tree;
 	}
 /*
@@ -264,16 +264,16 @@ final class OBJExporter extends MeshExporter {
 	}
 	*/
 	
-	public void doWrite() throws ExportError {
+	public void doWrite()  {
 		smoothingGroup=1;
 
 		long objCount = 
 			(tree.getStemCount()
 			+tree.getLeafCount())*(outputNormals? 2 : 1); 
 
-		try {
+//		try {
 			mesh = meshGenerator.createStemMeshByLevel(tree,progress);
-			leafMesh = MeshGenerator.createLeafMesh(tree,meshGenerator.useQuads);
+			leafMesh = meshGenerator.createLeafMesh(tree,meshGenerator.getUseQuads());
 
 			// vertices
 			progress.beginPhase("Writing vertices",objCount);
@@ -305,14 +305,14 @@ final class OBJExporter extends MeshExporter {
 			progress.endPhase();
 			w.flush();
 			
-		}	catch (Exception e) {
-			e.printStackTrace(System.err);
-			throw new ExportError(e.getMessage());
-			//e.printStackTrace(System.err);
-		}
+//		}	catch (Exception e) {
+//			e.printStackTrace(System.err);
+//			throw new ExportError(e.getMessage());
+//			//e.printStackTrace(System.err);
+//		}
 	}
 	
-	private void writeStemVertices(String type) throws Exception {
+	private void writeStemVertices(String type) {
 	
 		if (type == "vt") { 
 			// texture vectors
@@ -340,7 +340,7 @@ final class OBJExporter extends MeshExporter {
 
 	}
 	
-	private void writeLeafVertices(String type) throws Exception {
+	private void writeLeafVertices(String type) {
 		
 		if (type == "vt") { 
 			// texture vectors
@@ -381,7 +381,7 @@ final class OBJExporter extends MeshExporter {
 	
 	
 	
-	private void writeStemFaces() throws Exception {
+	private void writeStemFaces() {
 		// output mesh triangles
 		vertexOffset = 1;
 		//boolean separate_trunk = false;

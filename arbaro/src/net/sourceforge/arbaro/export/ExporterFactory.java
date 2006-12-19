@@ -23,10 +23,9 @@
 package net.sourceforge.arbaro.export;
 
 import net.sourceforge.arbaro.mesh.MeshGenerator;
+import net.sourceforge.arbaro.mesh.MeshGeneratorFactory;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.params.Params;
-
-
 
 
 /**
@@ -42,16 +41,16 @@ public class ExporterFactory {
 	//public final static int POV_SCENE = 4;
 
 	
-	int exportFormat = ExporterFactory.POV_MESH;
-	String outputPath = System.getProperty("user.dir")
+	static int exportFormat = ExporterFactory.POV_MESH;
+	static String outputPath = System.getProperty("user.dir")
 		+System.getProperty("file.separator")+"pov";
 	
 	// TODO move render parameters to a special RenderCmd class?
-	int renderW = 400;
-	int renderH = 600;
+	static int renderW = 400;
+	static int renderH = 600;
 
-	boolean outputStemUVs = false;
-	boolean outputLeafUVs = false;
+	static boolean outputStemUVs = false;
+	static boolean outputLeafUVs = false;
 
 	final static String[] formats = { "Povray meshes","Povray primitives","AutoCAD DXF","Wavefront OBJ" };
 
@@ -63,76 +62,76 @@ public class ExporterFactory {
 	 * 
 	 * @param output
 	 */
-	public void setExportFormat(int output) {
+	static public void setExportFormat(int output) {
 		exportFormat = output;
 	}
 	
-	public int getExportFormat() {
+	static public int getExportFormat() {
 		return exportFormat;
 	}
 	
-	public String getOutputPath() {
+	static public String getOutputPath() {
 		return outputPath;
 	}
 	
-	public void setOutputPath(String p) {
+	static public void setOutputPath(String p) {
 		outputPath=p;
 	}
 	
-	public void setRenderW(int w) {
+	static public void setRenderW(int w) {
 		renderW = w;
 	}
 	
-	public void setRenderH(int h) {
+	static public void setRenderH(int h) {
 		renderH=h;
 	}
 	
-	public int getRenderH() {
+	static public int getRenderH() {
 		return renderH;
 	}
 	
-	public int getRenderW() {
+	static public int getRenderW() {
 		return renderW;
 	}
 
-	public void setOutputStemUVs(boolean oUV) {
+	static public void setOutputStemUVs(boolean oUV) {
 		outputStemUVs = oUV;
 	}
 	
-	public boolean getOutputStemUVs() {
+	static public boolean getOutputStemUVs() {
 		return outputStemUVs;
 	}
 
-	public void setOutputLeafUVs(boolean oUV) {
+	static public void setOutputLeafUVs(boolean oUV) {
 		outputLeafUVs = oUV;
 	}
 
-	public boolean getOutputLeafUVs() {
+	static public boolean getOutputLeafUVs() {
 		return outputLeafUVs;
 	}
 
-	public Exporter createExporter(Tree tree, Params params) 
+	static public Exporter createExporter(Tree tree/*, Params params*/) 
 		throws InvalidExportFormatError {
 		
 		Exporter exporter = null;
-		MeshGenerator meshFactory;
+		MeshGenerator meshGenerator;
 		boolean useQuads = false;
 		
 		if (exportFormat == POV_CONES) {
-			exporter = new POVConeExporter(tree,params);
+			exporter = new POVConeExporter(tree/*,params*/);
 		}
 		else if (exportFormat == POV_MESH) {
-			meshFactory = new MeshGenerator(params,useQuads);
-			exporter = new POVMeshExporter(tree,meshFactory);
+			meshGenerator = MeshGeneratorFactory.createMeshGenerator(/*params,*/ useQuads);
+			exporter = new POVMeshExporter(tree,meshGenerator);
 			((POVMeshExporter)exporter).outputStemUVs = outputStemUVs;
 			((POVMeshExporter)exporter).outputLeafUVs = outputLeafUVs;
 		} else if (exportFormat == DXF) {
-			meshFactory = new MeshGenerator(params,useQuads);
-			exporter = new DXFExporter(tree,meshFactory);
+			meshGenerator = MeshGeneratorFactory.createMeshGenerator(/*params,*/ useQuads);
+			exporter = new DXFExporter(tree,meshGenerator);
 		} else if (exportFormat == OBJ) {
 			useQuads = true;
-			meshFactory = new MeshGenerator(params,useQuads);
-			exporter = new OBJExporter(tree,meshFactory);
+			meshGenerator = MeshGeneratorFactory.createMeshGenerator(/*params,*/ useQuads);
+			exporter = new OBJExporter(tree,meshGenerator);
 			((OBJExporter)exporter).outputStemUVs = outputStemUVs;
 			((OBJExporter)exporter).outputLeafUVs = outputLeafUVs;
 		} else {
@@ -142,10 +141,19 @@ public class ExporterFactory {
 		return exporter;
 	}
 
-	public Exporter createSceneExporter(Tree tree, Params params) { 
-		return new POVSceneExporter(tree,params,renderW,renderH);
+	static public Exporter createSceneExporter(Tree tree/*, Params params*/) { 
+		return new POVSceneExporter(tree,/*params,*/renderW,renderH);
 	}
 
+	static public Exporter createShieldedExporter(Tree tree, Params params) throws InvalidExportFormatError 
+	{
+		return new ShieldedExporter(createExporter(tree));
+	}
+
+	static public Exporter createShieldedSceneExporter(Tree tree/*,Params params*/) {
+		return new ShieldedExporter(createSceneExporter(tree/*, params*/));
+	}
+	
 	public static String[] getExportFormats() {
 		return formats;
 	}

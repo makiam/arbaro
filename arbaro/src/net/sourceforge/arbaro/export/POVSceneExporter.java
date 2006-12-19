@@ -27,7 +27,6 @@
 package net.sourceforge.arbaro.export;
 
 import net.sourceforge.arbaro.tree.Tree;
-import net.sourceforge.arbaro.params.*;
 
 /**
  * Creates a Povray scene file with the rendered tree
@@ -36,7 +35,7 @@ import net.sourceforge.arbaro.params.*;
  */
 class POVSceneExporter extends AbstractExporter {
 	Tree tree;
-	Params params;
+//	Params params;
 	String povrayDeclarationPrefix;
 	int renderW;
 	int renderH;
@@ -44,13 +43,13 @@ class POVSceneExporter extends AbstractExporter {
 	/**
 	 * @param tree
 	 */
-	public POVSceneExporter(Tree tree, Params params,
+	public POVSceneExporter(Tree tree, /*Params params,*/
 			int renderW, int renderH) {
 		this.tree = tree;
-		this.params = params;
+//		this.params = params;
 		this.renderW = renderW;
 		this.renderH = renderH;
-		this.povrayDeclarationPrefix = params.getParam("Species") + "_" + tree.getSeed() + "_"; 
+		this.povrayDeclarationPrefix = tree.getSpecies() + "_" + tree.getSeed() + "_"; 
 	}
 	
     /**
@@ -65,10 +64,10 @@ class POVSceneExporter extends AbstractExporter {
     }
     */
 
-    public void doWrite() throws ExportError {
+    public void doWrite() {
 		w.println("// render as "+renderH+"x"+renderW);
 
-		w.println("#include \"" + params.getParam("Species") + ".inc\"");
+		w.println("#include \"" + tree.getSpecies() + ".inc\"");
 		w.println("background {rgb <0.95,0.95,0.9>}");
 
 		w.println("light_source { <5000,5000,-3000>, rgb 1.2 }");
@@ -89,7 +88,7 @@ class POVSceneExporter extends AbstractExporter {
 		w.println("                          finish { ambient 0.15 diffuse 0.8 }}}");
 		w.println("         rotate 90*y }");
 
-		if (((IntParam)params.getParam("Leaves")).intValue() > 0) {
+		if (tree.getLeafCount() > 0) {
 		    w.println("         object { " + povrayDeclarationPrefix + "stems");
 		    w.println("                scale 0.7 rotate 45*y");  
 		    w.println("                translate <WIDTH*0.33,HEIGHT*0.33,WIDTH>");

@@ -42,12 +42,14 @@ class POVConeLeafWriter implements TreeTraversal {
 	/**
 	 * 
 	 */
-	public POVConeLeafWriter(AbstractExporter exporter, Params params) {
+	public POVConeLeafWriter(AbstractExporter exporter/*, Params params*/,
+			Tree tree) {
 		super();
 		this.exporter = exporter;
 		this.w = exporter.getWriter();
+		this.tree = tree;
 		this.povrayDeclarationPrefix =
-			params.getSpecies() + "_" + tree.getSeed() + "_";
+			tree.getSpecies() + "_" + tree.getSeed() + "_";
 		
 	}
 
@@ -263,11 +265,11 @@ class POVConeStemWriter implements TreeTraversal {
 	/**
 	 * 
 	 */
-	public POVConeStemWriter(AbstractExporter exporter, Params params, int level) {
+	public POVConeStemWriter(AbstractExporter exporter, /*Params params,*/ int level) {
 		super();
 		this.exporter = exporter;
 		this.w = exporter.getWriter();
-		this.params = params;
+//		this.params = params;
 		this.level=level;
 	}
 
@@ -289,7 +291,7 @@ class POVConeStemWriter implements TreeTraversal {
 			String indent = whitespace(stem.getLevel()*2+4);
 			NumberFormat fmt = FloatFormat.getInstance();
 			Enumeration sections = stem.sections();
-			LevelParams lpar = params.getLevelParams(stem.getLevel());
+//			LevelParams lpar = params.getLevelParams(stem.getLevel());
 			
 			if (sections.hasMoreElements()) {
 				StemSection from = (StemSection)sections.nextElement();
@@ -315,13 +317,16 @@ class POVConeStemWriter implements TreeTraversal {
 				}
 			
 				// put sphere at stem end
+/* FIXME now using sections instead of segments, the spherical stem end
+ *       will be made from several cones instead of one shpere ...
+ 				
 				if ((to.getRadius() > 0.0001) || 
 						(lpar.nTaper>1 && lpar.nTaper<=2)) 
 				{  
 					w.println(indent + "sphere { " + vectorStr(to.getPosition()) + ", "
 							+ fmt.format(to.getRadius()-0.0001) + " }");
 				}
-			
+			*/
 			}
 			
 			exporter.incProgressCount(AbstractExporter.STEM_PROGRESS_STEP);
@@ -399,22 +404,22 @@ class POVConeStemWriter implements TreeTraversal {
  */
 class POVConeExporter extends AbstractExporter {
 	Tree tree;
-	Params params;
+//	Params params;
 	private String povrayDeclarationPrefix;
 
 	/**
 	 * 
 	 */
-	public POVConeExporter(Tree tree, Params params) {
+	public POVConeExporter(Tree tree/*, Params params*/) {
 		super();
 		this.tree = tree;
-		this.params = params;
+//		this.params = params;
 		this.povrayDeclarationPrefix =
-			params.getSpecies() + "_" + tree.getSeed() + "_";
+			tree.getSpecies() + "_" + tree.getSeed() + "_";
 	}
 	
-	public void doWrite() throws ExportError{
-		try {
+	public void doWrite() {
+//		try {
 			// some declarations in the POV file
 			NumberFormat frm = FloatFormat.getInstance();
 			
@@ -428,12 +433,12 @@ class POVConeExporter extends AbstractExporter {
 			// stems
 			progress.beginPhase("writing stem objects",tree.getStemCount());
 			
-			for (int level=0; level < params.Levels; level++) {
+			for (int level=0; level < tree.getLevels(); level++) {
 				
 				w.println("#declare " + povrayDeclarationPrefix + "stems_"
 						+ level + " = union {");
 				
-				POVConeStemWriter writer = new POVConeStemWriter(this,params,level);
+				POVConeStemWriter writer = new POVConeStemWriter(this,/*params,*/level);
 				tree.traverseTree(writer);
 				
 				w.println("}");
@@ -447,7 +452,7 @@ class POVConeExporter extends AbstractExporter {
 				
 				w.println("#declare " + povrayDeclarationPrefix + "leaves = union {");
 				
-				POVConeLeafWriter lexporter = new POVConeLeafWriter(this,params);
+				POVConeLeafWriter lexporter = new POVConeLeafWriter(this,/*params*/ tree);
 				tree.traverseTree(lexporter);
 				
 				w.println("}");
@@ -460,7 +465,7 @@ class POVConeExporter extends AbstractExporter {
 			
 			// all stems together
 			w.println("#declare " + povrayDeclarationPrefix + "stems = union {"); 
-			for (int level=0; level < params.Levels; level++) {
+			for (int level=0; level < tree.getLevels(); level++) {
 				w.println("  object {" + povrayDeclarationPrefix + "stems_" 
 						+ level + "}");
 			}
@@ -468,11 +473,11 @@ class POVConeExporter extends AbstractExporter {
 			
 			w.flush();
 			
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.err.println(e);
-			throw new ExportError(e.getMessage());
-		}	
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			System.err.println(e);
+//			throw new ExportError(e.getMessage());
+//		}	
 	}
 
 	/**
@@ -492,12 +497,12 @@ class POVConeExporter extends AbstractExporter {
 	 * @param w The output stream
 	 */
 	private void writeLeafDeclaration() {
-		double length = params.LeafScale/Math.sqrt(params.LeafQuality);
-		double width = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
+		double length = tree.getLeafLength();
+		double width = tree.getLeafWidth();
 		w.println("#include \"arbaro.inc\"");
 		w.println("#declare " + povrayDeclarationPrefix + "leaf = " +
-				"object { Arb_leaf_" + (params.LeafShape.equals("0")? "disc" : params.LeafShape)
-				+ " translate " + (params.LeafStemLen+0.5) + "*y scale <" 
+				"object { Arb_leaf_" + (tree.getLeafShape().equals("0")? "disc" : tree.getLeafShape())
+				+ " translate " + (tree.getLeafStemLength()+0.5) + "*y scale <" 
 				+ width + "," + length + "," + width + "> }");
 	}	  	
 	

@@ -45,6 +45,13 @@ final public class Console {
 			System.err.println(msg);
 		}
 	}
+	
+	static synchronized public void printException(Exception e) {
+		if (outputLevel>REALLY_QUIET) {
+			System.err.println(e);
+			e.printStackTrace(System.err);
+		}
+	}
 
 	static synchronized public void progressChar(char c) {
 		if (outputLevel>=VERBOSE) {

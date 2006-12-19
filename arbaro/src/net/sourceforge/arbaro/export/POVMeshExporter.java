@@ -346,7 +346,7 @@ class POVMeshExporter extends MeshExporter {
 		//    	double leafWidth = tree.params.LeafScale*tree.params.LeafScaleX/Math.sqrt(tree.params.LeafQuality);
 		//    	LeafMesh mesh = new LeafMesh(tree.params.LeafShape,leafLength,leafWidth,tree.params.LeafStemLen);
 		
-		leafMesh = MeshGenerator.createLeafMesh(tree,false /* don't use Quads */);
+		leafMesh = meshGenerator.createLeafMesh(tree,false /* don't use Quads */);
 
 		int passes = 2; 
 		if (outputLeafNormals) passes++;

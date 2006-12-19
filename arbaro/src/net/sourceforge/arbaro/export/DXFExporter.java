@@ -171,6 +171,7 @@ class DXFFaceWriter extends DefaultTreeTraversal {
 	DXFWriter writer;
 	AbstractExporter exporter;
 	Progress progress;
+	MeshGenerator meshGenerator;
 //	TraversableTree tree;
 //	long leavesProgressCount=0;
 //	boolean verbose;
@@ -179,17 +180,18 @@ class DXFFaceWriter extends DefaultTreeTraversal {
 	/**
 	 * 
 	 */
-	public DXFFaceWriter(AbstractExporter exporter, MeshGenerator meshFactory, String layer) {
+	public DXFFaceWriter(AbstractExporter exporter, MeshGenerator meshGenerator, String layer) {
 		super();
 		this.layer = layer;
 		this.exporter = exporter;
 		this.writer = new DXFWriter(exporter.getWriter());
 		vFace = new VFace(new Vector(),new Vector(),new Vector());
+		this.meshGenerator = meshGenerator;
 	}
 	
 	public boolean enterTree(Tree tree) {
 	//	this.tree = tree;
-		this.leafMesh = MeshGenerator.createLeafMesh(tree,false);
+		this.leafMesh = meshGenerator.createLeafMesh(tree,false);
 		return true;
 	}
 
@@ -231,8 +233,8 @@ class DXFExporter extends MeshExporter {
 		//super(tree, pw, progress, verbose);
 	}
 
-	public void doWrite() throws ExportError {
-		try{
+	public void doWrite() {
+//		try{
 			DXFWriter writer = new DXFWriter(w);
 			writer.writeHeader("DXF created with Arbaro, tree species: "+tree.getSpecies(),
 					tree.getMinPoint(),tree.getMaxPoint());
@@ -250,15 +252,15 @@ class DXFExporter extends MeshExporter {
 			writer.writeEntitiesEnd();
 			writer.wg(0,"EOF");
 			w.flush();
-		}
-		catch (Exception e) {
-			Console.errorOutput(e.toString());
-			throw new ExportError(e.getMessage());
-			//e.printStackTrace(System.err);
-		}
+//		}
+//		catch (Exception e) {
+//			Console.errorOutput(e.toString());
+//			throw new ExportError(e.getMessage());
+//			//e.printStackTrace(System.err);
+//		}
 	}
 	
-	private void writeStems(String layer) throws Exception {
+	private void writeStems(String layer) {
 		// FIXME: optimize speed, maybe using enumerations
 
 		Mesh mesh = meshGenerator.createStemMesh(tree,progress);
@@ -284,7 +286,7 @@ class DXFExporter extends MeshExporter {
 		progress.endPhase();
 	}
 	
-	private void writeLeafs(String layer) throws Exception {
+	private void writeLeafs(String layer) {
 		// FIXME: optimize speed, maybe using enumerations
 //		LeafMesh leafMesh = tree.createLeafMesh(false);
 //		VFace vFace = new VFace(new Vector(),new Vector(),new Vector());
