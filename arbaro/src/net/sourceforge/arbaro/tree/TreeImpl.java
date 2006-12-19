@@ -191,7 +191,7 @@ class TreeImpl implements Tree {
 	 * @throws Exception
 	 */
 	
-	public void make(Progress progress) throws Exception {
+	public void make(Progress progress) {
 		this.progress = progress;
 		
 		setupGenProgress();
@@ -609,6 +609,13 @@ class TreeImpl implements Tree {
 */	
 	//    boolean writingCode; 
 	//    String progressMsg = "";
+	
+	public String getVertexInfo(int level) {
+		return "vertices/section: " 
+			+ params.getLevelParams(level).mesh_points + ", smooth: " 
+			+ (params.smooth_mesh_level>=level? "yes" : "no");
+	}
+
 	
 	/**
 	 * Sets the maximum for the progress while generating the tree 

@@ -39,5 +39,7 @@ public interface Tree {
 	public double getLeafLength();
 	
 	public double getLeafStemLength();
+
+	public String getVertexInfo(int level);
 	
 }
