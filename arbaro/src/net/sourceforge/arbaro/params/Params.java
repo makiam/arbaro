@@ -1081,12 +1081,16 @@ public class Params {
 
 	}
 	
-	public void readFromCfg(InputStream is) throws Exception {
+	public void readFromCfg(InputStream is) {
 		CfgTreeParser parser = new CfgTreeParser();
-		parser.parse(is,this);
+		try {
+			parser.parse(is,this);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
-	public void readFromXML(InputStream is) throws ParamException {
+	public void readFromXML(InputStream is) {
 		try {
 			XMLTreeParser parser = new XMLTreeParser();
 			parser.parse(new InputSource(is),this);

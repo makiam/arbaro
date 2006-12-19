@@ -24,6 +24,11 @@ package net.sourceforge.arbaro.params;
 
 import java.io.PrintWriter;
 
+//TODO this class is specific for tree generation algorithm
+//may be move it to arbaro.tree package and hide it for
+//other packages. param Values can be set and read than
+//through the TreeGenerator class.
+
 public class LevelParams {
 	// parameters for the 4 levels
 	
