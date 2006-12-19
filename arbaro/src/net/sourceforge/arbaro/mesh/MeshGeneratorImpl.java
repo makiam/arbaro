@@ -22,7 +22,6 @@
 
 package net.sourceforge.arbaro.mesh;
 
-import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.export.Progress;
 import net.sourceforge.arbaro.export.Console;
@@ -31,13 +30,15 @@ import net.sourceforge.arbaro.export.Console;
  * @author wolfram
  *
  */
-public class MeshGenerator {
-	Params params;
+class MeshGeneratorImpl implements MeshGenerator {
+//	Params params;
 	public boolean useQuads;
 	
-	public MeshGenerator(Params params, boolean useQuads) {
+	public boolean getUseQuads() { return useQuads; } 
+
+	public MeshGeneratorImpl(/*Params params,*/ boolean useQuads) {
 		super();
-		this.params = params;
+//		this.params = params;
 		this.useQuads = useQuads;
 	}
 	
@@ -49,15 +50,12 @@ public class MeshGenerator {
 //		params.toXML(w);
 //	}
 //	
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.mesh.MeshGenerator#createStemMesh(net.sourceforge.arbaro.tree.Tree, net.sourceforge.arbaro.export.Progress)
+	 */
 	public Mesh createStemMesh(Tree tree, Progress progress) {
 		progress.beginPhase("Creating mesh",tree.getStemCount());
-		
-		Console.verboseOutput("Output: mesh");
-		for (int l=0; l<Math.min(tree.getLevels(),4); l++) {
-			Console.verboseOutput("  Level " + l + ": vertices/section: " 
-					+ params.getLevelParams(l).mesh_points + ", smooth: " 
-					+ (params.smooth_mesh_level>=l? "yes" : "no"));
-		}
+		outputVertexInfo(tree);
 		
 		Mesh mesh = new Mesh(tree.getLevels());
 /*		for (int t=0; t<trunks.size(); t++) {
@@ -72,16 +70,21 @@ public class MeshGenerator {
 		return mesh;
 	}
 
-	// FIXME move to MeshFactory
-	public Mesh createStemMeshByLevel(Tree tree, Progress progress) throws Exception {
-		progress.beginPhase("Creating mesh",tree.getStemCount());
-		
+	private void outputVertexInfo(Tree tree) {
 		Console.verboseOutput("Output: mesh");
 		for (int l=0; l<Math.min(tree.getLevels(),4); l++) {
-			Console.verboseOutput("  Level " + l + ": vertices/section: " 
-					+ params.getLevelParams(l).mesh_points + ", smooth: " 
-					+ (params.smooth_mesh_level>=l? "yes" : "no"));
+			Console.verboseOutput("  Level " + l + ": "
+					+ tree.getVertexInfo(l));
 		}
+	}
+	
+	// FIXME move to MeshFactory
+	/* (non-Javadoc)
+	 * @see net.sourceforge.arbaro.mesh.MeshGenerator#createStemMeshByLevel(net.sourceforge.arbaro.tree.Tree, net.sourceforge.arbaro.export.Progress)
+	 */
+	public Mesh createStemMeshByLevel(Tree tree, Progress progress) {
+		progress.beginPhase("Creating mesh",tree.getStemCount());
+		outputVertexInfo(tree);
 
 		Mesh mesh = new Mesh(tree.getLevels());
 		
@@ -104,7 +107,7 @@ public class MeshGenerator {
 	}
 	
 	// FIXME move to MeshFactory
-	public static LeafMesh createLeafMesh(Tree tree, boolean useQuads) {
+	public LeafMesh createLeafMesh(Tree tree, boolean useQuads) {
 //		double leafLength = params.LeafScale/Math.sqrt(params.LeafQuality);
 //		double leafWidth = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
 		return new LeafMesh(tree.getLeafShape(),

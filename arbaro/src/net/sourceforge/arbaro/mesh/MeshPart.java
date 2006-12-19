@@ -89,7 +89,8 @@ public class MeshPart extends java.util.Vector {
 			sections = elements();
 			
 			// ignore root point
-			MeshSection sec = (MeshSection)sections.nextElement();
+			MeshSection sec =
+				(MeshSection)sections.nextElement();
 			
 			// if it's a clone calculate a vertex offset
 			// finding the corresponding segment in the parent stem's mesh
