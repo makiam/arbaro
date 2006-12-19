@@ -202,11 +202,8 @@ public class arbaro {
 		
 //		if (quiet) progress.consoleChar=' ';
 //		else progress.consoleChar='.';
-		TreeGenerator treeGenerator = new TreeGenerator();
-		
-		ExporterFactory exporterFactory = new ExporterFactory();
+		TreeGenerator treeGenerator = TreeGeneratorFactory.createTreeGenerator();
 		Exporter exporter;
-
 
 		// put here or later?
 		//if (smooth>=0) treeFactory.params.Smooth = smooth;
@@ -249,16 +246,16 @@ public class arbaro {
 			Tree tree = treeGenerator.makeTree(progress);
 			Params params = treeGenerator.getParams();
 			params.stopLevel = levels;
-			exporterFactory.setExportFormat(output);
-			exporterFactory.setOutputStemUVs(uvStems);
-			exporterFactory.setOutputLeafUVs(uvLeaves);
-			exporter = exporterFactory.createExporter(tree,params);
+			ExporterFactory.setExportFormat(output);
+			ExporterFactory.setOutputStemUVs(uvStems);
+			ExporterFactory.setOutputLeafUVs(uvLeaves);
+			exporter = ExporterFactory.createExporter(tree);
 			exporter.write(out,progress);
 		
 			if (scene_file != null) {
 				if (! quiet) System.err.println("Writing Povray scene to "+scene_file+"...");
 				PrintWriter scout = new PrintWriter(new FileWriter(new File(scene_file)));
-				exporter = exporterFactory.createSceneExporter(tree,params);
+				exporter = ExporterFactory.createSceneExporter(tree);
 				exporter.write(scout,progress);
 			}
 		}		
