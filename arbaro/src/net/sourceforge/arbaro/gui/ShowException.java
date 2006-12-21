@@ -35,11 +35,11 @@ public class ShowException {
 	static public void msgBox(Component parent, 
 			String title, Exception e) {
 		
-		JLabel msg = new JLabel(e.toString());
+		JLabel msg = new JLabel(e.getMessage());
 		//    		Dimension dim = msg.getMaximumSize();
 		//    		dim.setSize(100,dim.getHeight());
 		//    		msg.setMaximumSize(dim);
 		JOptionPane.showMessageDialog(parent,msg,
-				"Export error",JOptionPane.ERROR_MESSAGE);
+				title,JOptionPane.ERROR_MESSAGE);
 	}
 }

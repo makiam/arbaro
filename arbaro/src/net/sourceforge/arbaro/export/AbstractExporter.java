@@ -45,11 +45,13 @@ abstract class AbstractExporter implements Exporter {
 		return progress;
 	}
 	
+	/*
 	public void newProgress(boolean consoleProgress) {
 		progress = new Progress();
 		if (consoleProgress) 
 			Console.setOutputLevel(Console.VERBOSE);
 	}
+	*/
 	
 	public PrintWriter getWriter() { return w; }
 

@@ -25,8 +25,9 @@ package net.sourceforge.arbaro.export;
 import java.io.PrintWriter;
 
 /**
- * Exporter Facade with exception handling
- *
+ * Exporter Facade with exception handling. Delegates all methods
+ * of the Exporter interface to an exporter object given in then
+ * constructor. Exceptions are printed to the console.
  */
 public class ShieldedExporter implements Exporter {
     
@@ -36,12 +37,16 @@ public class ShieldedExporter implements Exporter {
 		this.exporter = exporter;
 	}
 
+	/*
+	 *  Output exception on the console
+	 */
 	protected void showException(Exception e) {
+		Console.errorOutput("Export error:");
 		Console.printException(e);
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.export.Exporter#getWriter()
+	/**
+	 * Delegates to exporter.getWriter and handles exceptions 
 	 */
 	public PrintWriter getWriter() {
 		try {
@@ -52,8 +57,8 @@ public class ShieldedExporter implements Exporter {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.export.Exporter#write(java.io.PrintWriter, net.sourceforge.arbaro.export.Progress)
+	/**
+	 * Delegates to exporter.write and handles exceptions 
 	 */
 	public void write(PrintWriter w, Progress progress)  {
 		try {

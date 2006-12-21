@@ -22,6 +22,7 @@
 
 package net.sourceforge.arbaro;
 
+import net.sourceforge.arbaro.export.Console;
 import net.sourceforge.arbaro.gui.Workplace;    
 
 /**
@@ -31,7 +32,8 @@ import net.sourceforge.arbaro.gui.Workplace;
 public class arbaro_gui {
 
     public static void main(String[] args) {
-    	new Workplace();
+		Console.setOutputLevel(Console.QUIET);
+		new Workplace();
     }
 }
 

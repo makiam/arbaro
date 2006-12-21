@@ -26,16 +26,8 @@
 
 package net.sourceforge.arbaro.export;
 
-//class ProgressError extends Exception{
-//	private static final long serialVersionUID = 1L;
-//	
-//	public ProgressError(String msg) {
-//		super(msg);
-//	}
-//};
-
 /**
- * Shows progress while creating and exporting a tree
+ * Handle progress while creating and exporting a tree
  */
 public final class Progress {
 

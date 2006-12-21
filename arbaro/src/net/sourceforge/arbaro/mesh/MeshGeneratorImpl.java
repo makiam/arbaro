@@ -36,20 +36,11 @@ class MeshGeneratorImpl implements MeshGenerator {
 	
 	public boolean getUseQuads() { return useQuads; } 
 
-	public MeshGeneratorImpl(/*Params params,*/ boolean useQuads) {
+	public MeshGeneratorImpl(boolean useQuads) {
 		super();
-//		this.params = params;
 		this.useQuads = useQuads;
 	}
 	
-//	public AbstractParam getParam(String name) {
-//		return params.getParam(name);
-//	}
-	
-//	public void ParamsToXML(PrintWriter w) throws ParamException {
-//		params.toXML(w);
-//	}
-//	
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.mesh.MeshGenerator#createStemMesh(net.sourceforge.arbaro.tree.Tree, net.sourceforge.arbaro.export.Progress)
 	 */
@@ -88,17 +79,8 @@ class MeshGeneratorImpl implements MeshGenerator {
 
 		Mesh mesh = new Mesh(tree.getLevels());
 		
-		/*
-		for (int level=0; level < params.Levels; level++) {
-			Enumeration stems = allStems(level);
-			while (stems.hasMoreElements()) {
-				((Stem)stems.nextElement()).addToMesh(mesh,false,useQuads);
-				getProgress().incProgress(1);
-			}
-		}
-		*/
 		for (int level=0; level < tree.getLevels(); level++) {
-			MeshCreator meshCreator = new MeshCreator(/*params,*/ mesh, level, useQuads, progress);
+			MeshCreator meshCreator = new MeshCreator(mesh, level, useQuads, progress);
 			tree.traverseTree(meshCreator);
 		}
 			
@@ -108,8 +90,6 @@ class MeshGeneratorImpl implements MeshGenerator {
 	
 	// FIXME move to MeshFactory
 	public LeafMesh createLeafMesh(Tree tree, boolean useQuads) {
-//		double leafLength = params.LeafScale/Math.sqrt(params.LeafQuality);
-//		double leafWidth = params.LeafScale*params.LeafScaleX/Math.sqrt(params.LeafQuality);
 		return new LeafMesh(tree.getLeafShape(),
 				tree.getLeafLength(),tree.getLeafWidth(),
 				tree.getLeafStemLength(),useQuads);

@@ -200,8 +200,6 @@ public class arbaro {
 		else
 			Console.setOutputLevel(Console.VERBOSE);
 		
-//		if (quiet) progress.consoleChar=' ';
-//		else progress.consoleChar='.';
 		TreeGenerator treeGenerator = TreeGeneratorFactory.createTreeGenerator();
 		Exporter exporter;
 
@@ -226,9 +224,6 @@ public class arbaro {
 		
 		// FIXME: put here or earlier?
 		if (smooth>=0) treeGenerator.setParam("Smooth",new Double(smooth).toString());
-		
-		//tree.setSeed(seed);
-		//params.stopLevel = levels;
 		
 		PrintWriter out;
 		if (output_file == null) {

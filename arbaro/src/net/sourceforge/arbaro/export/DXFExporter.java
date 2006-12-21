@@ -164,7 +164,7 @@ final class DXFWriter {
  * Exports the mesh's faces to the DXF file
  *
  */
-class DXFFaceWriter extends DefaultTreeTraversal {
+class DXFLeafWriter extends DefaultTreeTraversal {
 	LeafMesh leafMesh;
 	VFace vFace;
 	String layer;
@@ -172,15 +172,12 @@ class DXFFaceWriter extends DefaultTreeTraversal {
 	AbstractExporter exporter;
 	Progress progress;
 	MeshGenerator meshGenerator;
-//	TraversableTree tree;
-//	long leavesProgressCount=0;
-//	boolean verbose;
-	
+
 
 	/**
 	 * 
 	 */
-	public DXFFaceWriter(AbstractExporter exporter, MeshGenerator meshGenerator, String layer) {
+	public DXFLeafWriter(AbstractExporter exporter, MeshGenerator meshGenerator, String layer) {
 		super();
 		this.layer = layer;
 		this.exporter = exporter;
@@ -218,7 +215,6 @@ class DXFFaceWriter extends DefaultTreeTraversal {
  * Exports a tree mesh as DXF file
  */
 class DXFExporter extends MeshExporter {
-	//long leavesProgressCount=0;
 	NumberFormat frm = FloatFormat.getInstance();
 	Tree tree;
 
@@ -230,7 +226,6 @@ class DXFExporter extends MeshExporter {
 		
 		super(meshFactory);
 		this.tree = tree;
-		//super(tree, pw, progress, verbose);
 	}
 
 	public void doWrite() {
@@ -287,33 +282,10 @@ class DXFExporter extends MeshExporter {
 	}
 	
 	private void writeLeafs(String layer) {
-		// FIXME: optimize speed, maybe using enumerations
-//		LeafMesh leafMesh = tree.createLeafMesh(false);
-//		VFace vFace = new VFace(new Vector(),new Vector(),new Vector());
-		
 		progress.beginPhase("Writing leaf mesh",tree.getLeafCount());
 
-		DXFFaceWriter exporter = new DXFFaceWriter(this,meshGenerator,layer);
+		DXFLeafWriter exporter = new DXFLeafWriter(this,meshGenerator,layer);
 		tree.traverseTree(exporter);
-		
-//		Enumeration leaves = tree.allLeaves();
-//		
-//		while (leaves.hasMoreElements()) {
-//			Leaf l = (Leaf)leaves.nextElement();
-//			
-//			for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
-//
-//				Face face = leafMesh.shapeFaceAt(i);
-//				for (int k=0; k<3; k++) {
-//					vFace.points[k] = l.transf.apply(
-//							leafMesh.shapeVertexAt((int)face.points[k]).point);
-//				}
-//				
-//				writeFace(vFace,layer);
-//			}
-//			
-//			incLeavesProgressCount();
-//		}
 		
 		progress.endPhase();
 	}

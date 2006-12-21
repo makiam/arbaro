@@ -67,14 +67,8 @@ class MeshCreator implements TreeTraversal {
 			
 		} else { 
 //			try {
-				//stem.addToMesh(mesh,false,useQuads);
-//				MeshPartCreator traversal = new MeshPartCreator(params, useQuads);
-//				if (stem.traverseStem(traversal)) {
-//					mesh.addMeshpart(traversal.getMeshPart());
-//				}
-				
 				// FIXME: for better performance create only
-				// one MeshPArtCreator and change stem for every stem
+				// one MeshPartCreator and change stem for every stem
 				MeshPartCreator partCreator = new MeshPartCreator(stem, /*params,*/ useQuads);
 				MeshPart meshpart = partCreator.createMeshPart(progress);
 				if (meshpart != null) {

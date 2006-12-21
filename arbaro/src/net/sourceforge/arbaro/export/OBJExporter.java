@@ -63,24 +63,6 @@ class OBJLeafWriterBase extends DefaultTreeTraversal {
 		this.tree = tree;
 		return true;
 	}
-	
-	/*
-	void incLeavesProgressCount() {
-		if (leavesProgressCount++ % 500 == 0) {
-			progress.incProgress(500);
-			if (tree.params.verbose) System.err.print(".");
-		}
-	}
-	
-	void writeVector(Vector v) {
-		// FIXME: why I cannot get a FloatFormat instance
-		// when creating the class?
-		// NumberFormat fmt = FloatFormat.getInstance();
-		w.print("<"+fmt.format(v.getX())+","
-		+fmt.format(v.getZ())+","
-		+fmt.format(v.getY())+">");
-	}
-*/
 }
 
 /**
@@ -199,15 +181,6 @@ class OBJLeafVertexWriter extends OBJLeafWriterBase {
 		return true;
 	}
 
-	/*
-	private void incVertexProgressCount() {
-		if (vertexProgressCount++ % 100 == 0) {
-			progress.incProgress(100);
-			if (verbose) System.err.print(".");
-		}
-	}
-	*/
-	
 	private void writeVertex(Vector v, String type) {
 		w.println(type+" "
 				+fmt.format(v.getX())+" "
@@ -248,21 +221,6 @@ final class OBJExporter extends MeshExporter {
 		super(meshGenerator);
 		this.tree = tree;
 	}
-/*
-	private void incVertexProgressCount() {
-		if (vertexProgressCount++ % 100 == 0) {
-			progress.incProgress(100);
-			progress.consoleProgress();
-		}
-	}
-	
-	private void incFaceProgressCount() {
-		if (faceProgressCount++ % 500 == 0) {
-			progress.incProgress(500);
-			progress.consoleProgress();
-		}
-	}
-	*/
 	
 	public void doWrite()  {
 		smoothingGroup=1;
@@ -357,25 +315,6 @@ final class OBJExporter extends MeshExporter {
 					vertexOffset, type);
 			tree.traverseTree(vertexExporter);
 			vertexOffset = vertexExporter.leafVertexOffset;
-/*
-			// vertex and normal vectors
-			Enumeration leaves = tree.allLeaves();
-			
-			while (leaves.hasMoreElements()) {
-				Leaf l = (Leaf)leaves.nextElement();
-				
-				for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
-					
-					if (type=="v") {
-						writeVertex(l.transf.apply(leafMesh.shapeVertexAt(i).point),type);
-					} else {
-						writeVertex(l.transf.apply(leafMesh.shapeVertexAt(i).normal),type);
-					}
-				}
-				
-				incVertexProgressCount();
-			}
-			*/
 		}
 	}
 	
@@ -385,7 +324,6 @@ final class OBJExporter extends MeshExporter {
 		// output mesh triangles
 		vertexOffset = 1;
 		//boolean separate_trunk = false;
-//		int levels = tree.getLevels();
 		for (int stemLevel = 0; stemLevel<tree.getLevels(); stemLevel++) {
 		
 			// => start a new group
@@ -422,41 +360,7 @@ final class OBJExporter extends MeshExporter {
 			}
 		}
 	}
-/*	
-	private void writeLeafFaces() {
-		
-//		long leafFaceOffset=0;
-		
-		Enumeration leaves = tree.allLeaves();
-		
-		if (leaves.hasMoreElements()) {
-			
-			w.println("g leaves");
-			w.println("usemtl leaves");
-//			uvVertexOffset++;
-		
-			while (leaves.hasMoreElements()) {
-				// only leaf number is needed here
-				Leaf l = (Leaf)leaves.nextElement();
-				
-				w.println("s "+smoothingGroup++);
-				for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
-					Face face = leafMesh.shapeFaceAt(i);
-					writeFace(
-							face,vertexOffset,
-							face,uvVertexOffset,
-							outputLeafUVs,outputNormals);
-				}
-				
-				// increment face offset
-				vertexOffset += leafMesh.getShapeVertexCount();
-				
-				incFaceProgressCount();
-			}
-		}
-		
-	}
-	*/
+
 	private void writeVertex(Vector v, String type) {
 		w.println(type+" "
 				+frm.format(v.getX())+" "

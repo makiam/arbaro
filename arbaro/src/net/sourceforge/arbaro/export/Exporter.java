@@ -27,15 +27,6 @@ package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 
-/*class ExportError extends RuntimeException {
-	private static final long serialVersionUID = 1L;
-
-    public ExportError(String msg) {
-	super(msg);
-    }
-};
-*/
-
 /**
  * Base class for tree output to 3D-formats like Povray, DXF 
  * and Wavefront OBJ file formats

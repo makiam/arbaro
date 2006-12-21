@@ -60,14 +60,6 @@ class POVMeshLeafWriterBase extends DefaultTreeTraversal {
 			return true;
 		}
 		
-		/*
-		void incLeavesProgressCount() {
-			if (leavesProgressCount++ % 500 == 0) {
-				progress.incProgress(500);
-				if (tree.params.verbose) System.err.print(".");
-			}
-		}
-		*/
 		void writeVector(Vector v) {
 			w.print("<"+fmt.format(v.getX())+","
 			+fmt.format(v.getZ())+","
@@ -313,39 +305,7 @@ class POVMeshExporter extends MeshExporter {
 			w.flush();
 	}
 	
-/*	private void incStemsProgressCount() {
-		if (stemsProgressCount++ % 100 == 0) {
-			progress.incProgress(100);
-			if (tree.params.verbose) System.err.print(".");
-		}
-	}
-	*/
-	/*
-	private void incLeavesProgressCount() {
-		if (leavesProgressCount++ % 500 == 0) {
-			progress.incProgress(500);
-			if (tree.params.verbose) System.err.print(".");
-		}
-	}
-	*/
-	
-	/**
-	 * Returns a prefix for the Povray objects names,
-	 * it consists of the species name and the random seed
-	 * 
-	 * @return the prefix string
-	 */
-	/*
-	private String povrayDeclarationPrefix() {
-		return tree.params.Species + "_" + tree.params.Seed + "_";
-	}
-	*/
-	
 	private void writeLeaves() {
-		//    	double leafLength = tree.params.LeafScale/Math.sqrt(tree.params.LeafQuality);
-		//    	double leafWidth = tree.params.LeafScale*tree.params.LeafScaleX/Math.sqrt(tree.params.LeafQuality);
-		//    	LeafMesh mesh = new LeafMesh(tree.params.LeafShape,leafLength,leafWidth,tree.params.LeafStemLen);
-		
 		leafMesh = meshGenerator.createLeafMesh(tree,false /* don't use Quads */);
 
 		int passes = 2; 
@@ -411,154 +371,6 @@ class POVMeshExporter extends MeshExporter {
 		progress.endPhase();
 	}	
 	
-//	/**
-//	 * 	Outputs Povray code points section of the mesh2 object for the leaves
-//	 *  
-//	 * @param w the output stream
-//	 * @param mesh the mesh object
-//	 * @throws Exception
-//	 */
-	/*
-	private void writeLeavesPoints() throws Exception {
-		Enumeration leaves = tree.allLeaves();
-		String indent = "    ";
-		
-		while (leaves.hasMoreElements()) {
-			Leaf l = (Leaf)leaves.nextElement();
-			
-			for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
-				writeVector(l.transf.apply(leafMesh.shapeVertexAt(i).point));
-				
-				if (i<leafMesh.getShapeVertexCount()-1) {
-					w.print(",");
-				}
-				if (i % 3 == 2) {
-					// new line
-					w.println();
-					w.print(indent+"          ");
-				} 
-			}
-			
-			incLeavesProgressCount();
-		}
-	}
-	*/
-	
-//	/**
-//	 * Outputs Povray code points section of the mesh2 object for the leaves
-//	 * 
-//	 * @param w the output stream
-//	 * @param mesh the mesh object
-//	 * @throws Exception
-//	 */
-	/*
-	private void writeLeavesFaces() throws Exception {
-		Enumeration leaves = tree.allLeaves();
-		String indent = "    ";
-		
-		while (leaves.hasMoreElements()) {
-			// only leaf number is needed here
-			Leaf l = (Leaf)leaves.nextElement();
-			
-			for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
-				Face face = leafMesh.shapeFaceAt(i);
-				w.print("<" + (leafVertexOffset+face.points[0]) + "," 
-						+ (leafVertexOffset+face.points[1]) + "," 
-						+ (leafVertexOffset+face.points[2]) + ">");
-				if (i<leafMesh.getShapeFaceCount()-1) {
-					w.print(",");
-				}
-				if (i % 6 == 4) {
-					// new line
-					w.println();
-					w.print(indent + "          ");
-				}
-			}
-			w.println();
-			
-			// increment face offset
-			leafVertexOffset += leafMesh.getShapeVertexCount();
-			
-			incLeavesProgressCount();
-		}
-	}
-	*/
-
-//	/**
-//	 * Outputs Povray code uv indices section of the mesh2 object for the leaves
-//	 * 
-//	 * @param w the output stream
-//	 * @param mesh the mesh object
-//	 * @throws Exception
-//	 */
-	/*
-	private void writeLeavesUVFaces() throws Exception {
-		Enumeration leaves = tree.allLeaves();
-		String indent = "    ";
-		
-		while (leaves.hasMoreElements()) {
-			// only leaf number is needed here
-			Leaf l = (Leaf)leaves.nextElement();
-			
-			for (int i=0; i<leafMesh.getShapeFaceCount(); i++) {
-				Face face = leafMesh.shapeFaceAt(i);
-				w.print("<" + (*//*leafFaceOffset+*//*face.points[0]) + "," 
-						+ (*//*leafFaceOffset+*//*face.points[1]) + "," 
-						+ (*//*leafFaceOffset+*//*face.points[2]) + ">");
-				if (i<leafMesh.getShapeFaceCount()-1) {
-					w.print(",");
-				}
-				if (i % 6 == 4) {
-					// new line
-					w.println();
-					w.print(indent + "          ");
-				}
-			}
-			w.println();
-			
-			// increment face offset
-			//leafFaceOffset += leafMesh.getShapeVertexCount();
-			
-			incLeavesProgressCount();
-		}
-	}
-	*/
-	
-//	/**
-//	 * Outputs Povray code normals section of the mesh2 object for the leaves
-//	 *  
-//	 * @param w the output stream
-//	 * @param mesh the mesh object
-//	 * @throws Exception
-//	 */
-	/*
-	private void writeLeavesNormals() throws Exception {
-		Enumeration leaves = tree.allLeaves();
-		String indent = "    ";
-		
-		while (leaves.hasMoreElements()) {
-			Leaf l = (Leaf)leaves.nextElement();
-			
-			for (int i=0; i<leafMesh.getShapeVertexCount(); i++) {
-				writeVector(l.transf.apply(leafMesh.shapeVertexAt(i).normal));
-				
-				if (i<leafMesh.getShapeVertexCount()-1) {
-					w.print(",");
-				}
-				if (i % 3 == 2) {
-					// new line
-					w.println();
-					w.print(indent+"          ");
-				} 
-			}
-			
-			incLeavesProgressCount();
-			throw new Exception("Not implemented: if using normals for leaves use factor "+
-			"3 instead of 2 in progress.beginPhase");
-		}
-	}
-	*/
-	
 	private void writeStems() {
 		String indent="  ";
 		
@@ -598,24 +410,15 @@ class POVMeshExporter extends MeshExporter {
 		// output uv vectors
 		if (outputStemUVs) {
 			w.println(indent + "  uv_vectors {  " + uv_cnt);
-//			for (int i=0; i<mesh.firstMeshPart.length; i++) {
-//				if (mesh.firstMeshPart[i]>=0) {
-//					writeStemUVs((MeshPart)mesh.elementAt(mesh.firstMeshPart[i]),indent);
-					writeStemUVs(/*indent*/);
-					w.println();
-//				}
-				//FIXME incStemsProgressCount();
-//			}	
+			writeStemUVs(/*indent*/);
+			w.println();
 			w.println(indent+"  }");
 		}
 		
 		// output mesh triangles
 		w.println(indent + "  face_indices { " + face_cnt);
-			writeStemFaces(false/*,indent*/);
-			w.println();
-			
-//FIXME			incStemsProgressCount();
-			
+		writeStemFaces(false/*,indent*/);
+		w.println();
 		w.println(indent + "  }");
 		
 
@@ -776,12 +579,6 @@ class POVMeshExporter extends MeshExporter {
 		w.println();
 	}
 
-	
-//	public void writeSectionPoints(MeshSection ms, String indent) {
-//	}
-	
-//	public void writeSectionNormals(MeshSection ms, String indent) {
-//	}
 	private void writeVector(Vector v) {
 		w.print("<"+fmt.format(v.getX())+","
 		+fmt.format(v.getZ())+","

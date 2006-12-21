@@ -36,11 +36,11 @@ import java.lang.Math;
  * 
  * @author Wolfram Diestel
  */
-public class Transformation {
-	public final int X=0;
-	public final int Y=1;
-	public final int Z=2;
-	public final int T=3;
+public final class Transformation {
+	public static final int X=0;
+	public static final int Y=1;
+	public static final int Z=2;
+	public static final int T=3;
 	
 	Matrix matrix;
 	Vector vector;

@@ -58,44 +58,9 @@ class SubsegmentImpl implements StemSection {
 		return segment.transf.getZ();
 	}
 	
-	/*
-	public double getHeight() {
-		return dist;
-	}
-	*/
-	
 	public double getDistance() {
 		return segment.index * segment.length + dist;
 	}
-	
-	/*public Subsegment getNext() {
-		return next;
-	}
-	*/
-	
-	/*public StemSection getNext() {
-		if (next != null)
-			return next;
-		else
-			return segment.
-	}
-	*/
-	/*public boolean isLastSubsegment() {
-		return (next==null);
-	}
-	*/
-	
-	/* Last section of the stem? */
-//	public boolean isLast() {
-//		return (segment.isLastStemSegment() && next==null);
-//	}
-//	
-//	/* Last section of the stem? */
-//	public boolean isFirst() {
-//		return false; // first StemSection always is the first segment itself
-//		// return (segment.isFirstStemSegment() && prev==null);
-//	}
-	
 	
 	public SubsegmentImpl(Vector p, double r, double h, SegmentImpl segment) {
 		pos = p;
@@ -104,32 +69,13 @@ class SubsegmentImpl implements StemSection {
 		this.segment = segment;
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TraversableSubsegment#traverseStem(net.sourceforge.arbaro.tree.StemTraversal)
-	 */
-//	public boolean traverseStem(StemTraversal traversal) {
-//	    return traversal.visitSubsegment(this);
-//	}
-	
-	
 	public Vector[] getSectionPoints() {
 		Params par = segment.par;
 		LevelParams lpar = segment.lpar;
 
 		int pt_cnt = lpar.mesh_points;
 		Vector[] points;
-//	private void createSectionMeshpoints(StemSection sec,double rad, 
-//			boolean donttrf, double vMap) {
-		//h = (self.index+where)*self.stem.segment_len
-		//rad = self.stem.stem_radius(h)
-		// self.stem.DBG("MESH: pos: %s, rad: %f\n"%(str(pos),rad))
-		
-		// System.err.println("Segment-create meshpts, pos: "+pos+" rad: "+rad);
-		
-		//LevelParams lpar = params.levelParams[stem.getLevel()]; //segment.lpar;
-//		Vector pos = sec.getPosition();
 		Transformation trf = getTransformation(); //segment.getTransformation().translate(pos.sub(segment.getLowerPosition()));
-		//self.stem.TRF("MESH:",trf)
 		
 		// if radius = 0 create only one point
 		if (rad<0.000001) {
@@ -151,9 +97,6 @@ class SubsegmentImpl implements StemSection {
 				Vector pt = new Vector(Math.cos(angle*Math.PI/180),Math.sin(angle*Math.PI/180),0);
 				// scale it to stem radius
 				if (lpar.level==0 && (par.Lobes != 0 || par._0ScaleV !=0)) {
-					// self.stem.DBG("MESH+LOBES: angle: %f, sinarg: %f, rad: %f\n"%(angle, \
-					//self.tree.Lobes*angle*pi/180.0, \
-					//	rad*(1.0+self.tree.LobeDepth*cos(self.tree.Lobes*angle*pi/180.0))))
 					double rad1 = rad * (1 + 
 							par.random.uniform(-par._0ScaleV,par._0ScaleV)/
 							segment.getSubsegmentCount());
@@ -175,8 +118,5 @@ class SubsegmentImpl implements StemSection {
 		
 		return points;
 	}
-
-	
-
 
 }

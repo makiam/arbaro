@@ -105,13 +105,6 @@ public class MeshPart extends java.util.Vector {
 					uvVertexOffset += ms.size()==1? 1 : ms.size()+1;
 					ms = ms.next;
 				}
-//				
-//				for (MeshSection ms=((MeshSection)mp.elementAt(1)); // ignore root vertex
-//					ms.next.segment.getIndex() < sec.segment.getIndex();
-//					ms = ms.next) {
-//					
-//					uvVertexOffset += ms.size()==1? 1 : ms.size()+1;
-//				}
 				
 				startIndex += uvVertexOffset;
 			}
@@ -521,55 +514,6 @@ public class MeshPart extends java.util.Vector {
 		return faces;
 	}
 
-/*	
-	public java.util.Vector uvFaces(MeshSection section) throws ErrorMesh {
-		MeshSection next = section.next;
-		java.util.Vector faces = new java.util.Vector();
-		
-		if (section.size() ==1 && next.size() == 1) {
-			// normaly this shouldn't occur, only for very small radius?
-			// I should warn about this
-			System.err.println("WARNING: two adjacent mesh sections with only one point.");
-			return faces;
-		}
-		
-		if (section.size() == 1) {
-			for (int i=0; i<next.size(); i++) {
-				faces.addElement(new UVFace(
-							section.uvAt(0),
-							next.uvAt(i),
-							next.uvAt(i+1)
-							));
-			}
-		} else if (next.size() == 1) {
-			for (int i=0; i<section.size(); i++) {
-				faces.addElement(new UVFace(
-						section.uvAt(i),
-						next.uvAt(0),
-						section.uvAt(i+1)
-						));
-			}
-		} else { // section and next must have same point_cnt>1!!!
-			if (section.size() != next.size()) {
-				throw new ErrorMesh("Error: vertice numbers of two sections "
-						+ "differ ("+section.size()+","+next.size()+")");
-			}
-			for (int i=0; i<section.size(); i++) {
-				faces.addElement(new UVFace(
-						section.uvAt(i),
-						next.uvAt(i),
-						section.uvAt(i+1)
-						));
-				faces.addElement(new UVFace(
-						section.uvAt(i+1),
-						next.uvAt(i),
-						next.uvAt(i+1)));
-			}
-		}
-		return faces;
-	}
-*/
-	
 };
 
 

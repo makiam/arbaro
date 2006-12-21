@@ -41,6 +41,7 @@ import net.sourceforge.arbaro.tree.*;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.mesh.*;
 import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.export.Console;
 
 /**
  * An image showing parts of the edited tree
@@ -85,12 +86,11 @@ public class TreePreview extends JComponent {
 	public void paint(Graphics g) {
 		if (previewTree.getMesh() == null) {
 			try {
-				previewTree.remake();
+				previewTree.remake(false);
 			} catch (Exception e) {
-				System.err.println(e);
-				e.printStackTrace();
+				Console.printException(e);
 			}
-			return;
+			// return;
 		}
 		
 		Graphics2D g2 = (Graphics2D)g;
@@ -412,38 +412,6 @@ public class TreePreview extends JComponent {
 		}
 	}
 	
-/*
- 	private void drawLeaves(Graphics g) {
-		LeafMesh m = previewTree.createLeafMesh(false);
-		Enumeration leaves = previewTree.allLeaves();
-		
-		g.setColor(leafColor);
-		while (leaves.hasMoreElements()) {
-			Leaf l = (Leaf)leaves.nextElement();
-			
-			if (m.isFlat()) {
-				Vector p = l.getTransformation().apply(m.shapeVertexAt(m.getShapeVertexCount()-1).point);
-			
-				for (int i=0; i<m.getShapeVertexCount(); i++) {
-					Vector q = l.getTransformation().apply(m.shapeVertexAt(i).point);
-					drawLine(g,p,q);
-					p=q;
-				}
-			} else {
-				for (int i=0; i<m.getShapeFaceCount(); i++) {
-					Face f = m.shapeFaceAt(i);
-					Vector p = l.getTransformation().apply(m.shapeVertexAt((int)f.points[0]).point);
-					Vector q = l.getTransformation().apply(m.shapeVertexAt((int)f.points[1]).point);
-					Vector r = l.getTransformation().apply(m.shapeVertexAt((int)f.points[2]).point);
-					drawLine(g,p,q);
-					drawLine(g,p,r);
-					drawLine(g,r,q);
-				}
-				
-			}
-		}
-	}
-*/
 	
 	void drawLine(Graphics g,Vector p, Vector q) {
 		// FIXME: maybe eliminate class instantiations
@@ -462,9 +430,6 @@ public class TreePreview extends JComponent {
 		transform.transform(from,ifrom);
 		transform.transform(to,ito);
 		
-//		g.drawLine(xInt(u.getX()),yInt(u.getZ()),
-//				xInt(v.getX()),yInt(v.getZ()));
-
 		g.drawLine(ifrom.x,ifrom.y,ito.x,ito.y);
 	}
 	
@@ -508,30 +473,4 @@ public class TreePreview extends JComponent {
 			return true;
 		}
 	}
-	
-	/*
-	private void drawStems(Graphics g) {
-		g.setColor(otherLevelColor);
-		for (Enumeration stems=previewTree.allStems(-1); stems.hasMoreElements();) {
-			drawSegments(g, (Stem)stems.nextElement());
-		}
-	}
-	
-	private void drawSegments(Graphics g, Stem s) {
-		for (Enumeration segments=s.stemSegments(); segments.hasMoreElements();) {
-			Segment seg = (Segment)segments.nextElement();
-			// FIXME: maybe draw rectangles instead of thin lines
-			//drawStripe(g,seg.posFrom(),seg.rad1,seg.postTo(),seg.rad2());
-			drawLine(g,seg.posFrom(),seg.posTo());
-		}
-	}
-	*/
-	
-//	int xInt(double x) {
-//		return (int)Math.round(xoff+xscale*x);
-//	}
-//	
-//	int yInt(double y) {
-//		return (int)Math.round(yoff+yscale*y);
-//	}
 }

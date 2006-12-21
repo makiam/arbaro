@@ -22,29 +22,51 @@
 
 package net.sourceforge.arbaro.tree;
 
-/*
-class TraversalException extends ArbaroError{
-	public TraversalException(String errmsg) {
-		super(errmsg);
-	} 
-};
-*/
-
 /**
- * An interface, for traversal of the stems and 
+ * An interface, for traversal through the stems and 
  * leaves of a tree. (Compare Hierarchical Visitor Pattern)
  * 
- * @author Wolfram Diestel
  */
 
 public interface TreeTraversal {
-	   boolean enterTree(Tree tree); // going into a Tree
-       boolean leaveTree(Tree tree); // coming out of a Tree
-	   boolean enterStem(Stem stem); // going into a Stem
-       boolean leaveStem(Stem stem); // coming out of a Stem
-	/*   boolean enterSegment(Segment segment) throws TraversalException; // going into a Stem
-       boolean leaveSegment(Segment segment) throws TraversalException; // coming out of a Stem
-       boolean visitSubsegment(Subsegment subsegment) throws TraversalException; // process a Subsegment
-       */
-       boolean visitLeaf(Leaf leaf); // process a Leaf
+	
+	/**
+	 * going into a Tree
+	 * 
+	 * @param tree
+	 * @return when false, stop traversal at this level
+	 */
+	boolean enterTree(Tree tree); 
+	
+	/**
+	 * coming out of a Tree
+	 * 
+	 * @param tree
+	 * @return when false, stop traversal at this level
+	 */
+	boolean leaveTree(Tree tree);
+	
+	/**
+	 * going into a Stem
+	 * 
+	 * @param stem
+	 * @return when false, stop traversal at this level
+	 */
+	boolean enterStem(Stem stem);
+	
+	/**
+	 * coming out of a Stem
+	 * 
+	 * @param stem
+	 * @return when false, stop traversal at this level
+	 */
+	boolean leaveStem(Stem stem);
+	
+	/**
+	 * passing a Leaf
+	 * 
+	 * @param leaf
+	 * @return when false, stop traversal at this level
+	 */
+	boolean visitLeaf(Leaf leaf); 
 }

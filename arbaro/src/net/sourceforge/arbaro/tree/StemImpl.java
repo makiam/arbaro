@@ -47,102 +47,8 @@ class NotYetImplementedError extends ArbaroException{
 
 
 /**
- * Enumeration class that returns a list of stems and all theire substems
- * and clones recursively.
- */
-/*
-class StemEnumerator implements Enumeration {
-	private Enumeration stems;
-	private Enumeration indepth;
-	private int level; // level<0 means enumeration of all stems of all levels
-	// level>=0 means enumeration of stems of the given level only
-	private int stemlevel;
-*/	
-	/**
-	 * creates a new StemEnumerator instance
-	 * 
-	 * @param aLevel if given, than enumerate only stems of this level, if less than 0 enumerate stems of all levels
-	 * @param startEnum the initial list of stems to enumerate
-	 */
-/*
-	public StemEnumerator(int aLevel, Enumeration startEnum, int aStemLevel) {
-		stems = startEnum;
-		indepth = null;
-		level = aLevel; // the level of the requested stems
-		stemlevel = aStemLevel; // the level of "stems"
-	}
-	
-	public boolean hasMoreElements() {
-		if (level<0) {
-			// enumerate all levels
-			// So are there more stems
-			// on this level or on some higher level?
-			return stems.hasMoreElements() ||
-			(indepth != null && indepth.hasMoreElements());
-		} else if (level>stemlevel) {
-			find_stem_with_substems();
-			return indepth != null && indepth.hasMoreElements();
-		} else if (level==stemlevel) {
-			// consider clones and siblings
-			return (indepth != null && indepth.hasMoreElements()) ||
-			stems.hasMoreElements();
-		} else {
-			// shouldn't go here?
-			return false;
-		}
-	}
-	*/
-	/**
-	 * Go through the stems enumeration and find a stem which has substems
-	 */
-/*
-	private void find_stem_with_substems() {
-		while ((indepth==null || !indepth.hasMoreElements()) &&
-				stems.hasMoreElements()) {
-			Stem s = (Stem)stems.nextElement();
-			indepth = s.allStems(level);
-		}
-	}
-	
-	public Object nextElement() {
-		if (indepth != null && indepth.hasMoreElements()) {
-			return indepth.nextElement();
-		} else {
-			// there are no more substems on this stem,
-			// so proceed to the next stem
-			if (level<0) { // consider all levels
-				Stem s = (Stem)stems.nextElement();
-				indepth = s.allStems(level);
-				return s;
-			} else if (level>stemlevel) {
-				find_stem_with_substems();
-				// FIXME: when indepth==null, wrong Exception type
-				// is raised
-				return indepth.nextElement();
-			} else if (level==stemlevel) {
-				// consider clones
-				if (indepth != null && indepth.hasMoreElements()) {
-					return indepth.nextElement();
-				} else { // next sibling
-					Stem s = (Stem)stems.nextElement();
-					indepth = s.allStems(level);
-					return s;
-				}
-			} else {
-				// shouldn't go here?
-				throw new NoSuchElementException("AllStemsEnumerator");
-			}
-		}
-	}
-}
-*/
-
-// TODO the generation algorithm should be moved to a
-// TreeFactory class (or package)
-
-/**
- * A helper class for making 3d trees, this class makes a stem
- * (trunk or branch). Most of the generation algorithm is here.
+ * This class makes a stem (trunk or branch). 
+ * Most of the Jason&Weber tree generation algorithm is here.
  * 
  * @author Wolfram Diestel
  * 
@@ -207,19 +113,6 @@ class StemImpl implements Stem {
 	private class SectionsEnumerator implements Enumeration {
 		private Enumeration segments;
 		private Enumeration subsegments;
-		//private int level;
-		
-		//	    private class SubstemEnumerator extends StemEnumerator {
-		//	    	public SubstemEnumerator(int level) {
-		//	    		super(level,substems.elements());
-		//	    	}
-		//	    }
-		//
-		//	    private class CloneEnumerator extends StemEnumerator {
-		//	    	public CloneEnumerator(int level) {
-		//	    		super(level,clones.elements());
-		//	    	}
-		//	    }
 		
 		public SectionsEnumerator(StemImpl stem) {
 			segments = stem.segments.elements();
@@ -254,117 +147,11 @@ class StemImpl implements Stem {
 		}
 	}
 	
-	/*
-	private class AllStemsEnumerator implements Enumeration {
-		private Enumeration subst;
-		private Enumeration clon;
-		//private int level;
-		
-		//	    private class SubstemEnumerator extends StemEnumerator {
-		//	    	public SubstemEnumerator(int level) {
-		//	    		super(level,substems.elements());
-		//	    	}
-		//	    }
-		//
-		//	    private class CloneEnumerator extends StemEnumerator {
-		//	    	public CloneEnumerator(int level) {
-		//	    		super(level,clones.elements());
-		//	    	}
-		//	    }
-		
-		public AllStemsEnumerator(int level) {
-			if ((level<=0 || level>stemlevel) && substems != null) {
-				subst = new StemEnumerator(level,substems.elements(),stemlevel+1);
-			}
-			if (clones != null) {
-				clon = new StemEnumerator(level,clones.elements(),stemlevel);
-			}
-		}
-		
-		public boolean hasMoreElements() {
-			return (subst != null && subst.hasMoreElements()) ||
-			(clon != null && clon.hasMoreElements());
-		}
-		
-		public Object nextElement() {
-			if (clon != null && clon.hasMoreElements()) {
-				return clon.nextElement();
-			} else if (subst != null && subst.hasMoreElements()) {
-				return subst.nextElement();
-			} else {
-				throw new NoSuchElementException("AllStemsEnumerator");
-			}
-		}
-		
-		
-	}
-	
-	private class AllLeavesEnumerator implements Enumeration {
-		Enumeration stems;
-		Stem stem;
-		Enumeration leaves;
-		
-		public AllLeavesEnumerator() {
-			stems = allStems(-1);
-			stem = null;
-			leaves=null;
-		}
-		
-		public boolean hasMoreElements() {
-			find_stem_with_leaves();
-			
-			return leaves!=null && leaves.hasMoreElements();
-		}
-		
-		private void find_stem_with_leaves() {
-			while ((leaves==null || !leaves.hasMoreElements()) &&
-					stems.hasMoreElements()) {
-				stem = (Stem)stems.nextElement();
-				if (stem.leaves != null) leaves = stem.leaves.elements();
-				else leaves = null;
-			}
-		}
-		
-		public Object nextElement() {
-			// if necessary this will find the next stem with leaves...
-			if (hasMoreElements()) {
-				return leaves.nextElement();
-			} else {
-				throw new NoSuchElementException("LeafEnumerator");
-			}
-		}
-	}
-	*/
 	
 	public java.util.Enumeration sections() {
 		return new SectionsEnumerator(this);
 	}
 	
-	/**
-	 * Returns an enumeration of the stem itself an all
-	 * it's substems and clones. If level is giben only
-	 * substems of this level are enumerated.
-	 * 
-	 * @param level
-	 * @return
-	 */
-	/*
-	public Enumeration allStems(int level) {
-		return new AllStemsEnumerator(level);
-	}
-	
-	/**
-	 * Returns an enumeration of all leaves of the stem
-	 * itself (if it is of the last stem level) or all 
-	 * it's substems and clones.
-	 * 
-	 * @return
-	 */
-	/*
-	public Enumeration allLeaves() {
-		return new AllLeavesEnumerator();
-	}
-	*/
 	
 	/**
 	 * Returns an enumeration of the segments of the stem
@@ -498,17 +285,24 @@ class StemImpl implements Stem {
 		return pos;
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TraversableStem#getLevel()
+	/**
+	 * 
+	 * @return get the level of this stem, 0 means it is a trunk
 	 */
 	public int getLevel() {
 		return stemlevel;
 	}
 	
+	/**
+	 * @return the radius at the stem base
+	 */
 	public double getBaseRadius() {
 		return ((SegmentImpl)segments.elementAt(0)).rad1;
 	}
 	
+	/**
+	 * @return the radius at the stem peak
+	 */
 	public double getPeakRadius() {
 		return ((SegmentImpl)segments.elementAt(segments.size()-1)).rad2;
 	}
@@ -685,7 +479,7 @@ class StemImpl implements Stem {
 		
 		//if (par.verbose) {
 		if (! pruneTest) {
-			if (stemlevel==0) System.err.print("=");
+			if (stemlevel==0) Console.progressChar('=');
 			else if (stemlevel==1 && start_seg==0) Console.progressChar('/');
 			else if (stemlevel==2 && start_seg==0) Console.progressChar();
 		}
@@ -1177,8 +971,8 @@ class StemImpl implements Stem {
 				trf = trf.translate(segment.transf.getZ().mul(where*segmentLength));
 				
 				// create new leaf
-				LeafImpl leaf = new LeafImpl(par,trf); // ,loffs);
-				leaf.make();
+				LeafImpl leaf = new LeafImpl(trf); // ,loffs);
+				leaf.make(par);
 				leaves.addElement(leaf);
 				
 			}
@@ -1199,8 +993,8 @@ class StemImpl implements Stem {
 			// use different method for odd and even number
 			if (cnt%2 == 1) {
 				// create one leaf in the middle
-				LeafImpl leaf = new LeafImpl(par,trf); //,segmentCount*segmentLength);
-				leaf.make();
+				LeafImpl leaf = new LeafImpl(trf); //,segmentCount*segmentLength);
+				leaf.make(par);
 				leaves.addElement(leaf);
 				offsetangle = distangle;
 			} else {
@@ -1212,8 +1006,8 @@ class StemImpl implements Stem {
 					Transformation transf1 = trf.roty(rot*(offsetangle+s*distangle
 							+lpar_1.var(varangle)));
 					transf1 = transf1.rotx(downangle+lpar_1.var(vardown));
-					LeafImpl leaf = new LeafImpl(par,transf1); //,segmentCount*segmentLength);
-					leaf.make();
+					LeafImpl leaf = new LeafImpl(transf1); //,segmentCount*segmentLength);
+					leaf.make(par);
 					leaves.addElement(leaf);
 				}
 			}
@@ -1350,60 +1144,10 @@ class StemImpl implements Stem {
 	 # an umbrella formed acacia (don't know the english name of that trees) isn't
 	 */
 	
-	
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TraversableStem#traverseTree(net.sourceforge.arbaro.tree.TreeTraversal)
-	 */
-	/*
-	// TODO should be obsolete, when TreeTraversals are working
-	void addToMesh(Mesh mesh, boolean withSubstems, boolean useQuads) throws Exception {
-		
-		if (par.verbose) {
-			if (stemlevel<=1 && cloneIndex.size()==0) System.err.print(".");
-		}
-		
-		//String indent = "    ";
-		
-		// create mesh part for myself
-		if (segments.size()>0) {
-			MeshPart meshpart = new MeshPart(this,stemlevel<=par.smooth_mesh_level, useQuads);
-			for (int i=0; i<segments.size(); i++) {
-				((Segment)segments.elementAt(i)).addToMeshpart(meshpart);
-			}
-			mesh.addMeshpart(meshpart);
-		}
-		
-		if (withSubstems) {
-			// add clones to the mesh
-			if (clones != null) {
-				for (int i=0; i<clones.size(); i++) {
-					((Stem)clones.elementAt(i)).addToMesh(mesh,withSubstems, useQuads);
-				}
-			}
-			
-			if (substems != null) {
-				tree.getProgress().incProgress(substems.size());
-				
-				for (int i=0; i<substems.size(); i++) {
-					((Stem)substems.elementAt(i)).addToMesh(mesh,withSubstems, useQuads);
-				}
-			}
-		}
-	}
-	*/
-	
 	public boolean traverseTree(TreeTraversal traversal) {
 	    if (traversal.enterStem(this))  // enter this tree?
         {
 	    
-/*            if (segments != null) {
-            		Enumeration s = segments.elements();
-            		while (s.hasMoreElements())
-            			if (! ((Segment)s.nextElement()).accept(traversal))
-            				break;
-            }
-            */
-            
             if (leaves != null) {
             		Enumeration l = leaves.elements();
             		while (l.hasMoreElements())
@@ -1429,24 +1173,6 @@ class StemImpl implements Stem {
         return traversal.leaveStem(this);
 	}
 	
-	
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TraversableStem#traverseStem(net.sourceforge.arbaro.tree.StemTraversal)
-	 */
-//	public boolean traverseStem(StemTraversal traversal) {
-//	    if (traversal.enterStem(this))  // enter this stem?
-//        {
-//	    
-//            if (segments != null) {
-//            		Enumeration s = segments.elements();
-//            		while (s.hasMoreElements())
-//            			if (! ((Segment)s.nextElement()).traverseStem(traversal))
-//            				break;
-//            }
-//        }
-//	    
-//	    	return traversal.leaveStem(this);
-//    	}
     	
 	/**
 	 *  Returns the total number of all the substems and substems of substems a.s.o.
@@ -1465,38 +1191,6 @@ class StemImpl implements Stem {
 		return sum;
 	}
 	
-	// will be obsolet, when TreeTraversals are working
-	/*
-	long leafCount() {
-		long sum = 0;
-		
-		// last level add all leaves
-		if (stemlevel==par.Levels-1) {
-			sum = leaves.size();
-			
-			if (clones != null) {
-				for (int i=0; i<clones.size(); i++) {
-					sum += ((Stem)clones.elementAt(i)).leafCount();
-				}
-			}
-			
-		}
-		
-		// recursive call to substems
-		else {
-			for (int i=0; i<substems.size(); i++) {
-				sum += ((Stem)substems.elementAt(i)).leafCount();
-			}
-			if (clones != null) {
-				for (int i=0; i<clones.size(); i++) {
-					sum += ((Stem)clones.elementAt(i)).leafCount();
-				}	  	
-			}
-		}
-		
-		return sum;
-	}
-	*/
 	
 	// use with TreeTraversal
 	/* (non-Javadoc)

@@ -55,12 +55,9 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.sourceforge.arbaro.mesh.MeshGenerator;
-import net.sourceforge.arbaro.mesh.MeshGeneratorFactory;
 import net.sourceforge.arbaro.params.*;
-import net.sourceforge.arbaro.tree.TreeGenerator;
-import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
 import net.sourceforge.arbaro.export.ExporterFactory;
+import net.sourceforge.arbaro.export.Console;
 
 /**
  * The main window of Arbaro GUI
@@ -143,25 +140,16 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 
 	
 	public Workplace () {
+
 		// create tree with paramDB
 		params = new Params();
 		try { params.prepare(13); } catch (Exception e) {};
 
-		
-//		exporterFactory = new ExporterFactory();
-		
 		// create frame
 		frame = new JFrame("Arbaro");
 
 		// create preview Tree
-		MeshGenerator meshGenerator = new ShieldedGUIMeshGenerator(frame,
-	    		MeshGeneratorFactory.createMeshGenerator(true /*useQuads*/));
-
-		TreeGenerator treeGenerator = new ShieldedGUITreeGenerator(frame,
-				TreeGeneratorFactory.createTreeGenerator(params));
-
-		previewTree = new PreviewTree(params,meshGenerator,treeGenerator);
-		
+		previewTree = new PreviewTree(params);
 		
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame.addWindowListener(new WindowAdapter() {
@@ -233,7 +221,7 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 			public void stateChanged(ChangeEvent e) {
 				try {
 					setModified(true);
-					previewTree.remake();
+					previewTree.remake(true);
 					// valueEditor.noError();
 
 					// FIXME: only necessary, when species
@@ -241,11 +229,10 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 					frame.setTitle("Arbaro ["+params.Species+"]");
 					
 				} catch (ParamException err) {
-					System.err.println(err);
+					Console.errorOutput(err.toString());
 					valueEditor.showError(err);
 				} catch (Exception err) {
-					System.err.println(err);
-					err.printStackTrace();
+					Console.printException(err);
 				}
 			}
 		});
@@ -285,10 +272,10 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 					imageLabel.setIcon(icon);
 					((TitledBorder)imageLabel.getBorder()).setTitle(icon.getDescription());
 					
-					previewTree.remake();
+					previewTree.remake(true);
 					
 				} catch (Exception err) {
-					err.printStackTrace();
+					Console.printException(err);
 				}
 			}
 		});
@@ -555,7 +542,7 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 			// draw new tree
 			try {
 				previewTree.setParams(params);
-				previewTree.remake();
+				previewTree.remake(true);
 			} catch (ParamException err) {
 				setModified(false);
 				JOptionPane.showMessageDialog(frame,err.getMessage(),
@@ -602,20 +589,16 @@ import net.sourceforge.arbaro.export.ExporterFactory;
 
 					// draw opened tree
 					previewTree.setParams(params);
-					previewTree.remake();
+					previewTree.remake(true);
 					
 				} catch (ParamException err) {
 					setModified(false);
-					JOptionPane.showMessageDialog(frame,err.getMessage(),
-							"Parameter Error",
-							JOptionPane.ERROR_MESSAGE);
+					ShowException.msgBox(frame,"Parameter Error",err);
 				} catch (FileNotFoundException err) {
-					JOptionPane.showMessageDialog(frame,err.getMessage(),
-							"File not found",
-							JOptionPane.ERROR_MESSAGE);
+					ShowException.msgBox(frame,"File not found",err);
 				} catch (Exception err) {
-					System.err.println(err);
-					err.printStackTrace();
+					Console.printException(err);
+					ShowException.msgBox(frame,"Error opening file",err);
 				}
 
 			}	

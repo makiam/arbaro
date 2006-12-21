@@ -44,6 +44,8 @@ public abstract class SwingWorker {
 
     /** 
      * Set the value produced by worker thread 
+     * 
+     * @param x
      */
     synchronized void setValue(Object x) { 
         value = x; 

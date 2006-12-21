@@ -159,49 +159,49 @@ public class ExportDialog {
 		case ExporterFactory.POV_MESH: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
 					+fileSep+params.Species+".inc");
-		sceneCheckbox.setEnabled(true);
-		renderCheckbox.setEnabled(true);
-		smoothField.setEnabled(true);
-		tabbedPane.setEnabledAt(1,true);
-		uvStemsCheckbox.setEnabled(true);
-		uvLeavesCheckbox.setEnabled(true);
+			sceneCheckbox.setEnabled(true);
+			renderCheckbox.setEnabled(true);
+			smoothField.setEnabled(true);
+			tabbedPane.setEnabledAt(1,true);
+			uvStemsCheckbox.setEnabled(true);
+			uvLeavesCheckbox.setEnabled(true);
 		break;
 		
 		case ExporterFactory.POV_CONES: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
 					+fileSep+params.Species+".inc");
-		sceneCheckbox.setEnabled(true);
-		renderCheckbox.setEnabled(true);
-		smoothField.setEnabled(false);
-		tabbedPane.setEnabledAt(1,true);
-		uvStemsCheckbox.setEnabled(false);
-		uvLeavesCheckbox.setEnabled(false);
+			sceneCheckbox.setEnabled(true);
+			renderCheckbox.setEnabled(true);
+			smoothField.setEnabled(false);
+			tabbedPane.setEnabledAt(1,true);
+			uvStemsCheckbox.setEnabled(false);
+			uvLeavesCheckbox.setEnabled(false);
 		break;
 		
 		case ExporterFactory.DXF: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
 					+fileSep+params.Species+".dxf");
-		sceneCheckbox.setSelected(false);
-		sceneCheckbox.setEnabled(false);
-		renderCheckbox.setSelected(false);
-		renderCheckbox.setEnabled(false);
-		smoothField.setEnabled(true);
-		tabbedPane.setEnabledAt(1,false);
-		uvStemsCheckbox.setEnabled(false);
-		uvLeavesCheckbox.setEnabled(false);
+			sceneCheckbox.setSelected(false);
+			sceneCheckbox.setEnabled(false);
+			renderCheckbox.setSelected(false);
+			renderCheckbox.setEnabled(false);
+			smoothField.setEnabled(true);
+			tabbedPane.setEnabledAt(1,false);
+			uvStemsCheckbox.setEnabled(false);
+			uvLeavesCheckbox.setEnabled(false);
 		break;
 		
 		case ExporterFactory.OBJ: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
 					+fileSep+params.Species+".obj");
-		sceneCheckbox.setSelected(false);
-		sceneCheckbox.setEnabled(false);
-		renderCheckbox.setSelected(false);
-		renderCheckbox.setEnabled(false);
-		smoothField.setEnabled(true);
-		tabbedPane.setEnabledAt(1,false);
-		uvStemsCheckbox.setEnabled(true);
-		uvLeavesCheckbox.setEnabled(true);
+			sceneCheckbox.setSelected(false);
+			sceneCheckbox.setEnabled(false);
+			renderCheckbox.setSelected(false);
+			renderCheckbox.setEnabled(false);
+			smoothField.setEnabled(true);
+			tabbedPane.setEnabledAt(1,false);
+			uvStemsCheckbox.setEnabled(true);
+			uvLeavesCheckbox.setEnabled(true);
 		break;
 		
 		}

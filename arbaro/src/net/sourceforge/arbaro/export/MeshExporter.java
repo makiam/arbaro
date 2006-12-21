@@ -37,34 +37,5 @@ abstract class MeshExporter extends AbstractExporter {
 	public MeshExporter(MeshGenerator meshGenerator) {
 		this.meshGenerator = meshGenerator;
 	}
-	
-	/*
-	protected void incStemsProgressCount() {
-		if (stemsProgressCount++ % 100 == 0) {
-			progress.incProgress(100);
-			progress.consoleProgress();
-		}
-	}
-	
-	protected void incFaceProgressCount() {
-		if (faceProgressCount++ % 500 == 0) {
-			progress.incProgress(500);
-			progress.consoleProgress();
-		}
-	}
 
-	protected void incLeavesProgressCount() {
-		if (leavesProgressCount++ % 500 == 0) {
-			progress.incProgress(500);
-			progress.consoleProgress();
-		}
-	}
-	
-	protected void incVertexProgressCount() {
-		if (leavesProgressCount++ % 500 == 0) {
-			progress.incProgress(500);
-			progress.consoleProgress();
-		}
-	}
-	*/
 }

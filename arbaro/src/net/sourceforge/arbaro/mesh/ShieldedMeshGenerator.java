@@ -41,10 +41,11 @@ public class ShieldedMeshGenerator implements MeshGenerator {
 	 * 
 	 */
 	public ShieldedMeshGenerator(MeshGenerator meshGenerator) {
-		// TODO Auto-generated constructor stub
+		this.meshGenerator = meshGenerator;
 	}
 
 	protected void showException(Exception e) {
+		Console.errorOutput("Error in mesh generator:");
 		Console.printException(e);
 	}
 

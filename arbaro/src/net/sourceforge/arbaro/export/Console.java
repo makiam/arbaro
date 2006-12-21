@@ -6,7 +6,7 @@ final public class Console {
 	static final public int VERBOSE=2;
 	static final public int DEBUG=3;
 
-	static public char progrChr=' '; // show progress also on Console
+	static public char progrChr=' '; // show progress on Console
 	
 	static public int outputLevel;
 

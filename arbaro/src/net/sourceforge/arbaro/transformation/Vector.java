@@ -33,10 +33,10 @@ import net.sourceforge.arbaro.params.FloatFormat;
  * 
  * @author Wolfram Diestel
  */
-public class Vector {
-	final int X=0;
-	final int Y=1;
-	final int Z=2;
+public final class Vector {
+	final static int X=0;
+	final static int Y=1;
+	final static int Z=2;
 	
 	public final static Vector X_AXIS = new Vector(1,0,0);
 	public final static Vector Y_AXIS = new Vector(0,1,0);
@@ -56,17 +56,14 @@ public class Vector {
 		coord[Z] = z;
 	}
 	
+	public boolean equals(Vector v) {
+		return this.sub(v).abs() < 0.0000001; 
+	}
+	
 	public double abs() {
 		//returns the length of the vector
 		return Math.sqrt(coord[X]*coord[X] + coord[Y]*coord[Y] + coord[Z]*coord[Z]);
 	}
-	
-//	public String povray() {
-//		NumberFormat fmt = FloatFormat.getInstance();
-//		return "<"+fmt.format(coord[X])+","
-//		+fmt.format(coord[Z])+","
-//		+fmt.format(coord[Y])+">";
-//	}
 	
 	public String toString() {
 		NumberFormat fmt = FloatFormat.getInstance();

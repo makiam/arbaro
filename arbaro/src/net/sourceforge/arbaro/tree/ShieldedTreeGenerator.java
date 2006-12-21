@@ -32,6 +32,10 @@ import net.sourceforge.arbaro.params.Params;
 import net.sourceforge.arbaro.export.Console;
 
 /**
+ * A TreeGenerator facade handling exceptions in tree generation.
+ * TreeGenerator method calls are delegated to a TreeGenerator object
+ * given in the constructor. Exceptions are printed to the console.
+ * 
  * @author wolfram
  *
  */
@@ -39,18 +43,24 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 	TreeGenerator treeGenerator;
 	
 	/**
-	 * 
+	 * @treeGenerator a TreeGenerator object without exception handling
 	 */
 	public ShieldedTreeGenerator(TreeGenerator treeGenerator) {
 		this.treeGenerator = treeGenerator;
 	}
 	
+	/**
+	 * Print exceptions to the console using the Console class
+	 * 
+	 * @param e the Exception to print
+	 */
 	protected void showException(Exception e) {
+		Console.errorOutput("Error in tree generator:");
 		Console.printException(e);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#clearParams()
+	/**
+	 * See TreeGenerator interface
 	 */
 	public void clearParams() {
 		try {
@@ -60,8 +70,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#getParam(java.lang.String)
+	/**
+	 * See TreeGenerator interface
 	 */
 	public AbstractParam getParam(String param) {
 		try {
@@ -72,8 +82,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#getParamGroup(int, java.lang.String)
+	/**
+	 * See TreeGenerator interface
 	 */
 	public TreeMap getParamGroup(int level, String group) {
 		try {
@@ -84,8 +94,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#getParams()
+	/**
+	 * See TreeGenerator interface
 	 */
 	public Params getParams() {
 		try {
@@ -96,8 +106,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#getSeed()
+	/**
+	 * See TreeGenerator interface
 	 */
 	public int getSeed() {
 		try {
@@ -108,8 +118,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#makeTree(net.sourceforge.arbaro.export.Progress)
+	/**
+	 * See TreeGenerator interface
 	 */
 	public Tree makeTree(Progress progress) {
 		try {
@@ -120,8 +130,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#readParamsFromCfg(java.io.InputStream)
+	/**
+	 * See TreeGenerator interface
 	 */
 	public void readParamsFromCfg(InputStream is) {
 		try {
@@ -131,8 +141,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#readParamsFromXML(java.io.InputStream)
+	/**
+	 * See TreeGenerator interface
 	 */
 	public void readParamsFromXML(InputStream is) {
 		try {
@@ -142,8 +152,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#setParam(java.lang.String, java.lang.String)
+	/**
+	 * See TreeGenerator interface
 	 */
 	public void setParam(String param, String value) {
 		try {
@@ -153,8 +163,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#setSeed(int)
+	/**
+	 * See TreeGenerator interface
 	 */
 	public void setSeed(int seed) {
 		try {
@@ -164,8 +174,8 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.arbaro.tree.TreeGenerator#writeParamsToXML(java.io.PrintWriter)
+	/**
+	 * See TreeGenerator interface
 	 */
 	public void writeParamsToXML(PrintWriter out) {
 		try {

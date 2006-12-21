@@ -26,11 +26,13 @@ import net.sourceforge.arbaro.params.IntParam;
 import net.sourceforge.arbaro.params.Params;
 import net.sourceforge.arbaro.transformation.Vector;
 import net.sourceforge.arbaro.tree.TreeGenerator;
+import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
 import net.sourceforge.arbaro.tree.TreeTraversal;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.mesh.Mesh;
 import net.sourceforge.arbaro.mesh.LeafMesh;
 import net.sourceforge.arbaro.mesh.MeshGenerator;
+import net.sourceforge.arbaro.mesh.MeshGeneratorFactory;
 import net.sourceforge.arbaro.export.Progress;
 
 import java.io.PrintWriter;
@@ -59,7 +61,7 @@ public final class PreviewTree implements Tree {
 	Mesh mesh;
 	LeafMesh leafMesh;
 	MeshGenerator meshGenerator;
-	TreeGenerator treeGenerator;
+//	TreeGenerator treeGenerator;
 	
 	Tree tree;
 	
@@ -69,11 +71,11 @@ public final class PreviewTree implements Tree {
 	/**
 	 * @param other
 	 */
-	public PreviewTree(Params params, MeshGenerator meshGenerator,
-			TreeGenerator treeGenerator) {
+	public PreviewTree(Params params/*, MeshGenerator meshGenerator,
+			TreeGenerator treeGenerator*/) {
 		this.originalParams=params;
-		this.meshGenerator = meshGenerator;
-		this.treeGenerator = treeGenerator;
+//		this.meshGenerator = meshGenerator;
+//		this.treeGenerator = treeGenerator;
 		//this.params = new Params(params);
 	}
 	
@@ -129,7 +131,7 @@ public final class PreviewTree implements Tree {
 		return showLevel;
 	}
 
-	public void remake() throws Exception {
+	public void remake(boolean doFireStateChanged) {
 			//clear();
 			Params params = new Params(originalParams);
 			params.preview=true;
@@ -149,12 +151,14 @@ public final class PreviewTree implements Tree {
 			}
 
 			Progress progress = new Progress();
+			TreeGenerator treeGenerator = TreeGeneratorFactory.createShieldedTreeGenerator(params);
 		    tree = treeGenerator.makeTree(progress);
 		    
+		    MeshGenerator meshGenerator = MeshGeneratorFactory.createShieldedMeshGenerator(true); // useQuads		    
 			mesh = meshGenerator.createStemMesh(tree,progress);
 			leafMesh = meshGenerator.createLeafMesh(tree,true);
-			
-			fireStateChanged();
+	
+			if (doFireStateChanged)	fireStateChanged();
 	}
 	
 	public Mesh getMesh() {

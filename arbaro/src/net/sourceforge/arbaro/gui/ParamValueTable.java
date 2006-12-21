@@ -70,17 +70,6 @@ public final class ParamValueTable extends JPanel {
 	
 	ChangeEvent changeEvent;
 	
-	//	class CellRenderer extends DefaultTableCellRenderer {
-	//	    public CellRenderer() { 
-	//	    	super(); 
-	//	    }
-	//
-	//	    public void setValue(Object value) {
-	//	        setText((value == null) ? "" : 
-	//	        	((AbstractParam)value).getValue());
-	//	    }
-	//	}
-
 	
 	/********************** LeafShapeBox *****************************/
 

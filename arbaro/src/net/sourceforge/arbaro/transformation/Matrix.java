@@ -28,10 +28,10 @@ package net.sourceforge.arbaro.transformation;
  * @author Wolfram Diestel
  *
  */
-public class Matrix {
-	final int X=0;
-	final int Y=1;
-	final int Z=2;
+public final class Matrix {
+	final static int X=0;
+	final static int Y=1;
+	final static int Z=2;
 	
 	private double[] data;
 	

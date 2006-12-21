@@ -35,43 +35,19 @@ import net.sourceforge.arbaro.params.*;
 class LeafImpl implements Leaf {
 	
 	public Transformation transf;
-	Params par;
+//	Params par;
 	
 	public Transformation getTransformation() { return transf; }
 	
-//	double offset;    // how far from the parent's base
-//	double length;    // the length of the leaf (without leaf stem)
-//	double width;     // the width of the leaf
-	
-	public LeafImpl(Params params, Transformation trf/*, double offs*/) { /* offs = 0 */
-		par = params;
+	public LeafImpl(Transformation trf) {
+//		par = params;
 		transf = trf;
-//		offset = offs;
-		
-//		setLeafDimension();
-		
-		// FIXME: should stem radius be added?
-		// print self.parent.stem_radius(self.offset)
-		// self.direction.radius = self.parent.stem_radius(self.offset)+self.length/2
-		
-		// setLeafOrientation();
 	}
-	
-//	/**
-//	 *	Sets the length and width of a leaf
-//	 */
-//	private void setLeafDimension() {
-//		// FIXME: this is made in tree at the moment
-//		// it would be necessary only when leafs are
-//		// different in length and width
-//		length = par.LeafScale/Math.sqrt(par.LeafQuality);
-//		width = par.LeafScale*par.LeafScaleX/Math.sqrt(par.LeafQuality);
-//	}
 	
 	/**
 	 *	Leaf rotation toward light
 	 */
-	private void setLeafOrientation() {
+	private void setLeafOrientation(Params par) {
 		if (par.LeafBend==0) return;
 		
 		
@@ -117,8 +93,8 @@ class LeafImpl implements Leaf {
 	 * Makes the leave. Does nothing at the moment, because
 	 * all the values can be calculated in the constructor 
 	 */
-	public void make() {
-		setLeafOrientation();
+	public void make(Params par) {
+		setLeafOrientation(par);
 	}
 	
 	/* (non-Javadoc)
