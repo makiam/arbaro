@@ -8,7 +8,8 @@ package net.sourceforge.arbaro.tree;
 
 import junit.framework.TestCase;
 //import net.sourceforge.arbaro.tree.*;
-//import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.export.ExporterFactory;
 import net.sourceforge.arbaro.transformation.*;
 
 /**
@@ -20,19 +21,21 @@ import net.sourceforge.arbaro.transformation.*;
 public class SegmentTest extends TestCase {
 
 	static Tree aTestTree = makeTestTree();
-	static Stem aTestStem = makeTestStem();
+	static StemImpl aTestStem = makeTestStem();
 	double prec=0.00001; // precision for comparing of doubles
 	
-	static Stem makeTestStem() {
-		Stem stem=new Stem(aTestTree,null,0,new Transformation(),0);
+	static StemImpl makeTestStem() {
+		StemImpl stem=new StemImpl((TreeImpl)aTestTree,null,0,new Transformation(),0);
 		// stem.make();
 		return stem;
 	}
 	
 	static Tree makeTestTree() {
 		try {
-			Tree tree = new Tree();
-			tree.make();
+			Params params = new Params();
+			TreeGenerator treeGenerator = TreeGeneratorFactory.createTreeGenerator(params); //,null,false,false);
+			treeGenerator.setSeed(13);
+			Tree tree = treeGenerator.makeTree(null);
 			return tree;
 		} catch (Exception e) {
 			fail(e.getMessage());
@@ -46,7 +49,7 @@ public class SegmentTest extends TestCase {
 	}
 
 	public void testSegment() {
-		Segment segment = new Segment(
+		SegmentImpl segment = new SegmentImpl(
 				aTestStem, 
 				0, // first segment
 				new Transformation(),
@@ -58,7 +61,7 @@ public class SegmentTest extends TestCase {
 	public void testMake() {
 		//Params params = new Params();
 		//LevelParams lparams = params.levelParams[0];
-		Segment segment = new Segment(
+		SegmentImpl segment = new SegmentImpl(
 				aTestStem,
 				0, // first segment
 				new Transformation(),
@@ -78,7 +81,7 @@ public class SegmentTest extends TestCase {
 		// 4) characteristics of subsegments???
 		//       radii depending on taper
 		//       linearity depending on nCurveV <|> 0
-		assertEquals(((Subsegment)segment.subsegments.elementAt(segment.subsegments.size()-1)).height,
+		assertEquals(((SubsegmentImpl)segment.subsegments.elementAt(segment.subsegments.size()-1)).dist,
 				segment.getLength(),prec);
 	}
 

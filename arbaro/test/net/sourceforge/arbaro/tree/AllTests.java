@@ -27,7 +27,7 @@ public class AllTests {
 		suite.addTestSuite(LeafTest.class);
 		suite.addTestSuite(SegmentTest.class);
 		suite.addTestSuite(StemTest.class);
-		suite.addTestSuite(TreeTest.class);
+		suite.addTestSuite(treeTest.class);
 		//$JUnit-END$
 		return suite;
 	}

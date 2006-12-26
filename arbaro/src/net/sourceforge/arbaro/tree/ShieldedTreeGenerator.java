@@ -43,7 +43,7 @@ public class ShieldedTreeGenerator implements TreeGenerator {
 	TreeGenerator treeGenerator;
 	
 	/**
-	 * @treeGenerator a TreeGenerator object without exception handling
+	 * @param treeGenerator a TreeGenerator object without exception handling
 	 */
 	public ShieldedTreeGenerator(TreeGenerator treeGenerator) {
 		this.treeGenerator = treeGenerator;

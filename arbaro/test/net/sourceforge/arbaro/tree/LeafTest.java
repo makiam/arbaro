@@ -9,7 +9,7 @@ package net.sourceforge.arbaro.tree;
 import junit.framework.TestCase;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.params.Params;
-import net.sourceforge.arbaro.tree.Leaf;
+import net.sourceforge.arbaro.tree.LeafImpl;
 
 /**
  *
@@ -55,19 +55,19 @@ public class LeafTest extends TestCase {
 		T[3] = new Transformation().roty(156).translate(new Vector(0.9,1.2,0));
 		T[4] = new Transformation().rotx(180).translate(new Vector(-0.9,1.2,0));
 		
-		Leaf leaf;
+		LeafImpl leaf;
 		for (int i=0; i<T.length; i++) {
 			
 			// no leaf bend
 			params.LeafBend=0;
-			leaf = new Leaf(params,T[i]);
-			leaf.make();
+			leaf = new LeafImpl(T[i]);
+			leaf.make(params);
 			assertTransformationEquals(T[i],leaf.transf);
 			
 			// max leaf bend
 			params.LeafBend=1.0;
-			leaf = new Leaf(params,T[i]);
-			leaf.make();
+			leaf = new LeafImpl(T[i]);
+			leaf.make(params);
 			
 			Vector t = T[i].getT();
 			Vector z = leaf.transf.getZ();

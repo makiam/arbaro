@@ -9,8 +9,8 @@ package net.sourceforge.arbaro.tree;
 import junit.framework.TestCase;
 import java.util.Enumeration;
 import net.sourceforge.arbaro.transformation.Transformation;
-import net.sourceforge.arbaro.tree.Stem;
-import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.StemImpl;
+import net.sourceforge.arbaro.tree.TreeImpl;
 import net.sourceforge.arbaro.params.*;
 
 
@@ -23,18 +23,20 @@ import net.sourceforge.arbaro.params.*;
 public class StemTest extends TestCase {
 
 	static Tree aTestTree = makeTestTree();
-	static Stem aTestStem = makeTestStem();
+	static StemImpl aTestStem = makeTestStem();
 	
-	static Stem makeTestStem() {
-		Stem stem=new Stem(aTestTree,null,0,new Transformation(),0);
+	static StemImpl makeTestStem() {
+		StemImpl stem=new StemImpl((TreeImpl)aTestTree,null,0,new Transformation(),0);
 		stem.make();
 		return stem;
 	}
 	
 	static Tree makeTestTree() {
 		try {
-			Tree tree = new Tree();
-			tree.make();
+			Params params = new Params();
+			TreeGenerator treeGenerator = TreeGeneratorFactory.createTreeGenerator(params); //,null,false,false);
+			treeGenerator.setSeed(13);
+			Tree tree = treeGenerator.makeTree(null);
 			return tree;
 		} catch (Exception e) {
 			fail(e.getMessage());
@@ -68,8 +70,8 @@ public class StemTest extends TestCase {
 	}
 
 	public void testStem() {
-		Tree tree = new Tree();
-		Stem stem=new Stem(tree,null,0,new Transformation(),0);
+		TreeImpl tree = (TreeImpl)makeTestTree();
+		Stem stem=new StemImpl(tree,null,0,new Transformation(),0);
 		assertNotNull(stem);
 	}
 
@@ -77,8 +79,8 @@ public class StemTest extends TestCase {
 	}
 
 	public void testMake() {
-		Stem parent = aTestStem;
-		Stem stem = new Stem(aTestTree,parent,1,
+		StemImpl parent = aTestStem;
+		StemImpl stem = new StemImpl((TreeImpl)aTestTree,parent,1,
 				new Transformation(),0);
 		stem.make();
 		
@@ -91,7 +93,7 @@ public class StemTest extends TestCase {
 		}
 		
 		assertEquals(segCount,
-				((IntParam)aTestTree.getParam("1CurveRes")).intValue());
+				((TreeImpl)aTestTree).params.getLevelParams(1).nCurveRes);
 	}
 
 	public void testPruning() {
