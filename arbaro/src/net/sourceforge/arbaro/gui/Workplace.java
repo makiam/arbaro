@@ -313,7 +313,7 @@ import net.sourceforge.arbaro.export.Console;
 		constraints.weightx=0.2;
 		
 		// small top view
-		topView = new TreePreview(previewTree,TreePreview.PERSPECTIVE_TOP);
+		topView = new TreePreview(previewTree,TreePreview.PERSPECTIVE_TOP,config);
 		topView.setOpaque(true); 
 		topView.setBackground(bgClr);
 		
@@ -369,7 +369,7 @@ import net.sourceforge.arbaro.export.Console;
 	private JPanel createFrontView() {
 		JPanel frontViewWithSlider = new JPanel();
 		frontViewWithSlider.setLayout(new BorderLayout());
-		frontView = new TreePreview(previewTree,TreePreview.PERSPECTIVE_FRONT);
+		frontView = new TreePreview(previewTree,TreePreview.PERSPECTIVE_FRONT,config);
 		frontView.setOpaque(true);
 		frontView.setBackground(Color.WHITE);
 		frontViewWithSlider.add(frontView,BorderLayout.CENTER);

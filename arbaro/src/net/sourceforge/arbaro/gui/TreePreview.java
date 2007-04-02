@@ -48,9 +48,11 @@ import net.sourceforge.arbaro.export.Console;
  */
 public class TreePreview extends JComponent {
 	private static final long serialVersionUID = 1L;
-	
+
 	PreviewTree previewTree;
 	int perspective;
+	Config config;
+
 	boolean draft=false;
 	final static int PERSPECTIVE_FRONT=0;
 	final static int PERSPECTIVE_TOP=90;
@@ -64,8 +66,9 @@ public class TreePreview extends JComponent {
 	Transformation rotation; // viewing perspective
 	Vector origin = new Vector(0,0,0);
 	
-	public TreePreview(PreviewTree prvTree, int perspect) {
+	public TreePreview(PreviewTree prvTree, int perspect, Config config) {
 		super();
+		this.config = config;
 		setMinimumSize(new Dimension(100,100));
 		setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
 		setOpaque(true);
@@ -95,10 +98,17 @@ public class TreePreview extends JComponent {
 		
 		Graphics2D g2 = (Graphics2D)g;
 		
-		// turn antialiasing on
-		RenderingHints rh = new RenderingHints(
-				RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		// turn antialiasing on or off
+		RenderingHints rh; 
+		if (config.getProperty("preview.antialias","on").equals("on")) {
+			rh = new RenderingHints(
+					RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_ON);
+		} else {
+			rh = new RenderingHints(
+					RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_OFF);
+		}
 		g2.addRenderingHints(rh);
 		
 		try {
@@ -115,7 +125,7 @@ public class TreePreview extends JComponent {
 				drawMesh(g);
 				//drawLeaves(g);
 				Params params = previewTree.getParams();
-				previewTree.traverseTree(new LeafDrawer(g,params));
+				previewTree.traverseTree(new LeafDrawer(g,params,previewTree));
 			}
 
 			// DEBUG
@@ -160,6 +170,7 @@ public class TreePreview extends JComponent {
 ////			drawLine(g,stem.getTransformation().getT(),stem.getMaxPoint().sub(stem.getMinPoint()));
 
 		} catch (Exception e) {
+			Console.errorOutput(e.toString());
 			// do nothing, don't draw
 		}
 	}
@@ -369,13 +380,15 @@ public class TreePreview extends JComponent {
 	private class LeafDrawer implements TreeTraversal {
 		LeafMesh m;
 		Graphics g;
+//		PreviewTree pTree;
 		
-		public LeafDrawer(Graphics g, Params params) {
+		public LeafDrawer(Graphics g, Params params, PreviewTree pTree) {
 			this.g = g;
+			this.m = pTree.getLeafMesh();
 			g.setColor(leafColor);
 		}
 		public boolean enterTree(Tree tree) {
-			m = ((PreviewTree)tree).getLeafMesh(); //meshGenerator.createLeafMesh(tree,true /* useQuads */);
+//			m = ((PreviewTree)tree).getLeafMesh(); //meshGenerator.createLeafMesh(tree,true /* useQuads */);
 			return true;
 		}
 		public boolean leaveTree(Tree tree) {

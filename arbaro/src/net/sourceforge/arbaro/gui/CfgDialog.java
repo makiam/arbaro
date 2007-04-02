@@ -38,6 +38,7 @@ public class CfgDialog {
 	JTextField widthField;
 	JTextField heightField;
 	JTextField seedField;
+	JCheckBox antialiasBox;
 
 	String fileSep = System.getProperty("file.separator");
 
@@ -191,6 +192,19 @@ public class CfgDialog {
 		grid.setConstraints(seedField,ctext);
 		mainPanel.add(seedField);
 		
+		// antialias
+		clabel.gridy = ++line;
+		label = new JLabel("Antialias:");
+		grid.setConstraints(label,clabel);
+		mainPanel.add(label);
+		
+		ctext.gridy = line;
+		antialiasBox = new JCheckBox();
+		antialiasBox.setAlignmentX(JTextField.RIGHT_ALIGNMENT);
+		antialiasBox.setText("use antialiasing in tree preview");
+		antialiasBox.setSelected(config.getProperty("preview.antialias","on").equals("on"));
+		grid.setConstraints(antialiasBox,ctext);
+		mainPanel.add(antialiasBox);
 		
 		// buttons
 		JButton okButton = new JButton("OK");
@@ -225,6 +239,11 @@ public class CfgDialog {
 			config.setProperty("povray.width",widthField.getText());
 			config.setProperty("povray.height",heightField.getText());
 			config.setProperty("tree.seed",seedField.getText());
+			if (antialiasBox.isSelected()) {
+				config.setProperty("preview.antialias","on");
+			} else {
+				config.setProperty("preview.antialias","off");
+			}
 			frame.dispose();
 			try {
 				config.store();

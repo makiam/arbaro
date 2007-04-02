@@ -1233,10 +1233,10 @@ class StemImpl implements Stem {
 		
 			SegmentImpl s = ((SegmentImpl)segs.nextElement());
 			if (s.index < index) count += s.subsegments.size();
-			else return count;
+			else return count-1;
 		}
 		
-		return count;
+		return count-1;
 	}
 	
 

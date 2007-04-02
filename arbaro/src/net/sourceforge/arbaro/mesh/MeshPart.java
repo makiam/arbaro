@@ -100,9 +100,10 @@ public class MeshPart extends java.util.Vector {
 				
 				MeshSection ms = ((MeshSection)mp.elementAt(1)); // ignore root vertex
 				
+//				if (Console.debug()) Console.debugOutput("cloneOff: "+stem.getCloneSectionOffset());
 				for (int i=0; i<stem.getCloneSectionOffset(); i++) {
-					
 					uvVertexOffset += ms.size()==1? 1 : ms.size()+1;
+					if (Console.debug()) Console.debugOutput("i: "+i+" vertexOff: "+uvVertexOffset);
 					ms = ms.next;
 				}
 				
@@ -238,9 +239,7 @@ public class MeshPart extends java.util.Vector {
 	
 	
 	/**
-	 * Returns the number of all meshpoints of all sections
-	 * 
-	 * @return
+	 * @return the number of all meshpoints of all sections
 	 */
 	public int vertexCount() {
 		int cnt=0;
@@ -252,9 +251,7 @@ public class MeshPart extends java.util.Vector {
 	}
 	
 	/**
-	 * Returns the number of uv vectors for the mesh part
-	 * 
-	 * @return
+	 * @return the number of uv vectors for the mesh part
 	 */
 	public int uvCount() {
 		int cnt=0;
@@ -268,10 +265,8 @@ public class MeshPart extends java.util.Vector {
 	
 	
 	/**
-	 * Returns the number of faces, that have to be created - povray wants 
+	 * @return the number of faces, that have to be created - povray wants 
 	 * to know this before the faces itself
-	 *
-	 * @return
 	 */
 	public int faceCount()  {
 		int cnt = 0;
@@ -289,12 +284,9 @@ public class MeshPart extends java.util.Vector {
 	}
 	
 	/**
-	 * Returns the triangles between a section and the next
-	 * section.
-	 * 
 	 * @param inx
 	 * @param section
-	 * @return
+	 * @return the triangles between a section and the next section.
 	 * @throws MeshException
 	 */
 	public java.util.Vector faces(long inx, MeshSection section) throws MeshException {
@@ -352,11 +344,8 @@ public class MeshPart extends java.util.Vector {
 	
 
 	/**
-	 * Returns the triangles between a section and the next
-	 * section.
-	 * 
 	 * @param section
-	 * @return
+	 * @return the triangles between a section and the next section.
 	 * @throws MeshException
 	 */
 	public java.util.Vector vFaces(MeshSection section) throws MeshException {
@@ -420,12 +409,9 @@ public class MeshPart extends java.util.Vector {
 
 	
 	/**
-	 * Returns the texture's uv-coordinates of the triangles between a section and the next
-	 * section.
-	 * 
 	 * @param inx
 	 * @param section
-	 * @return
+	 * @return the texture's uv-coordinates of the triangles between a section and the next section.
 	 * @throws MeshException
 	 */
 	public java.util.Vector uvFaces(long inx, MeshSection section, Mesh mesh) throws MeshException {

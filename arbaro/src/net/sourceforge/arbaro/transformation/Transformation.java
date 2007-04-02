@@ -64,11 +64,9 @@ public final class Transformation {
 	}
 	
 	/**
-	 * Returns the product of two transformations, .i.e. the tranformation
+	 * @param T1 the transformation to multiply with
+	 * @return the product of two transformations, .i.e. the tranformation
 	 * resulting of the two transformations applied one after the other
-	 * 
-	 * @param T1
-	 * @return
 	 */
 	public Transformation prod(Transformation T1) {
 		return new Transformation(matrix.prod(T1.matrix()),

@@ -496,7 +496,7 @@ public class ExportDialog {
 				//FIXME fileChooser.getPath() ???
 				//tree.setOutputPath(fileField.getText());
 			} catch (Exception exc) {
-				Console.printException(exc);
+				net.sourceforge.arbaro.export.Console.printException(exc);
 				ShowException.msgBox(frame,"Export initialization error",exc);
 			}
 			// setup progress dialog
@@ -666,7 +666,7 @@ class TreeCreationTask {
 			worker.start();
 			
 		} catch (Exception e) {
-			Console.printException(e);
+			net.sourceforge.arbaro.export.Console.printException(e);
 			//ShowException(frame,"Tree creation initialization error",e);
 		}
 	}

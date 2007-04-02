@@ -69,7 +69,7 @@ public final class PreviewTree implements Tree {
 	protected EventListenerList listenerList = new EventListenerList();
 
 	/**
-	 * @param other
+	 * @param params tree parameters
 	 */
 	public PreviewTree(Params params/*, MeshGenerator meshGenerator,
 			TreeGenerator treeGenerator*/) {
