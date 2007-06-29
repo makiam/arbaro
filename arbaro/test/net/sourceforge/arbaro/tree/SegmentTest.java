@@ -11,6 +11,10 @@ import junit.framework.TestCase;
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.export.ExporterFactory;
 import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.tree.impl.SegmentImpl;
+import net.sourceforge.arbaro.tree.impl.StemImpl;
+import net.sourceforge.arbaro.tree.impl.SubsegmentImpl;
+import net.sourceforge.arbaro.tree.impl.TreeImpl;
 
 /**
  * @author wdiestel

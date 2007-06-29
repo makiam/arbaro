@@ -9,7 +9,7 @@ package net.sourceforge.arbaro.tree;
 import junit.framework.TestCase;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.params.Params;
-import net.sourceforge.arbaro.tree.LeafImpl;
+import net.sourceforge.arbaro.tree.impl.LeafImpl;
 
 /**
  *

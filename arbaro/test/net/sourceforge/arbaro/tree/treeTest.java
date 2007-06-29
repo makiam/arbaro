@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 
 import net.sourceforge.arbaro.tree.TreeGenerator;
 import net.sourceforge.arbaro.params.*;
-import net.sourceforge.arbaro.export.Progress;
+import net.sourceforge.arbaro.feedback.Progress;
 
 import java.util.*;
 import java.io.*;

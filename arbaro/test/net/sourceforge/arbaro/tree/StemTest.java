@@ -9,8 +9,8 @@ package net.sourceforge.arbaro.tree;
 import junit.framework.TestCase;
 import java.util.Enumeration;
 import net.sourceforge.arbaro.transformation.Transformation;
-import net.sourceforge.arbaro.tree.StemImpl;
-import net.sourceforge.arbaro.tree.TreeImpl;
+import net.sourceforge.arbaro.tree.impl.StemImpl;
+import net.sourceforge.arbaro.tree.impl.TreeImpl;
 import net.sourceforge.arbaro.params.*;
 
 
