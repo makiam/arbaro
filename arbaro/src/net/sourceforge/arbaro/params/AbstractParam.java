@@ -23,7 +23,8 @@
 package net.sourceforge.arbaro.params;
 
 import javax.swing.event.*;
-import net.sourceforge.arbaro.export.Console;
+
+import net.sourceforge.arbaro.feedback.Console;
 
 public abstract class AbstractParam {
 	public static final int GENERAL = -999; // no level - general params

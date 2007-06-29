@@ -33,7 +33,7 @@ import net.sourceforge.arbaro.mesh.Mesh;
 import net.sourceforge.arbaro.mesh.LeafMesh;
 import net.sourceforge.arbaro.mesh.MeshGenerator;
 import net.sourceforge.arbaro.mesh.MeshGeneratorFactory;
-import net.sourceforge.arbaro.export.Progress;
+import net.sourceforge.arbaro.feedback.Progress;
 
 import java.io.PrintWriter;
 

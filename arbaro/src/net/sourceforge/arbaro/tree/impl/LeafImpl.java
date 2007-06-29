@@ -20,11 +20,13 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.tree.impl;
 
 import java.lang.Math;
 
 import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.tree.Leaf;
+import net.sourceforge.arbaro.tree.TreeTraversal;
 import net.sourceforge.arbaro.params.*;
 
 /**

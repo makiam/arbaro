@@ -24,7 +24,8 @@
 //#
 //#**************************************************************************/
 
-package net.sourceforge.arbaro.export;
+package net.sourceforge.arbaro.feedback;
+
 
 /**
  * Handle progress while creating and exporting a tree

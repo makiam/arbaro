@@ -31,6 +31,7 @@ import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.tree.TreeGenerator;
 import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
 import net.sourceforge.arbaro.export.*;
+import net.sourceforge.arbaro.feedback.Progress;
 import net.sourceforge.arbaro.params.Params;
 
 public class ExportDialog {
@@ -496,7 +497,7 @@ public class ExportDialog {
 				//FIXME fileChooser.getPath() ???
 				//tree.setOutputPath(fileField.getText());
 			} catch (Exception exc) {
-				net.sourceforge.arbaro.export.Console.printException(exc);
+				net.sourceforge.arbaro.feedback.Console.printException(exc);
 				ShowException.msgBox(frame,"Export initialization error",exc);
 			}
 			// setup progress dialog
@@ -666,7 +667,7 @@ class TreeCreationTask {
 			worker.start();
 			
 		} catch (Exception e) {
-			net.sourceforge.arbaro.export.Console.printException(e);
+			net.sourceforge.arbaro.feedback.Console.printException(e);
 			//ShowException(frame,"Tree creation initialization error",e);
 		}
 	}

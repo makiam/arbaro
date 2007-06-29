@@ -31,6 +31,9 @@ import java.io.File;
 
 import net.sourceforge.arbaro.tree.*;
 import net.sourceforge.arbaro.export.*;
+import net.sourceforge.arbaro.feedback.Console;
+import net.sourceforge.arbaro.feedback.ProgramInfo;
+import net.sourceforge.arbaro.feedback.Progress;
 import net.sourceforge.arbaro.params.Params;
 
 /**
@@ -44,12 +47,8 @@ public class arbaro {
 	static void println(String s) { System.err.println(s); }
 	static void println() { System.err.println(); }
 	
-	public static final String programName = 
-		"Arbaro 2.0 - creates trees objects for rendering from xml parameter files\n"+
-		"(c) 2003-2004 by Wolfram Diestel <diestel@steloj.de> (GPL see file COPYING)\n";
-	
 	static void printProgramName() {
-		println(programName);
+		println(ProgramInfo.getInfo());
 		println();
 	}
 	

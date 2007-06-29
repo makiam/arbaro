@@ -21,9 +21,10 @@
 //#**************************************************************************/
 
 
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.tree.impl;
 
 import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.tree.StemSection;
 import net.sourceforge.arbaro.params.*;
 
 /**

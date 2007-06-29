@@ -3,7 +3,7 @@ package net.sourceforge.arbaro.tree;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
-import net.sourceforge.arbaro.export.Progress;
+import net.sourceforge.arbaro.feedback.Progress;
 import net.sourceforge.arbaro.params.AbstractParam;
 import net.sourceforge.arbaro.params.ParamException;
 import net.sourceforge.arbaro.params.Params;

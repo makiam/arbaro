@@ -20,20 +20,22 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.tree.impl;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
 
-import net.sourceforge.arbaro.export.Progress;
+import net.sourceforge.arbaro.feedback.Progress;
 import net.sourceforge.arbaro.params.AbstractParam;
 import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.TreeGenerator;
 
 /**
  * @author wolfram
  *
  */
-class TreeGeneratorImpl implements TreeGenerator {
+public class TreeGeneratorImpl implements TreeGenerator {
 	Params params;
 
 	/* (non-Javadoc)

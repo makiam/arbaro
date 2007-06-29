@@ -24,6 +24,9 @@ package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 
+import net.sourceforge.arbaro.feedback.Console;
+import net.sourceforge.arbaro.feedback.Progress;
+
 /**
  * @author wolfram
  *

@@ -23,6 +23,7 @@
 package net.sourceforge.arbaro.tree;
 
 import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.tree.impl.TreeGeneratorImpl;
 
 /**
  * @author wolfram

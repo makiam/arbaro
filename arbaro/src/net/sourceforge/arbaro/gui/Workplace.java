@@ -57,7 +57,7 @@ import javax.swing.event.ChangeListener;
 
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.export.ExporterFactory;
-import net.sourceforge.arbaro.export.Console;
+import net.sourceforge.arbaro.feedback.Console;
 
 /**
  * The main window of Arbaro GUI
@@ -780,7 +780,7 @@ import net.sourceforge.arbaro.export.Console;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(frame, net.sourceforge.arbaro.arbaro.programName,
+			JOptionPane.showMessageDialog(frame, net.sourceforge.arbaro.feedback.ProgramInfo.getInfo(),
 					"About Arbaro",JOptionPane.INFORMATION_MESSAGE,aboutIcon);
 		}
 	}

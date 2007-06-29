@@ -22,7 +22,6 @@
 
 package net.sourceforge.arbaro.export;
 
-import net.sourceforge.arbaro.params.FloatFormat;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.tree.*;
 import net.sourceforge.arbaro.params.*;

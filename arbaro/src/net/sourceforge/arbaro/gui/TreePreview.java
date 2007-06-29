@@ -41,7 +41,7 @@ import net.sourceforge.arbaro.tree.*;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.mesh.*;
 import net.sourceforge.arbaro.params.Params;
-import net.sourceforge.arbaro.export.Console;
+import net.sourceforge.arbaro.feedback.Console;
 
 /**
  * An image showing parts of the edited tree

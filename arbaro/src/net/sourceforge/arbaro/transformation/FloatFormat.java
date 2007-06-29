@@ -20,7 +20,7 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.params;
+package net.sourceforge.arbaro.transformation;
 
 import java.util.Locale;
 import java.text.NumberFormat;

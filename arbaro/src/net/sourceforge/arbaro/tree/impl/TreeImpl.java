@@ -20,7 +20,7 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.tree.impl;
 
 import java.io.PrintWriter;
 import java.lang.Math;
@@ -28,7 +28,14 @@ import java.util.Enumeration;
 
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.tree.LeafCounter;
+import net.sourceforge.arbaro.tree.Stem;
+import net.sourceforge.arbaro.tree.StemCounter;
+import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.TreeTraversal;
 import net.sourceforge.arbaro.export.*;
+import net.sourceforge.arbaro.feedback.Console;
+import net.sourceforge.arbaro.feedback.Progress;
 
 /**
  * A class for creation of threedimensional tree objects.

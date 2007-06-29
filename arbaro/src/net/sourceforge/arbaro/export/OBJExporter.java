@@ -26,8 +26,10 @@ import java.io.PrintWriter;
 import java.text.NumberFormat;
 import java.util.Enumeration;
 
+import net.sourceforge.arbaro.feedback.Progress;
 import net.sourceforge.arbaro.mesh.*;
 import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.transformation.FloatFormat;
 import net.sourceforge.arbaro.transformation.Vector;
 import net.sourceforge.arbaro.tree.*;
 

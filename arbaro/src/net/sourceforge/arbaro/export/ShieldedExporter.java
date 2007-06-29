@@ -24,6 +24,9 @@ package net.sourceforge.arbaro.export;
 
 import java.io.PrintWriter;
 
+import net.sourceforge.arbaro.feedback.Console;
+import net.sourceforge.arbaro.feedback.Progress;
+
 /**
  * Exporter Facade with exception handling. Delegates all methods
  * of the Exporter interface to an exporter object given in then

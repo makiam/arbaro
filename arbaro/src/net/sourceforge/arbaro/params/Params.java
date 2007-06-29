@@ -22,7 +22,7 @@
 
 package net.sourceforge.arbaro.params;
 
-import net.sourceforge.arbaro.export.Console;
+import net.sourceforge.arbaro.feedback.Console;
 
 import java.io.PrintWriter;
 import java.io.InputStream;

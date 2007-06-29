@@ -26,7 +26,7 @@ import java.util.Enumeration;
 
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.tree.*;
-import net.sourceforge.arbaro.export.Progress;
+import net.sourceforge.arbaro.feedback.Progress;
 
 
 /**

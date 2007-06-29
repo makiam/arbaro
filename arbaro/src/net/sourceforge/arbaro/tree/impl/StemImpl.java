@@ -20,14 +20,17 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.tree.impl;
 
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 
 import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.tree.Leaf;
+import net.sourceforge.arbaro.tree.Stem;
+import net.sourceforge.arbaro.tree.TreeTraversal;
 import net.sourceforge.arbaro.params.*;
-import net.sourceforge.arbaro.export.Console;
+import net.sourceforge.arbaro.feedback.Console;
 
 class ArbaroException extends RuntimeException {
 	private static final long serialVersionUID = 1L;

@@ -26,7 +26,6 @@ import java.lang.String;
 import java.lang.Math;
 
 import java.text.NumberFormat;
-import net.sourceforge.arbaro.params.FloatFormat;
 
 /**
  * A x,y,z-vector class

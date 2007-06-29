@@ -28,8 +28,8 @@ import java.text.NumberFormat;
 
 import net.sourceforge.arbaro.tree.*;
 import net.sourceforge.arbaro.mesh.*;
+import net.sourceforge.arbaro.transformation.FloatFormat;
 import net.sourceforge.arbaro.transformation.Vector;
-import net.sourceforge.arbaro.params.FloatFormat;
 
 
 
@@ -290,7 +290,7 @@ class POVMeshExporter extends MeshExporter {
 			// write tree definition as comment
 			w.println("/*************** Tree made by: ******************");
 			w.println();
-			w.println(net.sourceforge.arbaro.arbaro.programName);
+			w.println(net.sourceforge.arbaro.feedback.ProgramInfo.getInfo());
 			w.println();
 			tree.paramsToXML(w);
 			w.println("************************************************/");

@@ -26,10 +26,10 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.TreeMap;
 
-import net.sourceforge.arbaro.export.Progress;
 import net.sourceforge.arbaro.params.AbstractParam;
 import net.sourceforge.arbaro.params.Params;
-import net.sourceforge.arbaro.export.Console;
+import net.sourceforge.arbaro.feedback.Console;
+import net.sourceforge.arbaro.feedback.Progress;
 
 /**
  * A TreeGenerator facade handling exceptions in tree generation.

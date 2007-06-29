@@ -20,11 +20,12 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.tree.impl;
 
 import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.tree.StemSection;
 import net.sourceforge.arbaro.params.*;
-import net.sourceforge.arbaro.export.Console;
+import net.sourceforge.arbaro.feedback.Console;
 
 /**
  * A segment class, multiple segments form a stem.
