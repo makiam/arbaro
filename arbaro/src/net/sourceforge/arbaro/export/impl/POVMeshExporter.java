@@ -20,22 +20,25 @@
 //#
 //#**************************************************************************/
 
-package net.sourceforge.arbaro.export;
+package net.sourceforge.arbaro.export.impl;
 
 import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.text.NumberFormat;
 
-import net.sourceforge.arbaro.tree.*;
+import net.sourceforge.arbaro.tree.DefaultTreeTraversal;
+import net.sourceforge.arbaro.tree.Leaf;
+import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.mesh.*;
 import net.sourceforge.arbaro.transformation.FloatFormat;
 import net.sourceforge.arbaro.transformation.Vector;
+import net.sourceforge.arbaro.feedback.ProgramInfo;
 
 
 
 class POVMeshLeafWriterBase extends DefaultTreeTraversal {
 		LeafMesh leafMesh;
-		AbstractExporter exporter;
+		ExporterBase exporter;
 		long leafVertexOffset;
 		PrintWriter w;
 		long leavesProgressCount=0;
@@ -46,7 +49,7 @@ class POVMeshLeafWriterBase extends DefaultTreeTraversal {
 		/**
 		 * 
 		 */
-		public POVMeshLeafWriterBase(AbstractExporter exporter, LeafMesh leafMesh,
+		public POVMeshLeafWriterBase(ExporterBase exporter, LeafMesh leafMesh,
 				long leafVertexOffset) {
 			super();
 			this.w = exporter.getWriter();
@@ -74,7 +77,7 @@ class POVMeshLeafWriterBase extends DefaultTreeTraversal {
  */
 class POVMeshLeafFaceWriter extends POVMeshLeafWriterBase {
 	
-	public POVMeshLeafFaceWriter(AbstractExporter exporter, LeafMesh leafMesh,
+	public POVMeshLeafFaceWriter(ExporterBase exporter, LeafMesh leafMesh,
 			long leafVertexOffset) {
 		super(exporter,leafMesh,leafVertexOffset);
 	}
@@ -101,7 +104,7 @@ class POVMeshLeafFaceWriter extends POVMeshLeafWriterBase {
 		// increment face offset
 		leafVertexOffset += leafMesh.getShapeVertexCount();
 		
-		exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
+		exporter.incProgressCount(ExporterBase.LEAF_PROGRESS_STEP);
 		
 		return true;
 	}
@@ -123,7 +126,7 @@ class POVMeshLeafNormalWriter extends POVMeshLeafWriterBase {
 	 * @param leafMesh
 	 * @param leafVertexOffset
 	 */
-	public POVMeshLeafNormalWriter(AbstractExporter exporter, LeafMesh leafMesh,
+	public POVMeshLeafNormalWriter(ExporterBase exporter, LeafMesh leafMesh,
 			long leafVertexOffset) {
 		super(exporter, leafMesh, leafVertexOffset);
 		// TODO Auto-generated constructor stub
@@ -146,7 +149,7 @@ class POVMeshLeafNormalWriter extends POVMeshLeafWriterBase {
 				} 
 			}
 			
-			exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
+			exporter.incProgressCount(ExporterBase.LEAF_PROGRESS_STEP);
 
 			throw new RuntimeException("Not implemented: if using normals for leaves use factor "+
 			"3 instead of 2 in progress.beginPhase");
@@ -173,7 +176,7 @@ class POVMeshLeafUVFaceWriter extends POVMeshLeafWriterBase {
 	 * @param leafMesh
 	 * @param leafVertexOffset
 	 */
-	public POVMeshLeafUVFaceWriter(AbstractExporter exporter, LeafMesh leafMesh,
+	public POVMeshLeafUVFaceWriter(ExporterBase exporter, LeafMesh leafMesh,
 			long leafVertexOffset) {
 		super(exporter, leafMesh, leafVertexOffset);
 		// TODO Auto-generated constructor stub
@@ -201,7 +204,7 @@ class POVMeshLeafUVFaceWriter extends POVMeshLeafWriterBase {
 		// increment face offset
 		//leafFaceOffset += leafMesh.getShapeVertexCount();
 		
-		exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
+		exporter.incProgressCount(ExporterBase.LEAF_PROGRESS_STEP);
 		
 		return true;
 	}
@@ -220,7 +223,7 @@ class POVMeshLeafVertexWriter extends POVMeshLeafWriterBase {
 	 * @param leafMesh
 	 * @param leafVertexOffset
 	 */
-	public POVMeshLeafVertexWriter(AbstractExporter exporter, LeafMesh leafMesh,
+	public POVMeshLeafVertexWriter(ExporterBase exporter, LeafMesh leafMesh,
 			long leafVertexOffset) {
 		super(exporter, leafMesh, leafVertexOffset);
 		// TODO Auto-generated constructor stub
@@ -242,7 +245,7 @@ class POVMeshLeafVertexWriter extends POVMeshLeafWriterBase {
 			} 
 		}
 		
-		exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
+		exporter.incProgressCount(ExporterBase.LEAF_PROGRESS_STEP);
 		
 		return true;
 	}
@@ -258,7 +261,7 @@ class POVMeshLeafVertexWriter extends POVMeshLeafWriterBase {
  * @author wolfram
  *
  */
-class POVMeshExporter extends MeshExporter {
+public class POVMeshExporter extends MeshExporter {
 	Mesh mesh;
 	LeafMesh leafMesh;
 	Tree tree;
@@ -290,7 +293,7 @@ class POVMeshExporter extends MeshExporter {
 			// write tree definition as comment
 			w.println("/*************** Tree made by: ******************");
 			w.println();
-			w.println(net.sourceforge.arbaro.feedback.ProgramInfo.getInfo());
+			w.println(ProgramInfo.getInfo());
 			w.println();
 			tree.paramsToXML(w);
 			w.println("************************************************/");
@@ -479,7 +482,7 @@ class POVMeshExporter extends MeshExporter {
 				w.println();
 			} 
 			
-			incProgressCount(AbstractExporter.STEM_PROGRESS_STEP);
+			incProgressCount(ExporterBase.STEM_PROGRESS_STEP);
 		}
 		
 		w.println();
@@ -504,7 +507,7 @@ class POVMeshExporter extends MeshExporter {
 				// w.print(indent + "          ");
 			}
 
-			incProgressCount(AbstractExporter.STEM_PROGRESS_STEP);
+			incProgressCount(ExporterBase.STEM_PROGRESS_STEP);
 				
 		}
 	}
@@ -535,7 +538,7 @@ class POVMeshExporter extends MeshExporter {
 					w.println();
 				}
 
-				incProgressCount(AbstractExporter.MESH_PROGRESS_STEP);
+				incProgressCount(ExporterBase.MESH_PROGRESS_STEP);
 				
 			}
 			

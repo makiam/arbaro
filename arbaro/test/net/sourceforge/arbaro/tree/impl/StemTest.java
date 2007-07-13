@@ -4,11 +4,15 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.tree.impl;
 
 import junit.framework.TestCase;
 import java.util.Enumeration;
 import net.sourceforge.arbaro.transformation.Transformation;
+import net.sourceforge.arbaro.tree.Stem;
+import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.TreeGenerator;
+import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
 import net.sourceforge.arbaro.tree.impl.StemImpl;
 import net.sourceforge.arbaro.tree.impl.TreeImpl;
 import net.sourceforge.arbaro.params.*;
@@ -33,7 +37,7 @@ public class StemTest extends TestCase {
 	
 	static Tree makeTestTree() {
 		try {
-			Params params = new Params();
+			ParamManager params = new ParamManager();
 			TreeGenerator treeGenerator = TreeGeneratorFactory.createTreeGenerator(params); //,null,false,false);
 			treeGenerator.setSeed(13);
 			Tree tree = treeGenerator.makeTree(null);

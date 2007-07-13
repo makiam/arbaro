@@ -20,7 +20,9 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.params;
+package net.sourceforge.arbaro.params.impl;
+
+import net.sourceforge.arbaro.params.ParamException;
 
 public class IntParam extends AbstractParam {
 	private int min;
@@ -28,7 +30,7 @@ public class IntParam extends AbstractParam {
 	private int deflt;
 	private int value;
 	
-	IntParam(String nam,int mn, int mx, int def, String grp, int lev, 
+	public IntParam(String nam,int mn, int mx, int def, String grp, int lev, 
 			int ord, String sh, String lng) {
 		super(nam,grp,lev,ord,sh,lng);
 		min = mn;

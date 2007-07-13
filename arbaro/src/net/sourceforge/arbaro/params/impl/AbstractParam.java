@@ -20,15 +20,19 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.params;
+package net.sourceforge.arbaro.params.impl;
 
 import javax.swing.event.*;
+import java.lang.NumberFormatException;
 
 import net.sourceforge.arbaro.feedback.Console;
+import net.sourceforge.arbaro.params.Param;
+import net.sourceforge.arbaro.params.ParamException;
+import net.sourceforge.arbaro.params.ParamTypes;
+import net.sourceforge.arbaro.params.UnknownParameterTypeException;
 
-public abstract class AbstractParam {
-	public static final int GENERAL = -999; // no level - general params
-	String name;
+public abstract class AbstractParam implements Param {
+	public String name;
 	String group;
 	int level;
 	int order;
@@ -58,6 +62,10 @@ public abstract class AbstractParam {
 	
 	public static boolean loading=false;
 	
+	public int getIntValue() {
+		throw new NumberFormatException();
+	}
+	
 	protected void warn(String warning) {
 		if (! loading) Console.errorOutput("WARNING: "+warning);
 	}
@@ -67,7 +75,23 @@ public abstract class AbstractParam {
 		fireStateChanged();
 	}
 	
-	public boolean getEnabled() {
+	public int getType() {
+		if (this.getClass() == StringParam.class) {
+			return ParamTypes.STR_PARAM;
+		} else if (this.getClass() == IntParam.class) {
+			return ParamTypes.INT_PARAM;
+		} else if (this.getClass() == FloatParam.class) {
+			return ParamTypes.DBL_PARAM;
+		} else if (this.getClass() == ShapeParam.class) {
+			return ParamTypes.TREESHAPE_PARAM;
+		} else if (this.getClass() == LeafShapeParam.class) {
+			return ParamTypes.LEAFSHAPE_PARAM;
+		} else {
+			throw new UnknownParameterTypeException();
+		}
+	}
+	
+	public boolean isEnabled() {
 		return enabled;
 	}
 	

@@ -19,7 +19,7 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.params;
+package net.sourceforge.arbaro.params.impl;
 
 /**
  * @author wdiestel

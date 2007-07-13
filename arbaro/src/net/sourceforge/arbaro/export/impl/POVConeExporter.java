@@ -20,11 +20,14 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.export;
+package net.sourceforge.arbaro.export.impl;
 
 import net.sourceforge.arbaro.transformation.*;
-import net.sourceforge.arbaro.tree.*;
-import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.tree.Leaf;
+import net.sourceforge.arbaro.tree.Stem;
+import net.sourceforge.arbaro.tree.StemSection;
+import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.TreeTraversal;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
@@ -36,12 +39,12 @@ class POVConeLeafWriter implements TreeTraversal {
 	PrintWriter w;
 	//private long leavesProgressCount=0;
 	String povrayDeclarationPrefix;
-	AbstractExporter exporter;
+	ExporterBase exporter;
 	
 	/**
 	 * 
 	 */
-	public POVConeLeafWriter(AbstractExporter exporter/*, Params params*/,
+	public POVConeLeafWriter(ExporterBase exporter/*, Params params*/,
 			Tree tree) {
 		super();
 		this.exporter = exporter;
@@ -93,7 +96,7 @@ class POVConeLeafWriter implements TreeTraversal {
 				+ transformationStr(leaf.getTransformation())+"}");
 		
 //		increment progress count
-		exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
+		exporter.incProgressCount(ExporterBase.LEAF_PROGRESS_STEP);
 		
 		return true;
 	}
@@ -129,15 +132,15 @@ class POVConeLeafWriter implements TreeTraversal {
  */
 class POVConeStemWriter implements TreeTraversal {
 	Tree tree;
-	AbstractExporter exporter;
+	ExporterBase exporter;
 	PrintWriter w;
-	Params params;
+	//Params params;
 	int level;
 	
 	/**
 	 * 
 	 */
-	public POVConeStemWriter(AbstractExporter exporter, /*Params params,*/ int level) {
+	public POVConeStemWriter(ExporterBase exporter, /*Params params,*/ int level) {
 		super();
 		this.exporter = exporter;
 		this.w = exporter.getWriter();
@@ -199,7 +202,7 @@ class POVConeStemWriter implements TreeTraversal {
 			*/
 			}
 			
-			exporter.incProgressCount(AbstractExporter.STEM_PROGRESS_STEP);
+			exporter.incProgressCount(ExporterBase.STEM_PROGRESS_STEP);
 			
 			return true;
 		}
@@ -264,7 +267,7 @@ class POVConeStemWriter implements TreeTraversal {
  * Exports a tree as Povray primitives like cylinders and spheres 
  *
  */
-class POVConeExporter extends AbstractExporter {
+public class POVConeExporter extends ExporterBase {
 	Tree tree;
 //	Params params;
 	private String povrayDeclarationPrefix;

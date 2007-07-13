@@ -26,14 +26,14 @@ import java.io.PrintWriter;
 import java.lang.Math;
 import java.util.Enumeration;
 
-import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.params.LevelParams;
 import net.sourceforge.arbaro.transformation.*;
 import net.sourceforge.arbaro.tree.LeafCounter;
 import net.sourceforge.arbaro.tree.Stem;
 import net.sourceforge.arbaro.tree.StemCounter;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.tree.TreeTraversal;
-import net.sourceforge.arbaro.export.*;
 import net.sourceforge.arbaro.feedback.Console;
 import net.sourceforge.arbaro.feedback.Progress;
 
@@ -271,9 +271,9 @@ class TreeImpl implements Tree {
 		if (progress != null) {
 			// max progress = trunks * trunk segments * (first level branches + 1) 
 			long maxGenProgress = 
-				((IntParam)params.getParam("0Branches")).intValue()
-				* ((IntParam)params.getParam("0CurveRes")).intValue()
-				* (((IntParam)params.getParam("1Branches")).intValue()+1);
+				params.getParam("0Branches").getIntValue()
+				* params.getParam("0CurveRes").getIntValue()
+				* (params.getParam("1Branches").getIntValue()+1);
 			
 			progress.beginPhase("Creating tree structure",maxGenProgress);
 		}

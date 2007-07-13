@@ -30,7 +30,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
 
-import net.sourceforge.arbaro.params.AbstractParam;
+import net.sourceforge.arbaro.params.Params;
 
 
 class GroupNode extends DefaultMutableTreeNode {
@@ -149,18 +149,18 @@ public final class ParamGroupsView extends JTree {
 	
 	private void createNodes() {
 		
-		GroupNode general = new GroupNode("","General",AbstractParam.GENERAL);
+		GroupNode general = new GroupNode("","General",Params.GENERAL_PARAMS);
 		root.add(general);
 		
 		GroupNode firstGroup =
-			addGroup(general,"SHAPE","Tree shape",AbstractParam.GENERAL);
+			addGroup(general,"SHAPE","Tree shape",Params.GENERAL_PARAMS);
 		
-		addGroup(general,"TRUNK","Trunk radius",AbstractParam.GENERAL);
-		addGroup(general,"LEAVES","Leaves",AbstractParam.GENERAL);
+		addGroup(general,"TRUNK","Trunk radius",Params.GENERAL_PARAMS);
+		addGroup(general,"LEAVES","Leaves",Params.GENERAL_PARAMS);
 		//addGroup(general,"LEAVESADD","Leaf details",AbstractParam.GENERAL);
-		addGroup(general,"PRUNING","Pruning/Envelope",AbstractParam.GENERAL);
+		addGroup(general,"PRUNING","Pruning/Envelope",Params.GENERAL_PARAMS);
 		//addGroup(general,"MISC","Miscellaneous",AbstractParam.GENERAL);
-		addGroup(general,"QUALITY","Quality",AbstractParam.GENERAL);
+		addGroup(general,"QUALITY","Quality",Params.GENERAL_PARAMS);
 		
 		for (int i=0; i<4; i++) {
 			String lName = "Level "+i;

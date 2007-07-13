@@ -20,7 +20,7 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.export;
+package net.sourceforge.arbaro.export.impl;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
@@ -28,18 +28,16 @@ import java.util.Enumeration;
 
 import net.sourceforge.arbaro.feedback.Progress;
 import net.sourceforge.arbaro.mesh.*;
-import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.transformation.FloatFormat;
 import net.sourceforge.arbaro.transformation.Vector;
-import net.sourceforge.arbaro.tree.*;
-
-
-
+import net.sourceforge.arbaro.tree.DefaultTreeTraversal;
+import net.sourceforge.arbaro.tree.Leaf;
+import net.sourceforge.arbaro.tree.Tree;
 
 class OBJLeafWriterBase extends DefaultTreeTraversal {
 	Progress progress;
 	LeafMesh leafMesh;
-	AbstractExporter exporter;
+	ExporterBase exporter;
 	public int leafVertexOffset;
 	PrintWriter w;
 	long leavesProgressCount=0;
@@ -52,7 +50,7 @@ class OBJLeafWriterBase extends DefaultTreeTraversal {
 	 */
 	public OBJLeafWriterBase(Tree tree,
 			LeafMesh leafMesh,
-			AbstractExporter exporter,
+			ExporterBase exporter,
 			int leafVertexOffset) {
 		super();
 		this.exporter = exporter;
@@ -89,7 +87,7 @@ class OBJLeafFaceWriter extends OBJLeafWriterBase {
 	 * @param leafMesh
 	 * @param leafVertexOffset
 	 */
-	public OBJLeafFaceWriter(Tree tree, AbstractExporter exporter,
+	public OBJLeafFaceWriter(Tree tree, ExporterBase exporter,
 			LeafMesh leafMesh,
 			int leafVertexOffset, int uvVertexOffset,
 			long smoothingGroup,	
@@ -126,7 +124,7 @@ class OBJLeafFaceWriter extends OBJLeafWriterBase {
 		// increment face offset
 		leafVertexOffset += leafMesh.getShapeVertexCount();
 		
-		exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
+		exporter.incProgressCount(ExporterBase.LEAF_PROGRESS_STEP);
 		
 		return true;
 	}
@@ -162,7 +160,7 @@ class OBJLeafVertexWriter extends OBJLeafWriterBase {
 	 * @param leafMesh
 	 * @param leafVertexOffset
 	 */
-	public OBJLeafVertexWriter(Tree tree, AbstractExporter exporter, LeafMesh leafMesh,
+	public OBJLeafVertexWriter(Tree tree, ExporterBase exporter, LeafMesh leafMesh,
 			int leafVertexOffset, String type) {
 		super(tree, leafMesh, exporter, leafVertexOffset);
 		this.type=type;
@@ -178,7 +176,7 @@ class OBJLeafVertexWriter extends OBJLeafWriterBase {
 			}
 		}
 		
-		exporter.incProgressCount(AbstractExporter.MESH_PROGRESS_STEP);
+		exporter.incProgressCount(ExporterBase.MESH_PROGRESS_STEP);
 		
 		return true;
 	}
@@ -197,7 +195,7 @@ class OBJLeafVertexWriter extends OBJLeafWriterBase {
  * Exports a tree mesh as Wavefront OBJ file 
  *
  */
-final class OBJExporter extends MeshExporter {
+public class OBJExporter extends MeshExporter {
 	long vertexProgressCount=0;
 	long faceProgressCount=0;
 	NumberFormat frm = FloatFormat.getInstance();
@@ -295,7 +293,7 @@ final class OBJExporter extends MeshExporter {
 					}
 			}
 				
-			incProgressCount(AbstractExporter.MESH_PROGRESS_STEP);
+			incProgressCount(ExporterBase.MESH_PROGRESS_STEP);
 		}
 
 	}
@@ -358,7 +356,7 @@ final class OBJExporter extends MeshExporter {
 				
 				//			offset += ((MeshPart)mesh.elementAt(i)).vertexCount();
 				
-				incProgressCount(AbstractExporter.MESH_PROGRESS_STEP);
+				incProgressCount(ExporterBase.MESH_PROGRESS_STEP);
 			}
 		}
 	}

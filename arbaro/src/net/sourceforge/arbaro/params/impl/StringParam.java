@@ -20,22 +20,44 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.export;
+package net.sourceforge.arbaro.params.impl;
 
+public class StringParam extends AbstractParam {
+    private String deflt;
+    private  String value;
 
-import net.sourceforge.arbaro.mesh.MeshGenerator;
+    public StringParam(String nam, String def, String grp, int lev, 
+    		int ord, String sh, String lng) {
+	super(nam,grp,lev,ord,sh,lng);
+	deflt = def;
+	value = "";
+    }
 
-/**
- * @author wolfram
- *
- */
-abstract class MeshExporter extends AbstractExporter {
-	protected MeshGenerator meshGenerator;
-	/**
-	 * 
-	 */
-	public MeshExporter(MeshGenerator meshGenerator) {
-		this.meshGenerator = meshGenerator;
+    public String getDefaultValue() {
+	return deflt;
+    }
+
+    public void clear() {
+	value = "";
+	fireStateChanged();
+    }
+
+    public void setValue(String val) {
+	value = val;
+	fireStateChanged();
+    }
+
+    public boolean empty() {
+	return value.equals("");
+    }
+
+    public String getValue() {
+	if (empty()) {
+	    warn(name+" not given, using default value("+deflt+")");
+	    // set value to default, t.e. don't warn again
+	    value=deflt;
+	    fireStateChanged();
 	}
-
+	return value;
+    }
 }

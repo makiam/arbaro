@@ -23,7 +23,7 @@
 package net.sourceforge.arbaro.gui;
 
 import java.util.Iterator;
-import java.util.TreeMap;
+import java.util.Map;
 
 import java.awt.Component;
 import java.awt.Color;
@@ -52,7 +52,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.*;
 import javax.swing.AbstractCellEditor;
 
-import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.params.ParamEditing;
+import net.sourceforge.arbaro.params.Param;
+import net.sourceforge.arbaro.params.ParamTypes;
+import net.sourceforge.arbaro.params.ParamException;
+import net.sourceforge.arbaro.feedback.Console;
 
 public final class ParamValueTable extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -60,7 +64,7 @@ public final class ParamValueTable extends JPanel {
 	JTable table;
 	HelpInfo helpInfo;
 	
-	Params par;
+	ParamEditing par;
 	
 	String groupName;
 	int groupLevel;
@@ -83,14 +87,14 @@ public final class ParamValueTable extends JPanel {
 			//LeafShapeParam param = (LeafShapeParam)tree.getParam("LeafShape");
 			
 			//fill
-			String[] items = LeafShapeParam.values();
+			String[] items = par.getValues("LeafShape");
 			
 			for (int i=0; i<items.length; i++) {
 				addItem(items[i]);
 			}
 		}
 		
-		public void setValue(AbstractParam p) {
+		public void setValue(Param p) {
 			// select item
 			for (int i=0; i<getItemCount(); i++) {
 				if (getItemAt(i).equals(p.getValue())) {
@@ -150,7 +154,7 @@ public final class ParamValueTable extends JPanel {
 			//ShapeParam param = (ShapeParam)tree.getParam("Shape");
 			
 			//fill
-			String[] items = ShapeParam.values();
+			String[] items = par.getValues("Shape");
 			shapeIcons = new ImageIcon[items.length];
 			for (int i=0; i<items.length; i++) {
 				// values[i] = new Integer(i);
@@ -159,9 +163,9 @@ public final class ParamValueTable extends JPanel {
 			}
 		}
 		
-		public void setValue(AbstractParam p) {
+		public void setValue(Param p) {
 			// select item
-			setSelectedIndex(((IntParam)p).intValue());
+			setSelectedIndex(p.getIntValue());
 		}
 		
 		public String getValue() {
@@ -209,7 +213,7 @@ public final class ParamValueTable extends JPanel {
 	class CellEditor extends AbstractCellEditor implements TableCellEditor {
 		private static final long serialVersionUID = 1L;
 
-		AbstractParam param;
+		Param param;
 		JTextField paramField;
 		ShapeBox shapeBox;
 		LeafShapeBox leafShapeBox;
@@ -263,7 +267,7 @@ public final class ParamValueTable extends JPanel {
 				int row,
 				int column) {
 			//			currentColor = (Color)value;
-			param = (AbstractParam)value;
+			param = (Param)value;
 
 			if (param.getName().equals("Shape")) {
 				shapeBox.setValue(param);
@@ -286,24 +290,26 @@ public final class ParamValueTable extends JPanel {
 	    public CellRenderer() { super(); }
 
 	    public void setValue(Object value) {
+	    	Param par = (Param)value;
+	    	
 	    	// alignment for parameter type
-	    	if (value.getClass() == ShapeParam.class) {
+	    	if (par.getType() == ParamTypes.TREESHAPE_PARAM) {
 	    		setHorizontalAlignment(LEFT);
 	    		setText(""
-	    				+((ShapeParam)value).intValue()
-						+ " - "+value.toString());
-	    	} else if (value.getClass() == LeafShapeParam.class) {
+	    				+par.getIntValue()
+						+ " - "+par.toString());
+	    	} else if (par.getType() == ParamTypes.LEAFSHAPE_PARAM) {
 	    		setHorizontalAlignment(LEFT);
 	    		setText(value.toString());
-	    	} else if (value.getClass() == StringParam.class) {
+	    	} else if (par.getType() == ParamTypes.STR_PARAM) {
 	    		setHorizontalAlignment(LEFT);
 	    		setText(value.toString());
-	    	} else {
+	    	} else { // number
 	    		setHorizontalAlignment(RIGHT);
 	    		setText(value.toString());
 	    	}
 	    	
-	    	this.setEnabled(((AbstractParam)value).getEnabled());
+	    	this.setEnabled(((Param)value).isEnabled());
 	    }
 	}
 
@@ -313,16 +319,16 @@ public final class ParamValueTable extends JPanel {
 
 		public int getColumnCount() { return 2; }
 		public int getRowCount() { 
-			TreeMap params = par.getParamGroup(groupLevel,groupName);
+			Map params = par.getParamGroup(groupLevel,groupName);
 			return params.size();
 		}
 		public Object getValueAt(int row, int col) {
 			// FIXME: maybe the params should be stored directly in the model
 			
-			TreeMap params = par.getParamGroup(groupLevel,groupName);
+			Map params = par.getParamGroup(groupLevel,groupName);
 			int r = 0;
 			for (Iterator e=params.values().iterator(); e.hasNext();) {
-				AbstractParam p = (AbstractParam)e.next();
+				Param p = (Param)e.next();
 				if (row==r++) { 
 					if (col==0) return p.getName();
 					else return p;
@@ -373,18 +379,21 @@ public final class ParamValueTable extends JPanel {
 				// propagate change to other components, e.g. the preview
 				fireStateChanged();
 			} catch (Exception e) {
+				// FIXME: handle this in ParamEditing
 				if (e.getClass()==ParamException.class) {
-					System.err.println(e);
+					Console.errorOutput(e.getMessage());
+					//System.err.println(e);
 					showError(e);
 				} else {
-					System.err.println(e);
-					e.printStackTrace();
+					//System.err.println(e);
+					//e.printStackTrace();
+					Console.printException(e);
 				}
 			}
 		}
 		
 		public boolean isCellEditable(int row, int col) { 
-			return (col==1) && ((AbstractParam)getValueAt(row,col)).getEnabled(); 
+			return (col==1) && ((Param)getValueAt(row,col)).isEnabled(); 
 		}	
 		
 		//		public Class getColumnClass(int c) {
@@ -394,7 +403,7 @@ public final class ParamValueTable extends JPanel {
 	};
 	
 	
-	public ParamValueTable(Params params) {
+	public ParamValueTable(ParamEditing params) {
 		super(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder());
 		setBackground(bgClr);
@@ -443,7 +452,7 @@ public final class ParamValueTable extends JPanel {
 				} else {
 					int selectedRow = lsm.getMinSelectionIndex();
 					//selectedRow is selected
-					AbstractParam param=(AbstractParam)tableModel.getValueAt(selectedRow,1);
+					Param param=(Param)tableModel.getValueAt(selectedRow,1);
 					helpInfo.setText("<html><a href=\"longDesc\">"
 							+param.getName()+"</a>: "
 							+param.getShortDesc()

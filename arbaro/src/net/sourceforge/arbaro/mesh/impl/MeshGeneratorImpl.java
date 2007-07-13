@@ -20,8 +20,11 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.mesh;
+package net.sourceforge.arbaro.mesh.impl;
 
+import net.sourceforge.arbaro.mesh.LeafMesh;
+import net.sourceforge.arbaro.mesh.Mesh;
+import net.sourceforge.arbaro.mesh.MeshGenerator;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.feedback.Console;
 import net.sourceforge.arbaro.feedback.Progress;
@@ -30,7 +33,7 @@ import net.sourceforge.arbaro.feedback.Progress;
  * @author wolfram
  *
  */
-class MeshGeneratorImpl implements MeshGenerator {
+public class MeshGeneratorImpl implements MeshGenerator {
 //	Params params;
 	public boolean useQuads;
 	

@@ -1,12 +1,10 @@
 package net.sourceforge.arbaro.tree;
 
-import java.io.InputStream;
-import java.io.PrintWriter;
+//import java.io.InputStream;
+//import java.io.PrintWriter;
 
 import net.sourceforge.arbaro.feedback.Progress;
-import net.sourceforge.arbaro.params.AbstractParam;
-import net.sourceforge.arbaro.params.ParamException;
-import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.params.ParamManager;
 
 public interface TreeGenerator {
 
@@ -16,15 +14,15 @@ public interface TreeGenerator {
 
 	public abstract int getSeed();
 
-	public abstract Params getParams();
+	public abstract ParamManager getParamManager();
 
-	public abstract void setParam(String param, String value);
+//	public abstract void setParam(String param, String value);
 
 	// TODO: not used at the moment, may be the GUI
 	// should get a TreeGenerator as a ParamContainer
 	// and tree maker, and not work directly with Params
 	// class
-	public abstract AbstractParam getParam(String param);
+//	public abstract AbstractParam getParam(String param);
 
 	/**
 	 * Returns a parameter group
@@ -37,7 +35,7 @@ public interface TreeGenerator {
 	// should get a TreeGenerator as a ParamContainer
 	// and tree maker, and not work directly with Params
 	// class
-	public abstract java.util.TreeMap getParamGroup(int level, String group);
+//	public abstract java.util.TreeMap getParamGroup(int level, String group);
 
 	/**
 	 * Writes out the parameters to an XML definition file
@@ -49,12 +47,12 @@ public interface TreeGenerator {
 	// should get a TreeGenerator as a ParamContainer
 	// and tree maker, and not work directly with Params
 	// class
-	public abstract void writeParamsToXML(PrintWriter out);
+//	public abstract void writeParamsToXML(PrintWriter out);
 
 	/**
 	 * Clear all parameter values of the tree.
 	 */
-	public abstract void clearParams();
+//	public abstract void clearParams();
 
 	/**
 	 * Read parameter values from an XML definition file
@@ -62,7 +60,7 @@ public interface TreeGenerator {
 	 * @param is The input XML stream
 	 * @throws ParamException
 	 */
-	public abstract void readParamsFromXML(InputStream is);
+//	public abstract void readParamsFromXML(InputStream is);
 
 	/**
 	 * Read parameter values from an Config style definition file
@@ -70,6 +68,6 @@ public interface TreeGenerator {
 	 * @param is The input text stream
 	 * @throws ParamException
 	 */
-	public abstract void readParamsFromCfg(InputStream is);
+//	public abstract void readParamsFromCfg(InputStream is);
 
 }

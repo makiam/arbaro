@@ -1,10 +1,15 @@
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.tree.impl;
 
 
 import junit.framework.TestCase;
 
+import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.tree.TreeGenerator;
+import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
 import net.sourceforge.arbaro.params.*;
+//import net.sourceforge.arbaro.params.impl.AbstractParam;
+//import net.sourceforge.arbaro.params.impl.FloatParam;
+//import net.sourceforge.arbaro.params.impl.IntParam;
 import net.sourceforge.arbaro.feedback.Progress;
 
 import java.util.*;
@@ -115,12 +120,12 @@ public class treeTest extends TestCase {
 		}
 	};
 	
-	private void checkParam(String key, AbstractParam par) {
+	private void checkParam(String key, Param par) {
 		String val = (String)sassafrasParams.get(key);
-		if (par instanceof IntParam)
-			assertEquals(new Integer(val).intValue(),((IntParam)par).intValue());
-		else if (par instanceof FloatParam)
-			assertEquals(new Double(val).doubleValue(),((FloatParam)par).doubleValue(),prec);
+		if (par.getType() == ParamTypes.INT_PARAM)
+			assertEquals(new Integer(val).intValue(),par.getIntValue());
+		else if (par.getType() == ParamTypes.DBL_PARAM)
+			assertEquals(new Double(val).doubleValue(),new Double(par.getValue()).doubleValue(),prec);
 		else 
 			assertEquals(val,par.getValue());			
 //		if (! val.equals(par.getValue()))
@@ -134,36 +139,39 @@ public class treeTest extends TestCase {
 		while (keys.hasMoreElements()) {
 			String key = (String)keys.nextElement();
 			if (key.equals("species"))
-				checkParam(key,params.getParam("Species"));
+				checkParam(key,params.param("Species"));
 			else 
-				checkParam(key,params.getParam(key));
+				checkParam(key,params.param(key));
 		}
 	}
 
 	public void testTreeGenerator () {
-		TreeGenerator generator = TreeGeneratorFactory.createTreeGenerator();
-		
+		ParamManager params = new ParamManager();
 		// get params from String SassafrasCfg
 		InputStream is = new ByteArrayInputStream(sassafrasCfg.getBytes());
-		generator.readParamsFromCfg(is);
+		params.getParamReader().readFromCfg(is);
+
+		TreeGenerator generator = TreeGeneratorFactory.createTreeGenerator(params);
 		
-		checkParams(generator.getParams());
+		checkParams(generator.getParamManager().getTreeParams());
 		
 		// write Params as XML to a StringBuffer
 		StringWriter xsw = new StringWriter();
 		PrintWriter pw = new PrintWriter(xsw);
-		generator.writeParamsToXML(pw);
+		params.getParamWriter().toXML(pw);
 		
 		// clear params
-		generator.clearParams();
+		params = new ParamManager();
+//		generator.clearParams();
 		
-		assertEquals(generator.getParam("Species"),"default");
+		assertEquals(params.getParamEditing().getSpecies(),"default");
 		
 		// read params again from there
 		InputStream xis = new ByteArrayInputStream(xsw.toString().getBytes());
-		generator.readParamsFromXML(xis);
-		
-		checkParams(generator.getParams());
+		params.getParamReader().readFromXML(xis);
+
+		generator = TreeGeneratorFactory.createTreeGenerator(params);
+		checkParams(generator.getParamManager().getTreeParams());
 
 		// make Tree with this params
 		Tree tree = generator.makeTree(new Progress());

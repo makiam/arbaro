@@ -29,12 +29,18 @@ import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.File;
 
-import net.sourceforge.arbaro.tree.*;
-import net.sourceforge.arbaro.export.*;
+import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.TreeGenerator;
+import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
+import net.sourceforge.arbaro.export.ExporterFactory;
+import net.sourceforge.arbaro.export.Exporter;
+import net.sourceforge.arbaro.export.InvalidExportFormatError;
 import net.sourceforge.arbaro.feedback.Console;
 import net.sourceforge.arbaro.feedback.ProgramInfo;
 import net.sourceforge.arbaro.feedback.Progress;
-import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.params.ParamManager;
+import net.sourceforge.arbaro.params.ParamReader;
+import net.sourceforge.arbaro.params.ParamWriter;
 
 /**
  * Main class for command line version of Arbaro 
@@ -199,8 +205,6 @@ public class arbaro {
 		else
 			Console.setOutputLevel(Console.VERBOSE);
 		
-		TreeGenerator treeGenerator = TreeGeneratorFactory.createTreeGenerator();
-		Exporter exporter;
 
 		// put here or later?
 		//if (smooth>=0) treeFactory.params.Smooth = smooth;
@@ -218,11 +222,14 @@ public class arbaro {
 		}
 		
 		// read parameters
-		if (input == CFGinput) treeGenerator.readParamsFromCfg(in);
-		else treeGenerator.readParamsFromXML(in);
+		ParamManager params = new ParamManager();
+		ParamReader reader = params.getParamReader();
+		if (input == CFGinput) reader.readFromCfg(in);
+		else reader.readFromXML(in);
 		
 		// FIXME: put here or earlier?
-		if (smooth>=0) treeGenerator.setParam("Smooth",new Double(smooth).toString());
+		if (smooth>=0) params.getParamEditing().getParam("Smooth").
+			setValue(new Double(smooth).toString());
 		
 		PrintWriter out;
 		if (output_file == null) {
@@ -230,16 +237,21 @@ public class arbaro {
 		} else {
 			out = new PrintWriter(new FileWriter(new File(output_file)));
 		}
-		
+
+	
 		if (output==XMLoutput) {
 			// save parameters in XML file, don't create tree
-			treeGenerator.writeParamsToXML(out);
+			ParamWriter writer = params.getParamWriter();
+			writer.toXML(out);
 		} else {
+			TreeGenerator treeGenerator = TreeGeneratorFactory.createTreeGenerator(params);
+			Exporter exporter;
+
 			treeGenerator.setSeed(seed);
 			Progress progress = new Progress();
 			Tree tree = treeGenerator.makeTree(progress);
-			Params params = treeGenerator.getParams();
-			params.stopLevel = levels;
+			ParamManager treeParams = treeGenerator.getParamManager();
+			treeParams.getParamEditing().setStopLevel(levels);
 			ExporterFactory.setExportFormat(output);
 			ExporterFactory.setOutputStemUVs(uvStems);
 			ExporterFactory.setOutputLeafUVs(uvLeaves);

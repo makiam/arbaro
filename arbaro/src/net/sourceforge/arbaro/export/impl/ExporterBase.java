@@ -20,10 +20,11 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.export;
+package net.sourceforge.arbaro.export.impl;
 
 import java.io.PrintWriter;
 
+import net.sourceforge.arbaro.export.Exporter;
 import net.sourceforge.arbaro.feedback.Console;
 import net.sourceforge.arbaro.feedback.Progress;
 
@@ -31,7 +32,7 @@ import net.sourceforge.arbaro.feedback.Progress;
  * @author wolfram
  *
  */
-abstract class AbstractExporter implements Exporter {
+abstract class ExporterBase implements Exporter {
 	
 	protected static final int LEAF_PROGRESS_STEP = 500;
 	protected static final int STEM_PROGRESS_STEP = 100;

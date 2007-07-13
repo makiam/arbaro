@@ -22,11 +22,12 @@
 
 package net.sourceforge.arbaro.tree.impl;
 
-import java.io.InputStream;
-import java.io.PrintWriter;
+//import java.io.InputStream;
+//import java.io.PrintWriter;
+//import java.util.Map;
 
 import net.sourceforge.arbaro.feedback.Progress;
-import net.sourceforge.arbaro.params.AbstractParam;
+import net.sourceforge.arbaro.params.ParamManager;
 import net.sourceforge.arbaro.params.Params;
 import net.sourceforge.arbaro.tree.Tree;
 import net.sourceforge.arbaro.tree.TreeGenerator;
@@ -36,13 +37,15 @@ import net.sourceforge.arbaro.tree.TreeGenerator;
  *
  */
 public class TreeGeneratorImpl implements TreeGenerator {
-	Params params;
+	ParamManager paramMgr;
 
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeGenerator#makeTree(net.sourceforge.arbaro.export.Progress)
 	 */
 	public Tree makeTree(Progress progress) {
-		TreeImpl tree = new TreeImpl(seed, params);
+		Params params = paramMgr.getTreeParams();
+		params.prepare(seed);
+		TreeImpl tree = new TreeImpl(seed,params);
 		tree.make(progress);
 		
 		return tree;
@@ -50,12 +53,12 @@ public class TreeGeneratorImpl implements TreeGenerator {
 	
 	private int seed = 13;
 
-	public TreeGeneratorImpl() {
-		params = new Params();
-	}
-	
-	public TreeGeneratorImpl(Params params) {
-		this.params = params;
+//	public TreeGeneratorImpl() {
+//		this.paramMgr = new ParamManager();
+//	}
+//	
+	public TreeGeneratorImpl(ParamManager paramMgr) {
+		this.paramMgr = paramMgr;
 	}
 
 	/* (non-Javadoc)
@@ -75,17 +78,17 @@ public class TreeGeneratorImpl implements TreeGenerator {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeGenerator#getParams()
 	 */
-	public Params getParams() {
-		return params;
+	public ParamManager getParamManager() {
+		return paramMgr;
 	}
 	
 	
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeGenerator#setParam(java.lang.String, java.lang.String)
 	 */
-	public void setParam(String param, String value) {
-		params.setParam(param,value);
-	}
+//	public void setParam(String param, String value) {
+//		params.setParam(param,value);
+//	}
 	
 	// TODO: not used at the moment, may be the GUI
 	// should get a TreeGenerator as a ParamContainer
@@ -94,9 +97,9 @@ public class TreeGeneratorImpl implements TreeGenerator {
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeGenerator#getParam(java.lang.String)
 	 */
-	public AbstractParam getParam(String param) {
-		return params.getParam(param);
-	}
+//	public AbstractParam getParam(String param) {
+//		return params.getParam(param);
+//	}
 	
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeGenerator#getParamGroup(int, java.lang.String)
@@ -105,9 +108,9 @@ public class TreeGeneratorImpl implements TreeGenerator {
 	// should get a TreeGenerator as a ParamContainer
 	// and tree maker, and not work directly with Params
 	// class
-	public java.util.TreeMap getParamGroup(int level, String group) {
-		return params.getParamGroup(level,group);
-	}
+//	public Map getParamGroup(int level, String group) {
+//		return params.getParamGroup(level,group);
+//	}
 
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeGenerator#writeParamsToXML(java.io.PrintWriter)
@@ -116,29 +119,29 @@ public class TreeGeneratorImpl implements TreeGenerator {
 	// should get a TreeGenerator as a ParamContainer
 	// and tree maker, and not work directly with Params
 	// class
-	public void writeParamsToXML(PrintWriter out) {
-		params.toXML(out);
-	}
+//	public void writeParamsToXML(PrintWriter out) {
+//		params.toXML(out);
+//	}
 	
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeGenerator#clearParams()
 	 */
-	public void clearParams() {
-		params.clearParams();
-	}
+//	public void clearParams() {
+//		params.clearParams();
+//	}
 	
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeGenerator#readParamsFromXML(java.io.InputStream)
 	 */
-	public void readParamsFromXML(InputStream is) {
-		params.readFromXML(is);
-	}
+//	public void readParamsFromXML(InputStream is) {
+//		params.readFromXML(is);
+//	}
 	
 	/* (non-Javadoc)
 	 * @see net.sourceforge.arbaro.tree.TreeGenerator#readParamsFromCfg(java.io.InputStream)
 	 */
-	public void readParamsFromCfg(InputStream is) {
-		params.readFromCfg(is);
-	}
+//	public void readParamsFromCfg(InputStream is) {
+//		params.readFromCfg(is);
+//	}
 
 }

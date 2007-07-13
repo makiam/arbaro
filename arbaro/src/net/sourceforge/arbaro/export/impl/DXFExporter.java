@@ -20,7 +20,7 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.export;
+package net.sourceforge.arbaro.export.impl;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
@@ -169,7 +169,7 @@ class DXFLeafWriter extends DefaultTreeTraversal {
 	VFace vFace;
 	String layer;
 	DXFWriter writer;
-	AbstractExporter exporter;
+	ExporterBase exporter;
 	Progress progress;
 	MeshGenerator meshGenerator;
 
@@ -177,7 +177,7 @@ class DXFLeafWriter extends DefaultTreeTraversal {
 	/**
 	 * 
 	 */
-	public DXFLeafWriter(AbstractExporter exporter, MeshGenerator meshGenerator, String layer) {
+	public DXFLeafWriter(ExporterBase exporter, MeshGenerator meshGenerator, String layer) {
 		super();
 		this.layer = layer;
 		this.exporter = exporter;
@@ -204,7 +204,7 @@ class DXFLeafWriter extends DefaultTreeTraversal {
 			writer.writeFace(vFace,layer);
 		}
 		
-		exporter.incProgressCount(AbstractExporter.LEAF_PROGRESS_STEP);
+		exporter.incProgressCount(ExporterBase.LEAF_PROGRESS_STEP);
 		
 		return true;
 	}
@@ -214,7 +214,7 @@ class DXFLeafWriter extends DefaultTreeTraversal {
 /**
  * Exports a tree mesh as DXF file
  */
-class DXFExporter extends MeshExporter {
+public class DXFExporter extends MeshExporter {
 	NumberFormat frm = FloatFormat.getInstance();
 	Tree tree;
 
@@ -275,7 +275,7 @@ class DXFExporter extends MeshExporter {
 				}
 			}
 			
-			incProgressCount(AbstractExporter.STEM_PROGRESS_STEP);
+			incProgressCount(ExporterBase.STEM_PROGRESS_STEP);
 		}
 
 		progress.endPhase();

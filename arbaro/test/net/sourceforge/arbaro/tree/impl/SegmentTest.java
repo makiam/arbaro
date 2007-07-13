@@ -4,13 +4,16 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package net.sourceforge.arbaro.tree;
+package net.sourceforge.arbaro.tree.impl;
 
 import junit.framework.TestCase;
 //import net.sourceforge.arbaro.tree.*;
 import net.sourceforge.arbaro.params.*;
 import net.sourceforge.arbaro.export.ExporterFactory;
 import net.sourceforge.arbaro.transformation.*;
+import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.TreeGenerator;
+import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
 import net.sourceforge.arbaro.tree.impl.SegmentImpl;
 import net.sourceforge.arbaro.tree.impl.StemImpl;
 import net.sourceforge.arbaro.tree.impl.SubsegmentImpl;
@@ -36,7 +39,7 @@ public class SegmentTest extends TestCase {
 	
 	static Tree makeTestTree() {
 		try {
-			Params params = new Params();
+			ParamManager params = new ParamManager();
 			TreeGenerator treeGenerator = TreeGeneratorFactory.createTreeGenerator(params); //,null,false,false);
 			treeGenerator.setSeed(13);
 			Tree tree = treeGenerator.makeTree(null);

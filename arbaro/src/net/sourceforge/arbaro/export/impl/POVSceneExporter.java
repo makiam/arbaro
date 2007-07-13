@@ -24,7 +24,7 @@
 //#
 //#**************************************************************************/
 
-package net.sourceforge.arbaro.export;
+package net.sourceforge.arbaro.export.impl;
 
 import net.sourceforge.arbaro.tree.Tree;
 
@@ -33,7 +33,7 @@ import net.sourceforge.arbaro.tree.Tree;
  * included.
  * 
  */
-class POVSceneExporter extends AbstractExporter {
+public class POVSceneExporter extends ExporterBase {
 	Tree tree;
 //	Params params;
 	String povrayDeclarationPrefix;

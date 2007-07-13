@@ -55,7 +55,8 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.sourceforge.arbaro.params.*;
+import net.sourceforge.arbaro.params.ParamManager;
+import net.sourceforge.arbaro.params.ParamException;
 import net.sourceforge.arbaro.export.ExporterFactory;
 import net.sourceforge.arbaro.feedback.Console;
 
@@ -86,7 +87,7 @@ import net.sourceforge.arbaro.feedback.Console;
 	Config config;
 
 	//Tree tree;
-	Params params;
+	ParamManager params;
 //	ExporterFactory exporterFactory;
 	int seed = 13;
 	
@@ -142,14 +143,14 @@ import net.sourceforge.arbaro.feedback.Console;
 	public Workplace () {
 
 		// create tree with paramDB
-		params = new Params();
-		try { params.prepare(13); } catch (Exception e) {};
+		params = new ParamManager();
+		//try { params.prepare(13); } catch (Exception e) {};
 
 		// create frame
 		frame = new JFrame("Arbaro");
 
 		// create preview Tree
-		previewTree = new PreviewTree(params);
+		previewTree = new PreviewTree(params,13 /* seed*/);
 		
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame.addWindowListener(new WindowAdapter() {
@@ -174,12 +175,12 @@ import net.sourceforge.arbaro.feedback.Console;
 		applyConfig();
 		
 		// create GUI
-		AbstractParam.loading=true;
+		//AbstractParam.loading=true;
 		createGUI();
 		groupsView.fireStateChanged();
 		frame.setVisible(true);
 		setModified(false);
-		AbstractParam.loading=false;
+		//AbstractParam.loading=false;
 	}
 	
 	public void applyConfig() {
@@ -214,7 +215,7 @@ import net.sourceforge.arbaro.feedback.Console;
 		leftPane.add(scrollPane);//,JSplitPane.TOP);
 
 		// parameter value editor
-		valueEditor = new ParamValueTable(params);
+		valueEditor = new ParamValueTable(params.getParamEditing());
 		leftPane.add(valueEditor);//,JSplitPane.BOTTOM);
 
 		valueEditor.addChangeListener(new ChangeListener() {
@@ -226,9 +227,10 @@ import net.sourceforge.arbaro.feedback.Console;
 
 					// FIXME: only necessary, when species
 					// param changed
-					frame.setTitle("Arbaro ["+params.Species+"]");
+					frame.setTitle("Arbaro ["+params.getParamEditing().getSpecies()+"]");
 					
 				} catch (ParamException err) {
+					// FIXME handle this in ParamManager somewhere?
 					Console.errorOutput(err.toString());
 					valueEditor.showError(err);
 				} catch (Exception err) {
@@ -247,9 +249,9 @@ import net.sourceforge.arbaro.feedback.Console;
 					valueEditor.showGroup(group,level);
 
 					// change preview trees level
-					if (level==AbstractParam.GENERAL) {
+					if (level==params.getParamEditing().getGeneralLevel()) {
 						if (group.equals("LEAVES") || group.equals("LEAVESADD"))
-							previewTree.setShowLevel(params.Levels);
+							previewTree.setShowLevel(params.getParamEditing().getLevels());
 						else
 							previewTree.setShowLevel(1);
 					} else {
@@ -513,7 +515,7 @@ import net.sourceforge.arbaro.feedback.Console;
 	
 	void setModified(boolean mod) {
 		modified = mod;
-		params.enableDisable();
+		params.getParamEditing().enableDisable();
 	}
 	
 	class FileNewAction extends AbstractAction {
@@ -529,19 +531,20 @@ import net.sourceforge.arbaro.feedback.Console;
 			
 			// ask if should save when modified...
 			if (! shouldSave()) return;
-			AbstractParam.loading=true;
-			params.clearParams();
-			//tree.params.Species="default";
+
+/*			AbstractParam.loading=true; 
+			params.clearParams(); */
+			params = new ParamManager();
 			setModified(false);
-			AbstractParam.loading=false;
+/*			AbstractParam.loading=false; */
 
 			groupsView.fireStateChanged();
-			params.prepare(13); 
-			frame.setTitle("Arbaro ["+params.Species+"]");
+			/*params.prepare(13); */
+			frame.setTitle("Arbaro ["+params.getParamEditing().getSpecies()+"]");
 			
 			// draw new tree
 			try {
-				previewTree.setParams(params);
+				previewTree.setParamManager(params);
 				previewTree.remake(true);
 			} catch (ParamException err) {
 				setModified(false);
@@ -575,20 +578,21 @@ import net.sourceforge.arbaro.feedback.Console;
 				System.err.println("opening file: " +
 						fileChooser.getSelectedFile().getName());
 				try {
-					AbstractParam.loading=true;
+					/*AbstractParam.loading=true;
 					params.clearParams();
+					*/
 					treefile = fileChooser.getSelectedFile();
 					// read parameters
-					params.readFromXML(new FileInputStream(treefile));
-					AbstractParam.loading=false;
+					params.getParamReader().readFromXML(new FileInputStream(treefile));
+					//AbstractParam.loading=false;
 					setModified(false);
 
 					groupsView.fireStateChanged();
-					params.prepare(13); 
-					frame.setTitle("Arbaro ["+params.Species+"]");
+					//params.prepare(13); 
+					frame.setTitle("Arbaro ["+params.getParamEditing().getSpecies()+"]");
 
 					// draw opened tree
-					previewTree.setParams(params);
+					previewTree.setParamManager(params);
 					previewTree.remake(true);
 					
 				} catch (ParamException err) {
@@ -639,7 +643,7 @@ import net.sourceforge.arbaro.feedback.Console;
 				fileChooser.getSelectedFile().getName());
 		try {
 			PrintWriter out = new PrintWriter(new FileWriter(treefile));
-			params.toXML(out);
+			params.getParamWriter().toXML(out);
 			setModified(false);
 			return true;
 		} catch (ParamException err) {

@@ -20,11 +20,16 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.mesh;
+package net.sourceforge.arbaro.mesh.impl;
 
 import net.sourceforge.arbaro.feedback.Console;
 import net.sourceforge.arbaro.feedback.Progress;
-import net.sourceforge.arbaro.tree.*;
+import net.sourceforge.arbaro.mesh.Mesh;
+import net.sourceforge.arbaro.mesh.MeshPart;
+import net.sourceforge.arbaro.tree.Leaf;
+import net.sourceforge.arbaro.tree.Stem;
+import net.sourceforge.arbaro.tree.Tree;
+import net.sourceforge.arbaro.tree.TreeTraversal;
 
 /**
  * Create a mesh from the tree's stems using then TreeTraversal interface

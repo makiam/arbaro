@@ -20,10 +20,11 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.export;
+package net.sourceforge.arbaro.export.impl;
 
 import java.io.PrintWriter;
 
+import net.sourceforge.arbaro.export.Exporter;
 import net.sourceforge.arbaro.feedback.Console;
 import net.sourceforge.arbaro.feedback.Progress;
 

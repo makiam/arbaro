@@ -20,12 +20,15 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.mesh;
+package net.sourceforge.arbaro.mesh.impl;
 
 import java.util.Enumeration;
 
+import net.sourceforge.arbaro.mesh.MeshPart;
+import net.sourceforge.arbaro.mesh.MeshSection;
 import net.sourceforge.arbaro.transformation.*;
-import net.sourceforge.arbaro.tree.*;
+import net.sourceforge.arbaro.tree.Stem;
+import net.sourceforge.arbaro.tree.StemSection;
 import net.sourceforge.arbaro.feedback.Progress;
 
 

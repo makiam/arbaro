@@ -32,7 +32,9 @@ import net.sourceforge.arbaro.tree.TreeGenerator;
 import net.sourceforge.arbaro.tree.TreeGeneratorFactory;
 import net.sourceforge.arbaro.export.*;
 import net.sourceforge.arbaro.feedback.Progress;
-import net.sourceforge.arbaro.params.Params;
+import net.sourceforge.arbaro.params.ParamEditing;
+import net.sourceforge.arbaro.params.ParamManager;
+import net.sourceforge.arbaro.feedback.Console;
 
 public class ExportDialog {
 	final static int INTERVAL = 500; // 0.5 sec
@@ -45,7 +47,8 @@ public class ExportDialog {
 	Progressbar progressbar;
 	
 	// Tree tree;
-	Params params;
+	ParamManager parMgr;
+	ParamEditing params;
 	int seed;
 //	ExporterFactory exporterFactory;
 
@@ -75,10 +78,11 @@ public class ExportDialog {
 	
 	String fileSep = System.getProperty("file.separator");
 	
-	public ExportDialog(JFrame parent, int seed, /*ExporterFactory exporterFactory,*/ Params params, Config cfg, boolean render) {
+	public ExportDialog(JFrame parent, int seed, /*ExporterFactory exporterFactory,*/ ParamManager parMgr, Config cfg, boolean render) {
 		
 		//tree = tr;
-		this.params = params;
+		this.parMgr = parMgr;
+		this.params = parMgr.getParamEditing();
 		this.config = cfg;
 		this.render = render;
 //		this.exporterFactory = exporterFactory;
@@ -159,7 +163,7 @@ public class ExportDialog {
 		switch (outputFormat) {
 		case ExporterFactory.POV_MESH: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
-					+fileSep+params.Species+".inc");
+					+fileSep+params.getSpecies()+".inc");
 			sceneCheckbox.setEnabled(true);
 			renderCheckbox.setEnabled(true);
 			smoothField.setEnabled(true);
@@ -170,7 +174,7 @@ public class ExportDialog {
 		
 		case ExporterFactory.POV_CONES: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
-					+fileSep+params.Species+".inc");
+					+fileSep+params.getSpecies()+".inc");
 			sceneCheckbox.setEnabled(true);
 			renderCheckbox.setEnabled(true);
 			smoothField.setEnabled(false);
@@ -181,7 +185,7 @@ public class ExportDialog {
 		
 		case ExporterFactory.DXF: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
-					+fileSep+params.Species+".dxf");
+					+fileSep+params.getSpecies()+".dxf");
 			sceneCheckbox.setSelected(false);
 			sceneCheckbox.setEnabled(false);
 			renderCheckbox.setSelected(false);
@@ -194,7 +198,7 @@ public class ExportDialog {
 		
 		case ExporterFactory.OBJ: 
 			fileField.setText(fileChooser.getCurrentDirectory().getPath()
-					+fileSep+params.Species+".obj");
+					+fileSep+params.getSpecies()+".obj");
 			sceneCheckbox.setSelected(false);
 			sceneCheckbox.setEnabled(false);
 			renderCheckbox.setSelected(false);
@@ -278,7 +282,7 @@ public class ExportDialog {
 		ctext.gridy = line;
 		fileField = new JTextField(30);
 		fileField.setText(fileChooser.getCurrentDirectory().getPath()
-				+fileSep+params.Species+".inc");
+				+fileSep+params.getSpecies()+".inc");
 		fileField.setMinimumSize(new Dimension(250,19));
 		grid.setConstraints(fileField,ctext);
 		panel.add(fileField);
@@ -331,7 +335,7 @@ public class ExportDialog {
 		sceneFileField = new JTextField(30);
 		sceneFileField.setEnabled(sceneCheckbox.isSelected());
 		sceneFileField.setText(sceneFileChooser.getCurrentDirectory().getPath()
-				+fileSep+params.Species+".pov");
+				+fileSep+params.getSpecies()+".pov");
 		sceneFileField.setMinimumSize(new Dimension(250,19));
 		grid.setConstraints(sceneFileField,ctext);
 		panel.add(sceneFileField);
@@ -426,7 +430,7 @@ public class ExportDialog {
 		renderFileField = new JTextField(30);
 		renderFileField.setEnabled(renderCheckbox.isSelected());
 		renderFileField.setText(renderFileChooser.getCurrentDirectory().getPath()
-				+fileSep+params.Species+".png");
+				+fileSep+params.getSpecies()+".png");
 		renderFileField.setMinimumSize(new Dimension(250,19));
 		grid.setConstraints(renderFileField,ctext);
 		panel.add(renderFileField);
@@ -482,13 +486,14 @@ public class ExportDialog {
 			// get seed, output parameters
 			
 			// FIXME set progress, verbose, debug here?
+			params.getParam("Smooth").setValue(smoothField.getText());
 			TreeGenerator treeGenerator = new ShieldedGUITreeGenerator(frame,
-					TreeGeneratorFactory.createTreeGenerator(params));
+					TreeGeneratorFactory.createTreeGenerator(parMgr));
 //			ExporterFactory exporterFactory = new ExporterFactory();
 			
 			try{
 				treeGenerator.setSeed(Integer.parseInt(seedField.getText()));
-				treeGenerator.setParam("Smooth",smoothField.getText());
+//				treeGenerator.setParam("Smooth",smoothField.getText());
 				ExporterFactory.setRenderW(Integer.parseInt(widthField.getText()));
 				ExporterFactory.setRenderH(Integer.parseInt(heightField.getText()));
 				ExporterFactory.setExportFormat(formatBox.getSelectedIndex());
@@ -497,7 +502,7 @@ public class ExportDialog {
 				//FIXME fileChooser.getPath() ???
 				//tree.setOutputPath(fileField.getText());
 			} catch (Exception exc) {
-				net.sourceforge.arbaro.feedback.Console.printException(exc);
+				Console.printException(exc);
 				ShowException.msgBox(frame,"Export initialization error",exc);
 			}
 			// setup progress dialog

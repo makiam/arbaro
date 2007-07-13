@@ -20,44 +20,31 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.params;
+package net.sourceforge.arbaro.params.impl;
 
-public class StringParam extends AbstractParam {
-    private String deflt;
-    private  String value;
+/**
+ * @author wdiestel
+ *
+ */
+public final class LeafShapeParam extends StringParam {
+	
+	final static String[] items = {"disc","disc1","disc2","disc3","disc4","disc5","disc6","disc7","disc8","disc9","square","sphere"}; 
 
-    StringParam(String nam, String def, String grp, int lev, 
-    		int ord, String sh, String lng) {
-	super(nam,grp,lev,ord,sh,lng);
-	deflt = def;
-	value = "";
-    }
-
-    public String getDefaultValue() {
-	return deflt;
-    }
-
-    public void clear() {
-	value = "";
-	fireStateChanged();
-    }
-
-    public void setValue(String val) {
-	value = val;
-	fireStateChanged();
-    }
-
-    public boolean empty() {
-	return value.equals("");
-    }
-
-    public String getValue() {
-	if (empty()) {
-	    warn(name+" not given, using default value("+deflt+")");
-	    // set value to default, t.e. don't warn again
-	    value=deflt;
-	    fireStateChanged();
+	/**
+	 * @param nam
+	 * @param def
+	 * @param grp
+	 * @param lev
+	 * @param sh
+	 * @param lng
+	 */
+	public LeafShapeParam(String nam, String def, String grp, int lev,
+			int ord, String sh, String lng) {
+		super(nam, def, grp, lev, ord, sh, lng);
 	}
-	return value;
-    }
+	
+	public static String[] values() {
+		return items;
+	}
+
 }

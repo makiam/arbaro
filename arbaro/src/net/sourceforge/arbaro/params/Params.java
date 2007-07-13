@@ -23,6 +23,12 @@
 package net.sourceforge.arbaro.params;
 
 import net.sourceforge.arbaro.feedback.Console;
+import net.sourceforge.arbaro.params.impl.AbstractParam;
+import net.sourceforge.arbaro.params.impl.FloatParam;
+import net.sourceforge.arbaro.params.impl.IntParam;
+import net.sourceforge.arbaro.params.impl.LeafShapeParam;
+import net.sourceforge.arbaro.params.impl.ShapeParam;
+import net.sourceforge.arbaro.params.impl.StringParam;
 
 import java.io.PrintWriter;
 import java.io.InputStream;
@@ -34,6 +40,7 @@ import java.io.FileReader;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.TreeMap;
 
 import javax.swing.event.*;
@@ -159,7 +166,7 @@ class XMLTreeParser {
  *
  */
 
-public class Params {
+public class Params implements ParamReader, ParamWriter, ParamEditing {
 	
 	
 	// Tree Shapes 
@@ -304,7 +311,7 @@ public class Params {
 		for (Enumeration e = paramDB.elements(); e.hasMoreElements();) {
 			AbstractParam p = ((AbstractParam)e.nextElement());
 			try {
-				AbstractParam otherParam = other.getParam(p.name);
+				AbstractParam otherParam = other.param(p.name);
 				if (! otherParam.empty()) {
 					p.setValue(otherParam.getValue());
 				} // else use default value
@@ -326,6 +333,18 @@ public class Params {
 	
 	public String getSpecies() {
 		return Species;
+	}
+	
+	public int getGeneralLevel() {
+		return GENERAL_PARAMS;
+	}
+	
+	public int getLevels() {
+		return param("Levels").getIntValue();
+	}
+
+	public void setLevels(int levels) {
+		param("Levels").setValue(""+levels);
 	}
 	
 	// help methods for output of params
@@ -580,8 +599,8 @@ public class Params {
 		}
 	}
 	
-	public TreeMap getParamGroup(int level, String group) {
-		TreeMap result = new TreeMap();
+	public Map getParamGroup(int level, String group) {
+		Map result = new TreeMap();
 		for (Enumeration e = paramDB.elements(); e.hasMoreElements();) {
 			AbstractParam p = (AbstractParam)e.nextElement();
 			if (p.getLevel() == level && p.getGroup().equals(group)) {
@@ -594,15 +613,16 @@ public class Params {
 	// help methods for createing param-db
 	
 	int order;
+	public static final int GENERAL_PARAMS = -999; // no level - general params
 	private void intParam(String name, int min, int max, int deflt,
 			String group, String short_desc, String long_desc) {
-		paramDB.put(name,new IntParam(name,min,max,deflt,group,AbstractParam.GENERAL,
+		paramDB.put(name,new IntParam(name,min,max,deflt,group,Params.GENERAL_PARAMS,
 				order++,short_desc,long_desc));
 	}
 	
 	private void shapeParam(String name, int min, int max, int deflt,
 			String group, String short_desc, String long_desc) {
-		paramDB.put(name,new ShapeParam(name,min,max,deflt,group,AbstractParam.GENERAL,
+		paramDB.put(name,new ShapeParam(name,min,max,deflt,group,Params.GENERAL_PARAMS,
 				order++,short_desc,long_desc));
 	}	
 	
@@ -620,7 +640,7 @@ public class Params {
 	
 	private void dblParam(String name, double min, double max, double deflt,
 			String group, String short_desc, String long_desc) {
-		paramDB.put(name,new FloatParam(name,min,max,deflt,group,AbstractParam.GENERAL,
+		paramDB.put(name,new FloatParam(name,min,max,deflt,group,Params.GENERAL_PARAMS,
 				order++,short_desc,long_desc));
 	}
 	
@@ -638,13 +658,13 @@ public class Params {
 	
 	private void lshParam(String name, String deflt,
 			String group, String short_desc, String long_desc) {
-		paramDB.put(name,new LeafShapeParam(name,deflt,group,AbstractParam.GENERAL,
+		paramDB.put(name,new LeafShapeParam(name,deflt,group,Params.GENERAL_PARAMS,
 				order++,short_desc,long_desc));
 	}
 	
 	private void strParam(String name, String deflt,
 			String group, String short_desc, String long_desc) {
-		paramDB.put(name,new StringParam(name,deflt,group,AbstractParam.GENERAL,
+		paramDB.put(name,new StringParam(name,deflt,group,Params.GENERAL_PARAMS,
 				order++,short_desc,long_desc));
 	}
 	
@@ -1084,7 +1104,11 @@ public class Params {
 	public void readFromCfg(InputStream is) {
 		CfgTreeParser parser = new CfgTreeParser();
 		try {
+			// suppress warnings
+			AbstractParam.loading=true;
+			clearParams();
 			parser.parse(is,this);
+			AbstractParam.loading=false;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -1093,16 +1117,32 @@ public class Params {
 	public void readFromXML(InputStream is) {
 		try {
 			XMLTreeParser parser = new XMLTreeParser();
+			// suppress warnings
+			AbstractParam.loading=true;
+			clearParams();
 			parser.parse(new InputSource(is),this);
+			AbstractParam.loading=false;
 		} catch (Exception e) {
 			throw new ParamException(e.getMessage());
 		}
 	}
 	
-	public AbstractParam getParam(String parname) {
+	public AbstractParam param(String parname) {
 		return (AbstractParam)paramDB.get(parname);
 	}
 	
+	public Param getParam(String parname) {
+		return (AbstractParam)paramDB.get(parname);
+	}
+	
+	public String[] getValues(String paramName) {
+		if (paramName.equals("Shape")) {
+			return ShapeParam.values();
+		} else if (paramName.equals("LeafShape")) {
+			return LeafShapeParam.values();
+		} else throw new UnknownParameterTypeException();
+	}
+
 	public void addChangeListener(ChangeListener l) {
 		listenerList.add(ChangeListener.class, l);
 	}
@@ -1137,86 +1177,94 @@ public class Params {
 //		getParam("ZScaleV").setEnabled(false);
 		
 		// enable RatioPower/Leaves if Levels>1
-		enable = (((IntParam)getParam("Levels")).intValue() > 1);
-		getParam("RatioPower").setEnabled(enable);
-		getParam("Leaves").setEnabled(enable);
+		enable = (((IntParam)param("Levels")).intValue() > 1);
+		param("RatioPower").setEnabled(enable);
+		param("Leaves").setEnabled(enable);
 		
 		// enable leaf params if Leaves != 0
-		enable = (((IntParam)getParam("Leaves")).intValue() != 0 &&
-				((IntParam)getParam("Levels")).intValue() > 1);
-		getParam("LeafShape").setEnabled(enable);
-		getParam("LeafScale").setEnabled(enable);
-		getParam("LeafScaleX").setEnabled(enable);
-		getParam("LeafBend").setEnabled(enable);
-		getParam("LeafDistrib").setEnabled(enable);
-		getParam("LeafQuality").setEnabled(enable);
-		getParam("LeafStemLen").setEnabled(enable);
+		enable = (((IntParam)param("Leaves")).intValue() != 0 &&
+				((IntParam)param("Levels")).intValue() > 1);
+		param("LeafShape").setEnabled(enable);
+		param("LeafScale").setEnabled(enable);
+		param("LeafScaleX").setEnabled(enable);
+		param("LeafBend").setEnabled(enable);
+		param("LeafDistrib").setEnabled(enable);
+		param("LeafQuality").setEnabled(enable);
+		param("LeafStemLen").setEnabled(enable);
 		
 		// enable Pruning parameters, if PruneRatio>0 or Shape=envelope
-		enable = (((IntParam)getParam("Shape")).intValue() == 8 ||
-				((FloatParam)getParam("PruneRatio")).doubleValue()>0);
-		getParam("PrunePowerHigh").setEnabled(enable);
-		getParam("PrunePowerLow").setEnabled(enable);
-		getParam("PruneWidth").setEnabled(enable);
-		getParam("PruneWidthPeak").setEnabled(enable);
+		enable = (((IntParam)param("Shape")).intValue() == 8 ||
+				((FloatParam)param("PruneRatio")).doubleValue()>0);
+		param("PrunePowerHigh").setEnabled(enable);
+		param("PrunePowerLow").setEnabled(enable);
+		param("PruneWidth").setEnabled(enable);
+		param("PruneWidthPeak").setEnabled(enable);
 		
 		// enable LobeDepth if Lobes>0
-		enable = (((IntParam)getParam("Lobes")).intValue() > 0);
-		getParam("LobeDepth").setEnabled(enable);
+		enable = (((IntParam)param("Lobes")).intValue() > 0);
+		param("LobeDepth").setEnabled(enable);
 		
 		// enable AttractionUp if Levels>2
-		enable = (((IntParam)getParam("Levels")).intValue() > 2);
-		getParam("AttractionUp").setEnabled(enable);
+		enable = (((IntParam)param("Levels")).intValue() > 2);
+		param("AttractionUp").setEnabled(enable);
 		
 		// ############## disable unused levels ###########
 		
 		for (int i=0; i<4; i++) {
 			
-			enable = i<((IntParam)getParam("Levels")).intValue();
+			enable = i<((IntParam)param("Levels")).intValue();
 			
-			getParam(""+i+"Length").setEnabled(enable);
-			getParam(""+i+"LengthV").setEnabled(enable);
-			getParam(""+i+"Taper").setEnabled(enable);
+			param(""+i+"Length").setEnabled(enable);
+			param(""+i+"LengthV").setEnabled(enable);
+			param(""+i+"Taper").setEnabled(enable);
 			
-			getParam(""+i+"Curve").setEnabled(enable);
-			getParam(""+i+"CurveV").setEnabled(enable);
-			getParam(""+i+"CurveRes").setEnabled(enable);
-			getParam(""+i+"CurveBack").setEnabled(enable);
+			param(""+i+"Curve").setEnabled(enable);
+			param(""+i+"CurveV").setEnabled(enable);
+			param(""+i+"CurveRes").setEnabled(enable);
+			param(""+i+"CurveBack").setEnabled(enable);
 			
-			getParam(""+i+"SegSplits").setEnabled(enable);
-			getParam(""+i+"SplitAngle").setEnabled(enable);
-			getParam(""+i+"SplitAngleV").setEnabled(enable);
+			param(""+i+"SegSplits").setEnabled(enable);
+			param(""+i+"SplitAngle").setEnabled(enable);
+			param(""+i+"SplitAngleV").setEnabled(enable);
 			
-			getParam(""+i+"BranchDist").setEnabled(enable);
-			getParam(""+i+"Branches").setEnabled(enable);
+			param(""+i+"BranchDist").setEnabled(enable);
+			param(""+i+"Branches").setEnabled(enable);
 			
 			// down and rotation angle of last level are
 			// used for leaves
 			enable = enable || 
-			(((IntParam)getParam("Leaves")).intValue() != 0 &&
-					i==((IntParam)getParam("Levels")).intValue());
+			(((IntParam)param("Leaves")).intValue() != 0 &&
+					i==((IntParam)param("Levels")).intValue());
 			
-			getParam(""+i+"DownAngle").setEnabled(enable);
-			getParam(""+i+"DownAngleV").setEnabled(enable);
-			getParam(""+i+"Rotate").setEnabled(enable);
-			getParam(""+i+"RotateV").setEnabled(enable);
+			param(""+i+"DownAngle").setEnabled(enable);
+			param(""+i+"DownAngleV").setEnabled(enable);
+			param(""+i+"Rotate").setEnabled(enable);
+			param(""+i+"RotateV").setEnabled(enable);
 		}
 		
-		for (int i=0; i<((IntParam)getParam("Levels")).intValue() && i<4; i++) {
+		for (int i=0; i<((IntParam)param("Levels")).intValue() && i<4; i++) {
 			
 			// enable nSplitAngle/nSplitAngleV if nSegSplits>0
-			enable = (((FloatParam)getParam(""+i+"SegSplits")).doubleValue()>0) ||
-			(i==0 && ((IntParam)getParam("0BaseSplits")).intValue()>0);
-			getParam(""+i+"SplitAngle").setEnabled(enable);
-			getParam(""+i+"SplitAngleV").setEnabled(enable);
+			enable = (((FloatParam)param(""+i+"SegSplits")).doubleValue()>0) ||
+			(i==0 && ((IntParam)param("0BaseSplits")).intValue()>0);
+			param(""+i+"SplitAngle").setEnabled(enable);
+			param(""+i+"SplitAngleV").setEnabled(enable);
 			
 			// enable Curving parameters only when CurveRes>1
-			enable = (((IntParam)getParam(""+i+"CurveRes")).intValue()>1);
-			getParam(""+i+"Curve").setEnabled(enable);
-			getParam(""+i+"CurveV").setEnabled(enable);
-			getParam(""+i+"CurveBack").setEnabled(enable);
+			enable = (((IntParam)param(""+i+"CurveRes")).intValue()>1);
+			param(""+i+"Curve").setEnabled(enable);
+			param(""+i+"CurveV").setEnabled(enable);
+			param(""+i+"CurveBack").setEnabled(enable);
 		}
 		
+	}
+
+	public void setPreview(boolean preview) {
+		this.preview = preview;
+	}
+
+	public void setStopLevel(int stopLevel) {
+		this.stopLevel = stopLevel;
 	}
 	
 };

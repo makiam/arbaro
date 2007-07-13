@@ -22,6 +22,12 @@
 
 package net.sourceforge.arbaro.export;
 
+import net.sourceforge.arbaro.export.impl.DXFExporter;
+import net.sourceforge.arbaro.export.impl.OBJExporter;
+import net.sourceforge.arbaro.export.impl.POVConeExporter;
+import net.sourceforge.arbaro.export.impl.POVMeshExporter;
+import net.sourceforge.arbaro.export.impl.POVSceneExporter;
+import net.sourceforge.arbaro.export.impl.ShieldedExporter;
 import net.sourceforge.arbaro.mesh.MeshGenerator;
 import net.sourceforge.arbaro.mesh.MeshGeneratorFactory;
 import net.sourceforge.arbaro.tree.Tree;
@@ -145,7 +151,7 @@ public class ExporterFactory {
 		return new POVSceneExporter(tree,/*params,*/renderW,renderH);
 	}
 
-	static public Exporter createShieldedExporter(Tree tree, Params params) throws InvalidExportFormatError 
+	static public Exporter createShieldedExporter(Tree tree) throws InvalidExportFormatError 
 	{
 		return new ShieldedExporter(createExporter(tree));
 	}

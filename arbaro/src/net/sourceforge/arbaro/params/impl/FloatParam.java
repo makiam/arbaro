@@ -20,7 +20,9 @@
 //  #
 //  #**************************************************************************/
 
-package net.sourceforge.arbaro.params;
+package net.sourceforge.arbaro.params.impl;
+
+import net.sourceforge.arbaro.params.ParamException;
 
 public class FloatParam extends AbstractParam {
     private double min;
@@ -28,7 +30,7 @@ public class FloatParam extends AbstractParam {
     private double deflt;
     private double value;
 
-    FloatParam(String nam, double mn, double mx, double def, String grp, int lev,
+    public FloatParam(String nam, double mn, double mx, double def, String grp, int lev,
 	       int ord, String sh, String lng) {
 	super(nam,grp,lev,ord,sh,lng);
 	min = mn;
