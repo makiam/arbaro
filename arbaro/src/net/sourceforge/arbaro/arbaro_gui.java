@@ -22,19 +22,17 @@
 
 package net.sourceforge.arbaro;
 
-import net.sourceforge.arbaro.export.Console;
-import net.sourceforge.arbaro.gui.Workplace;
-import java.lang.System;
+import net.sourceforge.arbaro.feedback.Console;
+import net.sourceforge.arbaro.gui.Workplace;    
 
 /**
- * Main class for GUI version of Arbaro. It creates a new Workplace.
+ * Main class for GUI version of Arbaro. It creates a new Workplace. 
  */
 
 public class arbaro_gui {
 
     public static void main(String[] args) {
 		Console.setOutputLevel(Console.QUIET);
-		System.getProperties().list(System.out);
 		new Workplace();
     }
 }

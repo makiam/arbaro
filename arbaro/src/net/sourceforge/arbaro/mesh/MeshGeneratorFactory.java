@@ -22,6 +22,8 @@
 
 package net.sourceforge.arbaro.mesh;
 
+import net.sourceforge.arbaro.mesh.impl.MeshGeneratorImpl;
+
 /**
  * @author wolfram
  *
